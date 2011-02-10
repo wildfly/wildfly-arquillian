@@ -31,9 +31,9 @@ import org.jboss.dmr.ModelNode;
 /**
  * @author Emanuel Muckenhuber
  */
-class NewArquillianProviders {
+class ArquillianProviders {
 
-    static final String RESOURCE_NAME = NewArquillianProviders.class.getPackage().getName() + ".LocalDescriptions";
+    static final String RESOURCE_NAME = ArquillianProviders.class.getPackage().getName() + ".LocalDescriptions";
 
     static final DescriptionProvider SUBSYSTEM = new DescriptionProvider() {
 

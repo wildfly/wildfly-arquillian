@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jboss.as.arquillian.container.common;
+package org.jboss.as.arquillian.container;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -40,12 +40,10 @@ import org.jboss.as.server.client.api.deployment.ServerDeploymentActionResult;
 import org.jboss.as.server.client.api.deployment.ServerDeploymentManager;
 import org.jboss.as.server.client.api.deployment.ServerDeploymentPlanResult;
 import org.jboss.modules.management.ObjectProperties;
-import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceController.State;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.management.ServiceContainerMXBean;
 import org.jboss.osgi.jmx.MBeanProxy;
-import org.jboss.osgi.spi.util.BundleInfo;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 
@@ -77,7 +75,8 @@ public abstract class AbstractDeployableContainer implements DeployableContainer
     @Override
     public void setup(Context context, Configuration configuration) {
         containerConfig = configuration.getContainerConfig(JBossAsContainerConfiguration.class);
-        ModelControllerClient client = ModelControllerClient.Factory.create(containerConfig.getBindAddress(), containerConfig.getManagementPort());
+        ModelControllerClient client = ModelControllerClient.Factory.create(containerConfig.getBindAddress(),
+                containerConfig.getManagementPort());
         deploymentManager = ServerDeploymentManager.Factory.create(client);
     }
 
@@ -88,10 +87,6 @@ public abstract class AbstractDeployableContainer implements DeployableContainer
     @Override
     public ContainerMethodExecutor deploy(Context context, Archive<?> archive) throws DeploymentException {
         try {
-            // If this is an OSGi archive
-            if (BundleInfo.isValidateBundleManifest(ManifestUtils.getManifest(archive, false)))
-                startOSGiSubsystem();
-
             InputStream input = archive.as(ZipExporter.class).exportZip();
             DeploymentPlanBuilder builder = deploymentManager.newDeploymentPlan();
             builder = builder.add(archive.getName(), input).andDeploy();
@@ -140,7 +135,8 @@ public abstract class AbstractDeployableContainer implements DeployableContainer
             throw new IllegalStateException("MBean not available: " + objectName);
     }
 
-    protected void waitForServiceState(ServiceName serviceName, State expectedState, long timeout) throws IOException, InterruptedException {
+    protected void waitForServiceState(ServiceName serviceName, State expectedState, long timeout) throws IOException,
+            InterruptedException {
 
         ObjectName objectName = OBJECT_NAME;
         MBeanServerConnection mbeanServer = getMBeanServerConnection();
@@ -173,19 +169,5 @@ public abstract class AbstractDeployableContainer implements DeployableContainer
         }
 
         return deployAction.getDeploymentUnitUniqueName();
-    }
-
-    private void startOSGiSubsystem() throws IOException, InterruptedException {
-
-        ObjectName objectName = OBJECT_NAME;
-        waitForMBean(objectName, 5000);
-
-        MBeanServerConnection mbeanServer = getMBeanServerConnection();
-        ServiceContainerMXBean proxy = MBeanProxy.get(mbeanServer, objectName, ServiceContainerMXBean.class);
-        ServiceName serviceName = ServiceName.JBOSS.append("osgi", "context");
-        if (State.valueOf(proxy.getServiceStatus(serviceName.getCanonicalName()).getStateName()) != State.UP) {
-            proxy.setServiceMode(serviceName.getCanonicalName(), Mode.ACTIVE.toString());
-            waitForServiceState(serviceName, State.UP, 5000);
-        }
     }
 }

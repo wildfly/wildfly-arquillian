@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jboss.as.arquillian.container.common;
+package org.jboss.as.arquillian.container;
 
 import java.util.jar.Manifest;
 
@@ -35,8 +35,7 @@ public class DelegatingApplicationArchiveProcessor implements ApplicationArchive
 
     @Override
     public void process(Archive<?> appArchive, TestClass testClass) {
-
-        ApplicationArchiveProcessor archiveProcessor = null;
+        ApplicationArchiveProcessor archiveProcessor;
         if (isBundleArchive(testClass, appArchive))
             archiveProcessor = new OSGiApplicationArchiveProcessor();
         else
@@ -48,9 +47,6 @@ public class DelegatingApplicationArchiveProcessor implements ApplicationArchive
     private boolean isBundleArchive(TestClass testClass, Archive<?> appArchive) {
         // Check if the archive contains a valid OSGi manifest
         Manifest manifest = ManifestUtils.getOrCreateManifest(appArchive);
-        if (BundleInfo.isValidateBundleManifest(manifest))
-            return true;
-
-        return false;
+        return BundleInfo.isValidateBundleManifest(manifest);
     }
 }

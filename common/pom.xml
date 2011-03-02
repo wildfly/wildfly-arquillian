@@ -33,10 +33,10 @@
     </parent>
 
     <groupId>org.jboss.as</groupId>
-    <artifactId>jboss-as-arquillian-container-common</artifactId>
+    <artifactId>jboss-as-arquillian-common</artifactId>
     <version>7.0.0.Alpha2-SNAPSHOT</version>
 
-    <name>JBoss Application Server: Arquillian: Common Container</name>
+    <name>JBoss Application Server: Arquillian Common</name>
 
     <!--modules>
         <module>integration</module>
@@ -66,6 +66,10 @@
         <dependency>
           <groupId>org.jboss.arquillian.testenricher</groupId>
           <artifactId>arquillian-testenricher-msc</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>org.jboss.arquillian.testenricher</groupId>
+          <artifactId>arquillian-testenricher-jmx</artifactId>
         </dependency>
         <dependency>
           <groupId>org.jboss.arquillian.testenricher</groupId>

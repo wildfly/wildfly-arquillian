@@ -19,13 +19,14 @@
 * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 */
-package org.jboss.as.arquillian.container.common;
+package org.jboss.as.arquillian.container;
 
 import java.util.HashSet;
 import java.util.Set;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 
+import org.jboss.as.arquillian.container.ModuleApplicationArchiveProcessor;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ArchivePath;
 import org.jboss.shrinkwrap.api.ArchivePaths;
@@ -84,13 +85,15 @@ public class ModuleApplicationProcessorTestCase {
         for (String dep : value.split(",")) {
             deps.add(dep.trim());
         }
-        Assert.assertEquals(7, deps.size());
+        Assert.assertEquals(9, deps.size());
         Assert.assertTrue(deps.contains("org.jboss.arquillian.api"));
         Assert.assertTrue(deps.contains("org.jboss.arquillian.junit"));
+        Assert.assertTrue(deps.contains("org.jboss.arquillian.protocol.jmx"));
         Assert.assertTrue(deps.contains("org.jboss.arquillian.spi"));
         Assert.assertTrue(deps.contains("org.jboss.modules"));
         Assert.assertTrue(deps.contains("org.jboss.msc"));
         Assert.assertTrue(deps.contains("org.jboss.shrinkwrap.api"));
+        Assert.assertTrue(deps.contains("org.jboss.shrinkwrap.impl"));
         Assert.assertTrue(deps.contains("junit.junit"));
 
     }

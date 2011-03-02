@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jboss.as.arquillian.container.common;
+package org.jboss.as.arquillian.container;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -46,10 +46,12 @@ public class ModuleApplicationArchiveProcessor implements ApplicationArchiveProc
     static {
         defaultDependencies.add("org.jboss.arquillian.api");
         defaultDependencies.add("org.jboss.arquillian.junit");
+        defaultDependencies.add("org.jboss.arquillian.protocol.jmx");
         defaultDependencies.add("org.jboss.arquillian.spi");
         defaultDependencies.add("org.jboss.modules");
         defaultDependencies.add("org.jboss.msc");
         defaultDependencies.add("org.jboss.shrinkwrap.api");
+        defaultDependencies.add("org.jboss.shrinkwrap.impl");
         defaultDependencies.add("junit.junit");
     }
 

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jboss.as.arquillian.container;
+package org.jboss.as.arquillian.protocol.jmx;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -78,8 +78,6 @@ public class JBossASDeploymentPackager implements DeploymentPackager {
 
     private void merge(Archive<?> appArchive, Collection<Archive<?>> auxArchives) {
         for (Archive<?> aux : auxArchives) {
-            // we don't want to include the arquillian-core.jar and arquillian-junit.jar
-            // auxillary archives, as these are already part of the container
             if (!excludedAuxillaryArchives.contains(aux.getName())) {
                 appArchive.merge(aux);
             }

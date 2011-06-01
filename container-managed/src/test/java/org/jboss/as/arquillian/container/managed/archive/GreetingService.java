@@ -15,22 +15,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jboss.as.arquillian.protocol.jmx;
-
-import org.jboss.arquillian.container.test.spi.client.protocol.Protocol;
-import org.jboss.arquillian.core.spi.LoadableExtension;
+package org.jboss.as.arquillian.container.managed.archive;
 
 /**
- * JMXProtocolExtension
+ * GreetingService
  *
- * @author thomas.diesler@jboss.com
- * @since 31-May-2011
+ * @author <a href="mailto:aslak@redhat.com">Aslak Knutsen</a>
+ * @version $Revision: $
  */
-public class JBossASProtocolExtension implements LoadableExtension {
-
-    @Override
-    public void register(ExtensionBuilder builder) {
-        builder.service(Protocol.class, JBossASProtocol.class);
-        builder.observer(ArquillianServiceDeployer.class);
+public class GreetingService {
+    public String greet(String name) {
+        return "Hello " + name + "!";
     }
 }

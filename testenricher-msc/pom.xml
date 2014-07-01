@@ -4,18 +4,16 @@
 
     <!-- Parent -->
     <parent>
-        <groupId>org.wildfly</groupId>
-        <artifactId>wildfly-arquillian</artifactId>
-        <version>9.0.0.Alpha1-SNAPSHOT</version>
+        <groupId>org.wildfly.arquillian</groupId>
+        <artifactId>wildfly-arquillian-parent</artifactId>
+        <version>1.0.0.Alpha1-SNAPSHOT</version>
     </parent>
 
     <!-- Model Version -->
     <modelVersion>4.0.0</modelVersion>
 
     <!-- Artifact Configuration -->
-    <groupId>org.wildfly</groupId>
     <artifactId>wildfly-arquillian-testenricher-msc</artifactId>
-    <version>9.0.0.Alpha1-SNAPSHOT</version>
 
     <name>WildFly: Arquillian TestEnricher MSC</name>
 

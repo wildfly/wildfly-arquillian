@@ -26,10 +26,11 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.wildfly</groupId>
-        <artifactId>wildfly-arquillian</artifactId>
-        <version>9.0.0.Alpha1-SNAPSHOT</version>
+        <groupId>org.wildfly.arquillian</groupId>
+        <artifactId>wildfly-arquillian-parent</artifactId>
+        <version>1.0.0.Alpha1-SNAPSHOT</version>
     </parent>
+
     <artifactId>wildfly-arquillian-container-managed</artifactId>
 
     <name>WildFly: Arquillian Managed Container</name>
@@ -38,11 +39,11 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>org.wildfly.arquillian</groupId>
             <artifactId>wildfly-arquillian-common</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>org.wildfly.arquillian</groupId>
             <artifactId>wildfly-arquillian-protocol-jmx</artifactId>
         </dependency>
         <dependency>
@@ -108,7 +109,7 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>org.wildfly.arquillian</groupId>
             <artifactId>wildfly-arquillian-protocol-jmx</artifactId>
             <scope>test</scope>
         </dependency>
@@ -146,7 +147,7 @@
                         </property>
                     </systemProperties>
                     <systemPropertyVariables>
-                        <jboss.home>${basedir}/target/wildfly-core-${project.version}</jboss.home>
+                        <jboss.home>${basedir}/target/wildfly-core-${version.org.wildfly.core}</jboss.home>
                     </systemPropertyVariables>
                     <redirectTestOutputToFile>true</redirectTestOutputToFile>
                 </configuration>

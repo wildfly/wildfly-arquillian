@@ -26,9 +26,9 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.wildfly</groupId>
-        <artifactId>wildfly-arquillian</artifactId>
-        <version>9.0.0.Alpha1-SNAPSHOT</version>
+        <groupId>org.wildfly.arquillian</groupId>
+        <artifactId>wildfly-arquillian-parent</artifactId>
+        <version>1.0.0.Alpha1-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-arquillian-common</artifactId>
@@ -72,7 +72,7 @@
           <artifactId>arquillian-protocol-servlet</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>org.wildfly.arquillian</groupId>
             <artifactId>wildfly-arquillian-testenricher-msc</artifactId>
         </dependency>
         <dependency>

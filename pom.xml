@@ -27,49 +27,358 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.wildfly</groupId>
-        <artifactId>wildfly-parent</artifactId>
-        <version>9.0.0.Alpha1-SNAPSHOT</version>
+        <groupId>org.jboss</groupId>
+        <artifactId>jboss-parent</artifactId>
+        <version>14</version>
     </parent>
 
-    <artifactId>wildfly-arquillian</artifactId>
+    <artifactId>wildfly-arquillian-parent</artifactId>
 
+    <groupId>org.wildfly.arquillian</groupId>
+    <version>1.0.0.Alpha1-SNAPSHOT</version>
     <name>WildFly: Arquillian</name>
 
+    <properties>
+        <version.com.google.guava>16.0.1</version.com.google.guava>
+        <version.org.wildfly.core>1.0.0.Alpha1</version.org.wildfly.core>
+        <version.junit>4.11</version.junit>
+        <version.org.jboss.arquillian.core>1.1.2.Final-wildfly-1</version.org.jboss.arquillian.core>
+        <version.org.jboss.arquillian.container.osgi>2.1.0.CR2</version.org.jboss.arquillian.container.osgi>
+        <version.org.jboss.ejb-client>2.0.1.Final</version.org.jboss.ejb-client>
+        <version.osgi>5.0.0</version.osgi>
+        <version.org.jboss.osgi.metadata>3.0.1.Final</version.org.jboss.osgi.metadata>
+        <version.org.testng>6.1.1</version.org.testng>
+        <version.org.jboss.spec.javax.servlet.jboss-servlet-api_3.1_spec>1.0.0.Final</version.org.jboss.spec.javax.servlet.jboss-servlet-api_3.1_spec>
+        <version.org.jboss.spec.javax.ejb.jboss-ejb-api_3.2_spec>1.0.0.Final</version.org.jboss.spec.javax.ejb.jboss-ejb-api_3.2_spec>
+    </properties>
     <modules>
         <module>common</module>
-        <module>container-embedded</module>
+        <!-- <module>container-embedded</module>-->
         <module>container-managed</module>
         <module>container-remote</module>
         <module>protocol-jmx</module>
         <module>testenricher-msc</module>
         <module>testng-integration</module>
-
         <module>common-domain</module>
         <module>container-remote-domain</module>
         <module>container-managed-domain</module>
     </modules>
 
     <packaging>pom</packaging>
+    <dependencyManagement>
+        <dependencies>
+
+
+            <dependency>
+                <groupId>org.wildfly.arquillian</groupId>
+                <artifactId>wildfly-arquillian-common</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly.arquillian</groupId>
+                <artifactId>wildfly-arquillian-container-embedded</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly.arquillian</groupId>
+                <artifactId>wildfly-arquillian-container-managed</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly.arquillian</groupId>
+                <artifactId>wildfly-arquillian-container-remote</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly.arquillian</groupId>
+                <artifactId>wildfly-arquillian-common-domain</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly.arquillian</groupId>
+                <artifactId>wildfly-arquillian-container-domain-managed</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly.arquillian</groupId>
+                <artifactId>wildfly-arquillian-container-domain-remote</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly.arquillian</groupId>
+                <artifactId>wildfly-arquillian-protocol-jmx</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly.arquillian</groupId>
+                <artifactId>wildfly-arquillian-testenricher-msc</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <!-- External dependencies -->
+
+            <dependency>
+                <groupId>com.google.guava</groupId>
+                <artifactId>guava</artifactId>
+                <version>${version.com.google.guava}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>com.google.code.findbugs</groupId>
+                        <artifactId>jsr305</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+
+            <dependency>
+                <groupId>org.wildfly.core</groupId>
+                <artifactId>wildfly-core-parent</artifactId>
+                <scope>import</scope>
+                <type>pom</type>
+                <version>${version.org.wildfly.core}</version>
+            </dependency>
+
+
+
+            <dependency>
+                <groupId>org.jboss.arquillian.core</groupId>
+                <artifactId>arquillian-core-api</artifactId>
+                <version>${version.org.jboss.arquillian.core}</version>
+            </dependency>
+            <dependency>
+                <groupId>junit</groupId>
+                <artifactId>junit</artifactId>
+                <scope>test</scope>
+                <version>${version.junit}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.wildfly.core</groupId>
+                <artifactId>wildfly-core-build</artifactId>
+                <version>${version.org.wildfly.core}</version>
+                <type>zip</type>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+
+            <dependency>
+                <groupId>org.jboss.arquillian.container</groupId>
+                <artifactId>arquillian-container-osgi</artifactId>
+                <version>${version.org.jboss.arquillian.container.osgi}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.jboss.shrinkwrap.resolver</groupId>
+                        <artifactId>shrinkwrap-resolver-depchain</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.arquillian.container</groupId>
+                <artifactId>arquillian-container-spi</artifactId>
+                <version>${version.org.jboss.arquillian.core}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.arquillian.container</groupId>
+                <artifactId>arquillian-container-test-api</artifactId>
+                <version>${version.org.jboss.arquillian.core}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.arquillian.container</groupId>
+                <artifactId>arquillian-container-test-spi</artifactId>
+                <version>${version.org.jboss.arquillian.core}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.arquillian.container</groupId>
+                <artifactId>arquillian-container-test-impl-base</artifactId>
+                <version>${version.org.jboss.arquillian.core}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.arquillian.core</groupId>
+                <artifactId>arquillian-core-api</artifactId>
+                <version>${version.org.jboss.arquillian.core}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.arquillian.core</groupId>
+                <artifactId>arquillian-core-impl-base</artifactId>
+                <version>${version.org.jboss.arquillian.core}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.arquillian.core</groupId>
+                <artifactId>arquillian-core-spi</artifactId>
+                <version>${version.org.jboss.arquillian.core}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.arquillian.junit</groupId>
+                <artifactId>arquillian-junit-container</artifactId>
+                <version>${version.org.jboss.arquillian.core}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>commons-logging</groupId>
+                        <artifactId>commons-logging</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.arquillian.junit</groupId>
+                <artifactId>arquillian-junit-core</artifactId>
+                <version>${version.org.jboss.arquillian.core}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.arquillian.protocol</groupId>
+                <artifactId>arquillian-protocol-jmx</artifactId>
+                <version>${version.org.jboss.arquillian.core}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.arquillian.protocol</groupId>
+                <artifactId>arquillian-protocol-servlet</artifactId>
+                <version>${version.org.jboss.arquillian.core}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.arquillian.test</groupId>
+                <artifactId>arquillian-test-spi</artifactId>
+                <version>${version.org.jboss.arquillian.core}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.arquillian.test</groupId>
+                <artifactId>arquillian-test-impl-base</artifactId>
+                <version>${version.org.jboss.arquillian.core}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.arquillian.testenricher</groupId>
+                <artifactId>arquillian-testenricher-cdi</artifactId>
+                <version>${version.org.jboss.arquillian.core}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.arquillian.testenricher</groupId>
+                <artifactId>arquillian-testenricher-ejb</artifactId>
+                <version>${version.org.jboss.arquillian.core}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.arquillian.testenricher</groupId>
+                <artifactId>arquillian-testenricher-initialcontext</artifactId>
+                <version>${version.org.jboss.arquillian.core}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.arquillian.testenricher</groupId>
+                <artifactId>arquillian-testenricher-osgi</artifactId>
+                <version>${version.org.jboss.arquillian.container.osgi}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.arquillian.testenricher</groupId>
+                <artifactId>arquillian-testenricher-resource</artifactId>
+                <version>${version.org.jboss.arquillian.core}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.arquillian.testng</groupId>
+                <artifactId>arquillian-testng-core</artifactId>
+                <version>${version.org.jboss.arquillian.core}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.arquillian.testng</groupId>
+                <artifactId>arquillian-testng-container</artifactId>
+                <version>${version.org.jboss.arquillian.core}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>commons-logging</groupId>
+                        <artifactId>commons-logging</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.logging</groupId>
+                        <artifactId>jboss-logging-tools</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss</groupId>
+                <artifactId>jboss-ejb-client</artifactId>
+                <version>${version.org.jboss.ejb-client}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.jboss.remoting3</groupId>
+                        <artifactId>jboss-remoting</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.osgi</groupId>
+                <artifactId>org.osgi.core</artifactId>
+                <version>${version.osgi}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.spec.javax.servlet</groupId>
+                <artifactId>jboss-servlet-api_3.1_spec</artifactId>
+                <version>${version.org.jboss.spec.javax.servlet.jboss-servlet-api_3.1_spec}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.spec.javax.ejb</groupId>
+                <artifactId>jboss-ejb-api_3.2_spec</artifactId>
+                <version>${version.org.jboss.spec.javax.ejb.jboss-ejb-api_3.2_spec}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.osgi.metadata</groupId>
+                <artifactId>jbosgi-metadata</artifactId>
+                <version>${version.org.jboss.osgi.metadata}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.testng</groupId>
+                <artifactId>testng</artifactId>
+                <version>${version.org.testng}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
     <dependencies>
+
         <dependency>
-           <groupId>org.jboss.arquillian.core</groupId>
-           <artifactId>arquillian-core-api</artifactId>
+            <groupId>org.jboss.arquillian.core</groupId>
+            <artifactId>arquillian-core-api</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.jboss.remotingjmx</groupId>
-            <artifactId>remoting-jmx</artifactId>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
         </dependency>
         <dependency>
-           <groupId>junit</groupId>
-           <artifactId>junit</artifactId>
-           <scope>test</scope>
-        </dependency>
-        <!-- Super Hack to get things to run in the correct order-->
-        <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-core-build</artifactId>
-            <version>${project.version}</version>
             <type>zip</type>
             <exclusions>
                 <exclusion>
@@ -78,6 +387,8 @@
                 </exclusion>
             </exclusions>
         </dependency>
+
+
     </dependencies>
 
     <build>

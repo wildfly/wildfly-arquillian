@@ -26,9 +26,9 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.wildfly</groupId>
-        <artifactId>wildfly-arquillian</artifactId>
-        <version>9.0.0.Alpha1-SNAPSHOT</version>
+        <groupId>org.wildfly.arquillian</groupId>
+        <artifactId>wildfly-arquillian-parent</artifactId>
+        <version>1.0.0.Alpha1-SNAPSHOT</version>
     </parent>
     <artifactId>wildfly-arquillian-container-domain-managed</artifactId>
 
@@ -42,7 +42,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.wildfly</groupId>
+            <groupId>org.wildfly.arquillian</groupId>
             <artifactId>wildfly-arquillian-common-domain</artifactId>
         </dependency>
         <dependency>
@@ -84,25 +84,18 @@
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-resources-plugin</artifactId>
+                <artifactId>maven-dependency-plugin</artifactId>
                 <executions>
                     <execution>
-                        <id>copy-resources</id>
-                        <phase>process-test-classes</phase>
+                        <id>unpack-wildfly</id>
+                        <phase>generate-test-resources</phase>
                         <goals>
-                            <goal>copy-resources</goal>
+                            <goal>unpack-dependencies</goal>
                         </goals>
                         <configuration>
-                            <outputDirectory>${basedir}/target/jbossas</outputDirectory>
-                            <overwrite>true</overwrite>
-                            <resources>
-                                <resource>
-                                    <directory>${jboss.home}</directory>
-                                    <excludes>
-                                        <exclude>modules/</exclude>
-                                    </excludes>
-                                </resource>
-                            </resources>
+                            <includeGroupIds>org.wildfly</includeGroupIds>
+                            <includeArtifactIds>wildfly-core-build</includeArtifactIds>
+                            <outputDirectory>${project.build.directory}</outputDirectory>
                         </configuration>
                     </execution>
                 </executions>
@@ -117,15 +110,10 @@
                           <name>java.util.logging.manager</name>
                           <value>org.jboss.logmanager.LogManager</value>
                         </property>
-                        <property>
-                          <name>jboss.home</name>
-                          <value>${basedir}/target/jbossas</value>
-                        </property>
-                        <property>
-                          <name>module.path</name>
-                          <value>${jboss.home}/modules</value>
-                        </property>
                     </systemProperties>
+                    <systemPropertyVariables>
+                        <jboss.home>${basedir}/target/wildfly-core-${version.org.wildfly.core}</jboss.home>
+                    </systemPropertyVariables>
                     <redirectTestOutputToFile>true</redirectTestOutputToFile>
                 </configuration>
             </plugin>

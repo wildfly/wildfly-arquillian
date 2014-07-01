@@ -21,8 +21,8 @@ import javax.inject.Inject;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.testng.Arquillian;
+import org.jboss.msc.service.ServiceContainer;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.testng.Assert;
 import org.testng.annotations.Test;
@@ -36,17 +36,15 @@ public class BasicTestNGIntegrationTestCase extends Arquillian {
 
     @Deployment
     public static JavaArchive create() {
-        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class).addClass(GreetingService.class);
-        archive.addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
+        final JavaArchive archive = ShrinkWrap.create(JavaArchive.class);
         return archive;
     }
 
     @Inject
-    private GreetingService service;
+    private ServiceContainer service;
 
     @Test
     public void shouldBeAbleToInject() throws Exception {
         Assert.assertNotNull(service);
-        Assert.assertEquals("Hello Earthling!", service.greet("Earthling"));
     }
 }

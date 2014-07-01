@@ -26,6 +26,7 @@ import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -37,6 +38,7 @@ import org.junit.runner.RunWith;
  * @version $Revision: $
  */
 @RunWith(Arquillian.class)
+@Ignore("These tests need to be fixed up as domain does not support JMX runner, and servlet is not available in core")
 public class ManagedDomainTwoTestCase {
 
     @Deployment @TargetsContainer("backend")

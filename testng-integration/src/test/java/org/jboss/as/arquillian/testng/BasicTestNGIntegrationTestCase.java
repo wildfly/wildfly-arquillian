@@ -17,9 +17,8 @@
  */
 package org.jboss.as.arquillian.testng;
 
-import javax.inject.Inject;
-
 import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.arquillian.testng.Arquillian;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -40,7 +39,7 @@ public class BasicTestNGIntegrationTestCase extends Arquillian {
         return archive;
     }
 
-    @Inject
+    @ArquillianResource
     private ServiceContainer service;
 
     @Test

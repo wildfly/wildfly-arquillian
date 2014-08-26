@@ -1,1 +1,1 @@
-org.jboss.arquillian.testenricher.msc.MSCEnricherExtension
+org.wildfly.arquillian.testenricher.msc.MSCEnricherExtension

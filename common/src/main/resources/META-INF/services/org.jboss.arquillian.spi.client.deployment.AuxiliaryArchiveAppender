@@ -1,1 +1,1 @@
-org.jboss.as.arquillian.container.JBossASDeploymentAppender
+org.wildfly.arquillian.container.JBossASDeploymentAppender

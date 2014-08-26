@@ -1,1 +1,1 @@
-org.jboss.as.arquillian.protocol.jmx.JMXProtocolClientExtension
+org.wildfly.arquillian.protocol.jmx.JMXProtocolClientExtension

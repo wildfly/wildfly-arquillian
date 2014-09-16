@@ -39,7 +39,7 @@ public class CommonContainerConfiguration implements ContainerConfiguration {
 
     public CommonContainerConfiguration() {
         managementAddress = "127.0.0.1";
-        managementPort = 9990;
+        managementPort = 9990 + Integer.decode(System.getProperty("jboss.socket.binding.port-offset", "0"));
     }
 
     public String getManagementAddress() {

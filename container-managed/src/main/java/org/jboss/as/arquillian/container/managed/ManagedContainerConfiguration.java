@@ -37,7 +37,7 @@ public class ManagedContainerConfiguration extends DistributionContainerConfigur
      */
     private static final Integer DEFAULT_VALUE_WAIT_FOR_PORTS_TIMEOUT_SECONDS = 10;
 
-    private String javaVmArguments = System.getProperty("jboss.options", "-Xmx512m -XX:MaxPermSize=256m");
+    private String javaVmArguments = System.getProperty("jboss.options");
 
     private String jbossArguments;
 
@@ -47,7 +47,7 @@ public class ManagedContainerConfiguration extends DistributionContainerConfigur
 
     private boolean outputToConsole = true;
 
-    private String serverConfig = System.getProperty("jboss.server.config.file.name", "standalone.xml");
+    private String serverConfig = System.getProperty("jboss.server.config.file.name");
 
     private boolean allowConnectingToRunningServer = Boolean.parseBoolean(System.getProperty(
         "allowConnectingToRunningServer", "false"));
@@ -65,7 +65,6 @@ public class ManagedContainerConfiguration extends DistributionContainerConfigur
     private String cleanServerBaseDir;
 
     public ManagedContainerConfiguration() {
-        super();
     }
 
     @Override

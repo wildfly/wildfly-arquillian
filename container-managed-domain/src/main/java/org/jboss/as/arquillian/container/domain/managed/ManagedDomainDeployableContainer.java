@@ -17,22 +17,25 @@
  */
 package org.jboss.as.arquillian.container.domain.managed;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
+import static org.wildfly.core.launcher.ProcessHelper.addShutdownHook;
+import static org.wildfly.core.launcher.ProcessHelper.destroyProcess;
+import static org.wildfly.core.launcher.ProcessHelper.processHasDied;
+
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.Socket;
-import java.util.ArrayList;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 
 import org.jboss.arquillian.container.spi.client.container.LifecycleException;
 import org.jboss.as.arquillian.container.domain.CommonDomainDeployableContainer;
@@ -41,7 +44,8 @@ import org.jboss.as.arquillian.container.domain.Domain.Server;
 import org.jboss.as.server.logging.ServerLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.as.arquillian.container.domain.ManagementClient;
-import org.jboss.as.protocol.StreamUtils;
+import org.wildfly.core.launcher.DomainCommandBuilder;
+import org.wildfly.core.launcher.Launcher;
 
 /**
  * @author <a href="mailto:aslak@redhat.com">Aslak Knutsen</a>
@@ -51,9 +55,7 @@ public class ManagedDomainDeployableContainer extends CommonDomainDeployableCont
 
     static final String TEMP_CONTAINER_DIRECTORY = "arquillian-temp-container";
 
-    static final String SERVER_BASE_DIR = "domain";
     static final String CONFIG_DIR = "configuration";
-    static final String LOG_DIR = "log";
     static final String DATA_DIR = "data";
     static final String SERVERS_DIR = "servers";
 
@@ -80,38 +82,43 @@ public class ManagedDomainDeployableContainer extends CommonDomainDeployableCont
         }
 
         try {
-            List<String> additionalJavaOptsCmd = createAdditionalJavaOptsCmd(config);
-            final String jbossHomeDir = config.getJbossHome();
-            String serverBaseDir = getSystemPropertyValue(additionalJavaOptsCmd, "jboss.server.base.dir", jbossHomeDir + File.separatorChar + SERVER_BASE_DIR);
-
-            if (config.isSetupCleanServerBaseDir() || config.getCleanServerBaseDir() != null) {
-                final File cleanServerDirectories = setupCleanServerDirectories(serverBaseDir, jbossHomeDir, config.getCleanServerBaseDir());
-                replaceSystemPropertyValue(additionalJavaOptsCmd, "jboss.server.base.dir", cleanServerDirectories.toString());
+            final DomainCommandBuilder commandBuilder = DomainCommandBuilder.of(config.getJbossHome(), config.getJavaHome());
+            if (config.getJavaVmArguments() != null) {
+                final String[] javaOpts = config.getJavaVmArguments().split("\\s+");
+                commandBuilder.addProcessControllerJavaOptions(javaOpts)
+                        .addHostControllerJavaOptions(javaOpts);
             }
 
-            List<String> loggingOptsCmd = createLoggingOptsCmd(additionalJavaOptsCmd, jbossHomeDir, serverBaseDir);
-            List<String> cmd = createCommandLine(config, additionalJavaOptsCmd, loggingOptsCmd);
+            if (config.isSetupCleanServerBaseDir() || config.getCleanServerBaseDir() != null) {
+                setupCleanServerDirectories(commandBuilder, config.getCleanServerBaseDir());
+            }
 
-            log.info("Starting container with: " + cmd.toString());
-            ProcessBuilder processBuilder = new ProcessBuilder(cmd);
-            processBuilder.redirectErrorStream(true);
-            process = processBuilder.start();
+            final String modulesPath = config.getModulePath();
+            if (modulesPath != null && !modulesPath.isEmpty()) {
+                commandBuilder.addModuleDirs(modulesPath.split(Pattern.quote(File.pathSeparator)));
+            }
+
+            if (config.isEnableAssertions()) {
+                commandBuilder.addHostControllerJavaOption("-ea")
+                        .addProcessControllerJavaOption("-ea");
+            }
+            if (config.getDomainConfig() != null) {
+                commandBuilder.setDomainConfiguration(config.getDomainConfig());
+            }
+            if (config.getHostConfig() != null) {
+                commandBuilder.setHostConfiguration(config.getHostConfig());
+            }
+
+            // Previous versions of arquillian set the jboss.home.dir property in the JVM properties.
+            // Some tests may rely on this behavior, but could be considered to be removed as all the scripts add this
+            // property after the modules path (-mp) has been defined. The command builder will set the property after
+            // the module path has been defined as well.
+            commandBuilder.addProcessControllerJavaOption("-Djboss.home.dir=" + commandBuilder.getWildFlyHome());
+
+            log.info("Starting container with: " + commandBuilder.build());
+            process = Launcher.of(commandBuilder).setRedirectErrorStream(true).launch();
             new Thread(new ConsoleConsumer()).start();
-            final Process proc = process;
-            shutdownThread = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    if (proc != null) {
-                        proc.destroy();
-                        try {
-                            proc.waitFor();
-                        } catch (InterruptedException e) {
-                            throw new RuntimeException(e);
-                        }
-                    }
-                }
-            });
-            Runtime.getRuntime().addShutdownHook(shutdownThread);
+            shutdownThread = addShutdownHook(process);
 
             long startupTimeout = getContainerConfiguration().getStartupTimeoutInSeconds();
             long timeout = startupTimeout * 1000;
@@ -122,7 +129,7 @@ public class ManagedDomainDeployableContainer extends CommonDomainDeployableCont
                 serverAvailable = getManagementClient().isDomainInRunningState();
                 timeout -= (System.currentTimeMillis() - before);
                 if (!serverAvailable) {
-                    if (processHasDied(proc))
+                    if (processHasDied(process))
                         break;
                     Thread.sleep(sleep);
                     timeout -= sleep;
@@ -130,35 +137,13 @@ public class ManagedDomainDeployableContainer extends CommonDomainDeployableCont
                 }
             }
             if (!serverAvailable) {
-                destroyProcess();
+                destroyProcess(process);
                 throw new TimeoutException(String.format("Managed Domain server was not started within [%d] s",
                         config.getStartupTimeoutInSeconds()));
             }
         } catch (Exception e) {
             throw new LifecycleException("Could not start container", e);
         }
-    }
-
-    private List<String> createLoggingOptsCmd(List<String> additionalJavaOptsCmd, String jbossHomeDir, String serverBaseDir) {
-        final String bootLogFileDefaultValue = serverBaseDir + File.separatorChar + LOG_DIR + File.separatorChar + "process-controller.log";
-        final String loggingConfigurationDefaultValue = serverBaseDir + File.separatorChar + CONFIG_DIR + File.separatorChar + "logging.properties";
-        final String bootLogFileValue = getSystemPropertyValue(additionalJavaOptsCmd, "org.jboss.boot.log.file", getFile(bootLogFileDefaultValue, jbossHomeDir).getAbsolutePath());
-        final String loggingConfigurationValue = getSystemPropertyValue(additionalJavaOptsCmd, "logging.configuration", getFile(loggingConfigurationDefaultValue, jbossHomeDir).toURI().toString());
-        List<String> relativeJavaOptsCmd = new ArrayList<String>();
-        relativeJavaOptsCmd.add("-Dorg.jboss.boot.log.file=" + bootLogFileValue);
-        relativeJavaOptsCmd.add("-Dlogging.configuration=" + loggingConfigurationValue);
-        return relativeJavaOptsCmd;
-    }
-
-    private List<String> createAdditionalJavaOptsCmd(ManagedDomainContainerConfiguration config) {
-        final String additionalJavaOpts = config.getJavaVmArguments();
-        List<String> additionalJavaOptsCmd = new ArrayList<String>();
-        if (additionalJavaOpts != null) {
-            for (String opt : additionalJavaOpts.split("\\s+")) {
-                additionalJavaOptsCmd.add(opt);
-            }
-        }
-        return additionalJavaOptsCmd;
     }
 
     @Override
@@ -215,70 +200,6 @@ public class ManagedDomainDeployableContainer extends CommonDomainDeployableCont
         }
     }
 
-    private List<String> createCommandLine(ManagedDomainContainerConfiguration config, List<String> additionalJavaOptsCmd, List<String> loggingOptsCmd)
-            throws Exception {
-
-        final String jbossHomeDir = config.getJbossHome();
-        String modulesPath = config.getModulePath();
-        if (modulesPath == null || modulesPath.isEmpty()) {
-            modulesPath = jbossHomeDir + File.separatorChar + "modules";
-        }
-        File modulesDir = new File(modulesPath);
-        if (modulesDir.isDirectory() == false)
-            throw new IllegalStateException("Cannot find: " + modulesDir);
-
-        String bundlesPath = modulesDir.getParent() + File.separator + "bundles";
-        File bundlesDir = new File(bundlesPath);
-
-        File modulesJar = new File(jbossHomeDir + File.separatorChar + "jboss-modules.jar");
-        if (!modulesJar.exists())
-            throw new IllegalStateException("Cannot find: " + modulesJar);
-
-        List<String> cmd = new ArrayList<String>();
-        String javaExec = config.getJavaHome() + File.separatorChar + "bin" + File.separatorChar + "java";
-        if (config.getJavaHome().contains(" ")) {
-            javaExec = "\"" + javaExec + "\"";
-        }
-        cmd.add(javaExec);
-        cmd.addAll(additionalJavaOptsCmd);
-
-        if (config.isEnableAssertions()) {
-            cmd.add("-ea");
-        }
-
-        cmd.add("-Djboss.home.dir=" + jbossHomeDir);
-        cmd.addAll(loggingOptsCmd);
-        cmd.add("-Djboss.bundles.dir=" + bundlesDir.getCanonicalPath());
-        cmd.add("-Djboss.domain.default.config=" + config.getDomainConfig());
-        cmd.add("-Djboss.host.default.config=" + config.getHostConfig());
-        cmd.add("-jar");
-        cmd.add(modulesJar.getAbsolutePath());
-        cmd.add("-mp");
-        cmd.add(modulesPath);
-        cmd.add("org.jboss.as.process-controller");
-        cmd.add("-jboss-home");
-        cmd.add(jbossHomeDir);
-        cmd.add("-jvm");
-        cmd.add(javaExec);
-        cmd.add("--");
-        cmd.addAll(loggingOptsCmd);
-        cmd.add("--");
-        cmd.add("-default-jvm");
-        cmd.add(javaExec);
-
-        return cmd;
-    }
-
-    private static boolean processHasDied(final Process process) {
-        try {
-            process.exitValue();
-            return true;
-        } catch (IllegalThreadStateException e) {
-            // good
-            return false;
-        }
-    }
-
     private boolean isServerRunning() {
         Socket socket = null;
         try {
@@ -305,17 +226,6 @@ public class ManagedDomainDeployableContainer extends CommonDomainDeployableCont
                 + "change to another type of container.\n"
                 + "To disable this check and allow Arquillian to connect to a running server, "
                 + "set allowConnectingToRunningServer to true in the container configuration");
-    }
-
-    private int destroyProcess() {
-        if (process == null)
-            return 0;
-        process.destroy();
-        try {
-            return process.waitFor();
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     private void waitForAutoStartServersToStart(Domain domain, ManagementClient client) {
@@ -371,180 +281,49 @@ public class ManagedDomainDeployableContainer extends CommonDomainDeployableCont
     }
 
     /**
-     * Replace the value of the system property from a list of command line arguments.
-     *
-     * @param cmdArguments list of command line arguments
-     * @param systemPropertyName name of the system property
-     * @param newValue the new value
-     */
-    private void replaceSystemPropertyValue(List<String> cmdArguments, String systemPropertyName, String newValue) {
-        final String argument = "-D" + systemPropertyName + "=";
-        final Iterator<String> cmdArgumentsIterator = cmdArguments.iterator();
-        while (cmdArgumentsIterator.hasNext()) {
-            String cmdArgument = cmdArgumentsIterator.next();
-            if (cmdArgument.startsWith(argument)) {
-                cmdArgumentsIterator.remove();
-            }
-        }
-        cmdArguments.add(argument + newValue);
-    }
-
-    /**
-     * Get the value of the system property from a list of command line arguments.
-     * @param cmdArguments list of command line arguments
-     * @param systemPropertyName name of the system property
-     * @param defaultValue the default value
-     *
-     * @return The value of the {@code systemPropertyName} if found in the {@code cmdArguments}
-     *         or the {@code defaultValue}
-     */
-    private String getSystemPropertyValue(List<String> cmdArguments, String systemPropertyName, String defaultValue) {
-        final String argument = "-D" + systemPropertyName + "=";
-        for (String cmdArgument : cmdArguments) {
-            if (cmdArgument.startsWith(argument)) {
-                return cmdArgument.substring(argument.length());
-            }
-        }
-        return defaultValue;
-    }
-
-    /**
-     * Get a File from a file pathname.<br/>
-     * If the file or directory denoted by {@code pathname} doesn't exist,
-     * check if a relative path to the {@code jbossHome} dir exists.
-     * @param filePathname the file pathname
-     * @param jbossHome the jboss home directory
-     *
-     * @return the File form for the file pathname.
-     */
-    private static File getFile(final String filePathname, final String jbossHome) {
-        File result = new File(filePathname);
-        // AS7-1752 see if a non-existent relative path exists relative to the home dir
-        if (!result.exists() && !result.isAbsolute()) {
-            File relative = new File(jbossHome, filePathname);
-            if (relative.exists()) {
-                result = relative;
-            }
-        }
-        return result;
-    }
-
-    /**
      * Setup clean directories to run the container.
-     * @param serverBaseDir the server base directory
-     * @param jbossHome the JBoss home
      * @param cleanServerBaseDirPath the clean server base directory
      */
-    static File setupCleanServerDirectories(String serverBaseDir, String jbossHome, String cleanServerBaseDirPath) throws IOException {
-        final File cleanServerBaseDir;
+    private static void setupCleanServerDirectories(final DomainCommandBuilder commandBuilder, final String cleanServerBaseDirPath) throws IOException {
+        final Path cleanBase;
         if (cleanServerBaseDirPath != null) {
-            cleanServerBaseDir = new File(cleanServerBaseDirPath);
-
+            cleanBase = Paths.get(cleanServerBaseDirPath);
         } else {
-            cleanServerBaseDir = createTempServerBaseDirectory();
+            cleanBase = Files.createTempDirectory(TEMP_CONTAINER_DIRECTORY);
         }
-        if (!cleanServerBaseDir.exists()) {
-            throw ServerLogger.ROOT_LOGGER.serverBaseDirectoryDoesNotExist(cleanServerBaseDir);
+
+        if (Files.notExists(cleanBase)) {
+            throw ServerLogger.ROOT_LOGGER.serverBaseDirectoryDoesNotExist(cleanBase.toFile());
         }
-        if (!cleanServerBaseDir.isDirectory()) {
-            throw ServerLogger.ROOT_LOGGER.serverBaseDirectoryIsNotADirectory(cleanServerBaseDir);
+        if (!Files.isDirectory(cleanBase)) {
+            throw ServerLogger.ROOT_LOGGER.serverBaseDirectoryIsNotADirectory(cleanBase.toFile());
         }
-        copyOriginalDirectoryToCleanServerBaseDir(CONFIG_DIR, serverBaseDir, jbossHome, cleanServerBaseDir);
-        copyOriginalDirectoryToCleanServerBaseDir(DATA_DIR, serverBaseDir, jbossHome, cleanServerBaseDir);
-        copyOriginalDirectoryToCleanServerBaseDir(SERVERS_DIR, serverBaseDir, jbossHome, cleanServerBaseDir);
-        return cleanServerBaseDir;
+
+        final Path currentConfigDir = commandBuilder.getConfigurationDirectory();
+        final Path configDir = cleanBase.resolve(CONFIG_DIR);
+        copyDir(currentConfigDir, configDir);
+
+        final Path currentDataDir = commandBuilder.getBaseDirectory().resolve(DATA_DIR);
+        if (Files.exists(currentDataDir)) {
+            copyDir(currentDataDir, cleanBase.resolve(DATA_DIR));
+        }
+        commandBuilder.setBaseDirectory(cleanBase);
+        commandBuilder.setConfigurationDirectory(configDir);
     }
 
-
-    /**
-     * Copy the original directory to the clean server base directory.
-     * @param originalDirName Name of the original directory
-     * @param cleanServerBaseDir the clean server base directories
-     * @param serverBaseDir the server base directory
-     * @param jbossHome the jboss home
-     * @throws IOException
-     */
-    private static void copyOriginalDirectoryToCleanServerBaseDir(String originalDirName, String serverBaseDir, String jbossHome, File cleanServerBaseDir)
-            throws IOException {
-        final File originalDir = getFile(serverBaseDir + File.separatorChar + originalDirName, jbossHome);
-
-        File cleanDir = new File(cleanServerBaseDir, originalDirName);
-        cleanDir.mkdir();
-
-        if (originalDir.exists()) {
-            copyDirectory(originalDir, cleanDir);
-        }
-    }
-
-
-    /**
-     * Create a temporary directory to setup clean directories to run the container.
-     *
-     * @throws IOException
-     */
-    private static File createTempServerBaseDirectory() throws IOException {
-        File tempDir = new File(System.getProperty("java.io.tmpdir"));
-        File tempContainer = new File(tempDir, TEMP_CONTAINER_DIRECTORY);
-        // Delete the previous directory if exists...
-        if (tempContainer.exists()) {
-            deleteRecursively(tempContainer);
-        }
-        if (!tempContainer.mkdir()) {
-            throw new IOException("Could not create temp directory: " + tempContainer.getAbsolutePath());
-        }
-        return tempContainer;
-    }
-
-    /**
-     * Copy directory from {@code src} to {@code dest}.
-     *
-     * @param src Source directory
-     * @param dest Destination directory
-     */
-    private static void copyDirectory(File src, File dest) {
-        for (String current : src.list()) {
-            final File srcFile = new File(src, current);
-            final File destFile = new File(dest, current);
-
-            if (srcFile.isDirectory()) {
-                destFile.mkdir();
-                copyDirectory(srcFile, destFile);
-            } else {
-                try {
-                    final InputStream in = new BufferedInputStream(new FileInputStream(srcFile));
-                    final OutputStream out = new BufferedOutputStream(new FileOutputStream(destFile));
-
-                    try {
-                        int i;
-                        while ((i = in.read()) != -1) {
-                            out.write(i);
-                        }
-                    } catch (IOException e) {
-                        throw ServerLogger.ROOT_LOGGER.errorCopyingFile(srcFile.getAbsolutePath(), destFile.getAbsolutePath(), e);
-                    } finally {
-                        StreamUtils.safeClose(in);
-                        StreamUtils.safeClose(out);
-                    }
-
-                } catch (FileNotFoundException e) {
-                    throw new RuntimeException(e);
-                }
+    private static void copyDir(final Path from, final Path to) throws IOException {
+        Files.walkFileTree(from, new SimpleFileVisitor<Path>(){
+            @Override
+            public FileVisitResult preVisitDirectory(final Path dir, final BasicFileAttributes attrs) throws IOException {
+                Files.copy(dir, to.resolve(from.relativize(dir)));
+                return FileVisitResult.CONTINUE;
             }
-        }
-    }
 
-    /**
-     * Delete a file if exists.
-     * @param file the file to delete
-     */
-    private static void deleteRecursively(File file) {
-        if (file.exists()) {
-            if (file.isDirectory()) {
-                for (String name : file.list()) {
-                    deleteRecursively(new File(file, name));
-                }
+            @Override
+            public FileVisitResult visitFile(final Path file, final BasicFileAttributes attrs) throws IOException {
+                Files.copy(file, to.resolve(from.relativize(file)));
+                return FileVisitResult.CONTINUE;
             }
-            file.delete();
-        }
+        });
     }
 }

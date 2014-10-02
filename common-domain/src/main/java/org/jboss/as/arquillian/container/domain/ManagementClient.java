@@ -46,6 +46,8 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.management.MBeanServerConnection;
 import javax.management.remote.JMXConnector;
@@ -227,6 +229,17 @@ public class ManagementClient {
 
         } catch (Exception ignored) { }
         return false;
+    }
+
+    public Set<String> getDomainHosts() throws Exception{
+        Set<String> hosts = new HashSet<String>();
+        readRootNode();
+
+        if (rootNode.isDefined())
+            if (rootNode.hasDefined("host"))
+                hosts.addAll(rootNode.get("host").keys());
+
+        return hosts;
     }
 
     public boolean isDomainInRunningState() {

@@ -29,7 +29,7 @@
     <parent>
         <groupId>org.jboss</groupId>
         <artifactId>jboss-parent</artifactId>
-        <version>14</version>
+        <version>16</version>
     </parent>
 
     <artifactId>wildfly-arquillian-parent</artifactId>
@@ -43,11 +43,9 @@
         <version.org.wildfly.core>1.0.0.Alpha7</version.org.wildfly.core>
         <version.junit>4.11</version.junit>
         <version.org.jboss.arquillian.core>1.1.2.Final-wildfly-2</version.org.jboss.arquillian.core>
-        <version.org.jboss.arquillian.container.osgi>2.1.0.CR2</version.org.jboss.arquillian.container.osgi>
+        <version.org.jboss.shrinkwrap.descriptors>2.0.0-alpha-6</version.org.jboss.shrinkwrap.descriptors>
         <version.org.jboss.ejb-client>2.0.1.Final</version.org.jboss.ejb-client>
-        <version.osgi>5.0.0</version.osgi>
-        <version.org.jboss.osgi.metadata>3.0.1.Final</version.org.jboss.osgi.metadata>
-        <version.org.testng>6.1.1</version.org.testng>
+        <version.org.testng>6.8.8</version.org.testng>
         <version.org.jboss.spec.javax.servlet.jboss-servlet-api_3.1_spec>1.0.0.Final</version.org.jboss.spec.javax.servlet.jboss-servlet-api_3.1_spec>
         <version.org.jboss.spec.javax.ejb.jboss-ejb-api_3.2_spec>1.0.0.Final</version.org.jboss.spec.javax.ejb.jboss-ejb-api_3.2_spec>
     </properties>
@@ -184,18 +182,6 @@
 
             <dependency>
                 <groupId>org.jboss.arquillian.container</groupId>
-                <artifactId>arquillian-container-osgi</artifactId>
-                <version>${version.org.jboss.arquillian.container.osgi}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.jboss.shrinkwrap.resolver</groupId>
-                        <artifactId>shrinkwrap-resolver-depchain</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.arquillian.container</groupId>
                 <artifactId>arquillian-container-spi</artifactId>
                 <version>${version.org.jboss.arquillian.core}</version>
             </dependency>
@@ -298,12 +284,6 @@
 
             <dependency>
                 <groupId>org.jboss.arquillian.testenricher</groupId>
-                <artifactId>arquillian-testenricher-osgi</artifactId>
-                <version>${version.org.jboss.arquillian.container.osgi}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.arquillian.testenricher</groupId>
                 <artifactId>arquillian-testenricher-resource</artifactId>
                 <version>${version.org.jboss.arquillian.core}</version>
             </dependency>
@@ -331,6 +311,12 @@
             </dependency>
 
             <dependency>
+                <groupId>org.jboss.shrinkwrap.descriptors</groupId>
+                <artifactId>shrinkwrap-descriptors-impl-base</artifactId>
+                <version>${version.org.jboss.shrinkwrap.descriptors}</version>
+            </dependency>
+
+            <dependency>
                 <groupId>org.jboss</groupId>
                 <artifactId>jboss-ejb-client</artifactId>
                 <version>${version.org.jboss.ejb-client}</version>
@@ -340,12 +326,6 @@
                         <artifactId>jboss-remoting</artifactId>
                     </exclusion>
                 </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.osgi</groupId>
-                <artifactId>org.osgi.core</artifactId>
-                <version>${version.osgi}</version>
             </dependency>
 
             <dependency>
@@ -359,13 +339,6 @@
                 <artifactId>jboss-ejb-api_3.2_spec</artifactId>
                 <version>${version.org.jboss.spec.javax.ejb.jboss-ejb-api_3.2_spec}</version>
             </dependency>
-
-            <dependency>
-                <groupId>org.jboss.osgi.metadata</groupId>
-                <artifactId>jbosgi-metadata</artifactId>
-                <version>${version.org.jboss.osgi.metadata}</version>
-            </dependency>
-
             <dependency>
                 <groupId>org.testng</groupId>
                 <artifactId>testng</artifactId>
@@ -408,10 +381,5 @@
 
 
     </dependencies>
-
-    <build>
-        <plugins>
-        </plugins>
-    </build>
 
 </project>

@@ -35,7 +35,7 @@ public class ManagedDomainContainerConfiguration extends CommonDomainContainerCo
 
     private String modulePath = System.getProperty("module.path");
 
-    private String javaVmArguments = System.getProperty("jboss.options", "-Xmx512m -XX:MaxPermSize=256m");
+    private String javaVmArguments = System.getProperty("jboss.options");
 
     private int startupTimeoutInSeconds = 60;
 
@@ -45,9 +45,9 @@ public class ManagedDomainContainerConfiguration extends CommonDomainContainerCo
 
     private boolean outputToConsole = true;
 
-    private String domainConfig = System.getProperty("jboss.domain.default.config", "domain.xml");
+    private String domainConfig = System.getProperty("jboss.domain.default.config");
 
-    private String hostConfig = System.getProperty("jboss.host.default.config", "host.xml");
+    private String hostConfig = System.getProperty("jboss.host.default.config");
 
     private boolean allowConnectingToRunningServer = false;
 

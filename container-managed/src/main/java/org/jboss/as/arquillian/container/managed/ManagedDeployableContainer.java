@@ -16,34 +16,38 @@
  */
 package org.jboss.as.arquillian.container.managed;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
+import static org.wildfly.core.launcher.ProcessHelper.addShutdownHook;
+import static org.wildfly.core.launcher.ProcessHelper.destroyProcess;
+import static org.wildfly.core.launcher.ProcessHelper.processHasDied;
+
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.DatagramSocket;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 
 import org.jboss.arquillian.container.spi.client.container.LifecycleException;
 import org.jboss.as.arquillian.container.CommonDeployableContainer;
-import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.server.logging.ServerLogger;
 import org.jboss.dmr.ModelNode;
+import org.wildfly.core.launcher.Launcher;
+import org.wildfly.core.launcher.StandaloneCommandBuilder;
 
 /**
  * The managed deployable container.
  *
  * @author Thomas.Diesler@jboss.com
+ * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  * @since 17-Nov-2010
  */
 public final class ManagedDeployableContainer extends CommonDeployableContainer<ManagedContainerConfiguration> {
@@ -51,8 +55,6 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
     static final String TEMP_CONTAINER_DIRECTORY = "arquillian-temp-container";
 
     static final String CONFIG_DIR = "configuration";
-    static final String SERVER_BASE_DIR = "standalone";
-    static final String LOG_DIR = "log";
     static final String DATA_DIR = "data";
 
     private static final int PORT_RANGE_MIN = 1;
@@ -65,16 +67,6 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
     @Override
     public Class<ManagedContainerConfiguration> getConfigurationClass() {
         return ManagedContainerConfiguration.class;
-    }
-
-    private static boolean processHasDied(final Process process) {
-        try {
-            process.exitValue();
-            return true;
-        } catch (IllegalThreadStateException e) {
-            // good
-            return false;
-        }
     }
 
     @Override
@@ -90,98 +82,60 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
         }
 
         try {
-            final String jbossHome = config.getJbossHome();
-            File jbossHomeDir = new File(jbossHome).getCanonicalFile();
-            if (jbossHomeDir.isDirectory() == false)
-                throw new IllegalStateException("Cannot find: " + jbossHomeDir);
+            final StandaloneCommandBuilder commandBuilder = StandaloneCommandBuilder.of(config.getJbossHome());
 
             String modulesPath = config.getModulePath();
-            if (modulesPath == null || modulesPath.isEmpty()) {
-                modulesPath = jbossHome + File.separatorChar + "modules";
+            if (modulesPath != null && !modulesPath.isEmpty()) {
+                commandBuilder.addModuleDirs(modulesPath.split(Pattern.quote(File.pathSeparator)));
             }
 
             String bundlesPath = config.getBundlePath();
-            if (bundlesPath == null || bundlesPath.isEmpty()) {
-                bundlesPath = jbossHome + File.separatorChar + "bundles";
+            if (bundlesPath == null || !bundlesPath.isEmpty()) {
+                log.warning("Bundles path is deprecated and no longer used.");
             }
 
             final String additionalJavaOpts = config.getJavaVmArguments();
             final String additionalJbossOpts = config.getJbossArguments();
 
-            File modulesJar = new File(jbossHome + File.separatorChar + "jboss-modules.jar");
-            if (!modulesJar.exists())
-                throw new IllegalStateException("Cannot find: " + modulesJar);
-
-            List<String> cmd = new ArrayList<String>();
-            String javaExec = config.getJavaHome() + File.separatorChar + "bin" + File.separatorChar + "java";
-            if (config.getJavaHome().contains(" ")) {
-                javaExec = "\"" + javaExec + "\"";
-            }
-            cmd.add(javaExec);
+            commandBuilder.setJavaHome(config.getJavaHome());
             if (additionalJavaOpts != null) {
-                for (String opt : additionalJavaOpts.split("\\s+")) {
-                    cmd.add(opt);
-                }
+                commandBuilder.addJavaOptions(additionalJavaOpts.split("\\s+"));
             }
 
             if (config.isEnableAssertions()) {
-                cmd.add("-ea");
+                commandBuilder.addJavaOption("-ea");
             }
-
-            String serverBaseDir = getSystemPropertyValue(cmd, "jboss.server.base.dir", jbossHome + File.separatorChar + SERVER_BASE_DIR);
 
             // Create a clean server base to run the container; ARQ-638
             if (config.isSetupCleanServerBaseDir() || config.getCleanServerBaseDir() != null) {
-                serverBaseDir = setupCleanServerDirectories(serverBaseDir, jbossHome, config.getCleanServerBaseDir()).getAbsolutePath();
-                replaceSystemPropertyValue(cmd, "jboss.server.base.dir", serverBaseDir);
+                setupCleanServerDirectories(commandBuilder, config.getCleanServerBaseDir());
             }
 
-            final String bootLogFileDefaultValue = serverBaseDir + File.separatorChar + LOG_DIR + File.separatorChar + "server.log";
-            final String loggingConfigurationDefaultValue = serverBaseDir + File.separatorChar + CONFIG_DIR + File.separatorChar + "logging.properties";
-            cmd.add("-Djboss.home.dir=" + jbossHome);
-            cmd.add("-Dorg.jboss.boot.log.file=" + getSystemPropertyValue(cmd, "org.jboss.boot.log.file", getFile(bootLogFileDefaultValue, jbossHome).getAbsolutePath()));
-            cmd.add("-Dlogging.configuration=" + getSystemPropertyValue(cmd, "logging.configuration", getFile(loggingConfigurationDefaultValue, jbossHome).toURI().toString()));
-            cmd.add("-Djboss.bundles.dir=" + bundlesPath);
-            cmd.add("-jar");
-            cmd.add(modulesJar.getAbsolutePath());
-            cmd.add("-mp");
-            cmd.add(modulesPath);
-            cmd.add("org.jboss.as.standalone");
-            cmd.add("-server-config");
-            cmd.add(config.getServerConfig());
             if (config.isAdminOnly())
-                cmd.add("--admin-only");
+                commandBuilder.setAdminOnly();
 
             if (additionalJbossOpts != null) {
-                for (String opt : additionalJbossOpts.split("\\s+")) {
-                    cmd.add(opt);
-                }
+                commandBuilder.addServerArguments(additionalJbossOpts.split("\\s+"));
             }
+
+            if (config.getServerConfig() != null) {
+                commandBuilder.setServerConfiguration(config.getServerConfig());
+            }
+
+            // Previous versions of arquillian set the jboss.home.dir property in the JVM properties.
+            // Some tests may rely on this behavior, but could be considered to be removed as all the scripts add this
+            // property after the modules path (-mp) has been defined. The command builder will set the property after
+            // the module path has been defined as well.
+            commandBuilder.addJavaOption("-Djboss.home.dir=" + commandBuilder.getWildFlyHome());
 
             // Wait on ports before launching; AS7-4070
             this.waitOnPorts();
 
 
-            log.info("Starting container with: " + cmd.toString());
-            ProcessBuilder processBuilder = new ProcessBuilder(cmd);
-            processBuilder.redirectErrorStream(true);
-            process = processBuilder.start();
+            log.info("Starting container with: " + commandBuilder.build());
+            process = Launcher.of(commandBuilder).setRedirectErrorStream(true).launch();
             new Thread(new ConsoleConsumer()).start();
-            final Process proc = process;
-            shutdownThread = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    if (proc != null) {
-                        proc.destroy();
-                        try {
-                            proc.waitFor();
-                        } catch (InterruptedException e) {
-                            throw new RuntimeException(e);
-                        }
-                    }
-                }
-            });
-            Runtime.getRuntime().addShutdownHook(shutdownThread);
+            shutdownThread = addShutdownHook(process);
 
             long startupTimeout = getContainerConfiguration().getStartupTimeoutInSeconds();
             long timeout = startupTimeout * 1000;
@@ -192,7 +146,7 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
                 serverAvailable = getManagementClient().isServerInRunningState();
                 timeout -= (System.currentTimeMillis() - before);
                 if (!serverAvailable) {
-                    if (processHasDied(proc))
+                    if (processHasDied(process))
                         break;
                     Thread.sleep(sleep);
                     timeout -= sleep;
@@ -200,7 +154,7 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
                 }
             }
             if (!serverAvailable) {
-                destroyProcess();
+                destroyProcess(process);
                 throw new TimeoutException(String.format("Managed server was not started within [%d] s", getContainerConfiguration().getStartupTimeoutInSeconds()));
             }
 
@@ -325,10 +279,7 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
             }
         } catch (Exception e) {
             try {
-                if(process != null) {
-                    process.destroy();
-                    process.waitFor();
-                }
+                destroyProcess(process);
             }catch (Exception ignore) {}
             throw new LifecycleException("Could not stop container", e);
         }
@@ -365,17 +316,6 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
         );
     }
 
-    private int destroyProcess() {
-        if (process == null)
-            return 0;
-        process.destroy();
-        try {
-            return process.waitFor();
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     /**
      * Runnable that consumes the output of the process. If nothing consumes the output the AS will hang on some platforms
      *
@@ -403,180 +343,49 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
     }
 
     /**
-     * Replace the value of the system property from a list of command line arguments.
-     *
-     * @param cmdArguments list of command line arguments
-     * @param systemPropertyName name of the system property
-     * @param newValue the new value
-     */
-    private void replaceSystemPropertyValue(List<String> cmdArguments, String systemPropertyName, String newValue) {
-        final String argument = "-D" + systemPropertyName + "=";
-        final Iterator<String> cmdArgumentsIterator = cmdArguments.iterator();
-        while(cmdArgumentsIterator.hasNext()) {
-            String cmdArgument = cmdArgumentsIterator.next();
-            if (cmdArgument.startsWith(argument)) {
-                cmdArgumentsIterator.remove();
-            }
-        }
-        cmdArguments.add(argument + newValue);
-    }
-
-    /**
-     * Get the value of the system property from a list of command line arguments.
-     *
-     * @param cmdArguments list of command line arguments
-     * @param systemPropertyName name of the system property
-     * @param defaultValue the default value
-     * @return The value of the {@code systemPropertyName} if found in the {@code cmdArguments}
-     *         or the {@code defaultValue}
-     */
-    private String getSystemPropertyValue(List<String> cmdArguments, String systemPropertyName, String defaultValue) {
-        final String argument = "-D" + systemPropertyName + "=";
-        for (String cmdArgument : cmdArguments) {
-            if (cmdArgument.startsWith(argument)) {
-                return cmdArgument.substring(argument.length());
-            }
-        }
-        return defaultValue;
-    }
-
-    /**
-     * Get a File from a file pathname.<br/>
-     * If the file or directory denoted by {@code pathname} doesn't exist,
-     * check if a relative path to the {@code jbossHome} dir exists.
-     *
-     * @param filePathname the file pathname
-     * @param jbossHome the jboss home directory
-     * @return the File form for the file pathname.
-     */
-    static File getFile(final String filePathname, final String jbossHome) {
-        File result = new File(filePathname);
-        // AS7-1752 see if a non-existent relative path exists relative to the home dir
-        if (!result.exists() && !result.isAbsolute()) {
-            File relative = new File(jbossHome, filePathname);
-            if (relative.exists()) {
-                result = relative;
-            }
-        }
-        return result;
-    }
-
-    /**
      * Setup clean directories to run the container.
-     * @param serverBaseDir the server base directory
-     * @param jbossHome the JBoss home
      * @param cleanServerBaseDirPath the clean server base directory
      */
-    static File setupCleanServerDirectories(String serverBaseDir, String jbossHome, String cleanServerBaseDirPath) throws IOException {
-        final File cleanServerBaseDir;
+    private static void setupCleanServerDirectories(final StandaloneCommandBuilder commandBuilder, final String cleanServerBaseDirPath) throws IOException {
+        final Path cleanBase;
         if (cleanServerBaseDirPath != null) {
-            cleanServerBaseDir = new File(cleanServerBaseDirPath);
+            cleanBase = Paths.get(cleanServerBaseDirPath);
         } else {
-            cleanServerBaseDir = createTempServerBaseDirectory();
+            cleanBase = Files.createTempDirectory(TEMP_CONTAINER_DIRECTORY);
         }
-        if (!cleanServerBaseDir.exists()) {
-            throw ServerLogger.ROOT_LOGGER.serverBaseDirectoryDoesNotExist(cleanServerBaseDir);
+
+        if (Files.notExists(cleanBase)) {
+            throw ServerLogger.ROOT_LOGGER.serverBaseDirectoryDoesNotExist(cleanBase.toFile());
         }
-        if (!cleanServerBaseDir.isDirectory()) {
-            throw ServerLogger.ROOT_LOGGER.serverBaseDirectoryIsNotADirectory(cleanServerBaseDir);
+        if (!Files.isDirectory(cleanBase)) {
+            throw ServerLogger.ROOT_LOGGER.serverBaseDirectoryIsNotADirectory(cleanBase.toFile());
         }
-        copyOriginalDirectoryToCleanServerBaseDir(CONFIG_DIR, serverBaseDir, jbossHome, cleanServerBaseDir);
-        copyOriginalDirectoryToCleanServerBaseDir(DATA_DIR, serverBaseDir, jbossHome, cleanServerBaseDir);
-        // For jboss.server.deployment.scanner.default
-        File deploymentsDir = new File(cleanServerBaseDir, "deployments");
-        deploymentsDir.mkdir();
-        return cleanServerBaseDir;
+
+        final Path currentConfigDir = commandBuilder.getConfigurationDirectory();
+        final Path configDir = cleanBase.resolve(CONFIG_DIR);
+        copyDir(currentConfigDir, configDir);
+
+        final Path currentDataDir = commandBuilder.getBaseDirectory().resolve(DATA_DIR);
+        if (Files.exists(currentDataDir)) {
+            copyDir(currentDataDir, cleanBase.resolve(DATA_DIR));
+        }
+        commandBuilder.setBaseDirectory(cleanBase);
+        commandBuilder.setConfigurationDirectory(configDir);
     }
 
-    /**
-     * Copy the original directory to the clean server base directory.
-     * @param originalDirName Name of the original directory
-     * @param cleanServerBaseDir the clean server base directories
-     * @param serverBaseDir the server base directory
-     * @param jbossHome the jboss home
-     * @throws IOException
-     */
-    static void copyOriginalDirectoryToCleanServerBaseDir(String originalDirName, String serverBaseDir, String jbossHome, File cleanServerBaseDir)
-            throws IOException {
-        final File originalDir = getFile(serverBaseDir + File.separatorChar + originalDirName, jbossHome);
-
-        File cleanDir = new File(cleanServerBaseDir, originalDirName);
-        cleanDir.mkdir();
-
-        if (originalDir.exists()) {
-            copyDirectory(originalDir, cleanDir);
-        }
-    }
-
-    /**
-     * Create a temporary directory to setup clean directories to run the container.
-     *
-     * @throws IOException
-     */
-    static File createTempServerBaseDirectory() throws IOException {
-        File tempDir = new File(System.getProperty("java.io.tmpdir"));
-        File tempContainer = new File(tempDir, TEMP_CONTAINER_DIRECTORY);
-        // Delete the previous directory if exists...
-        if (tempContainer.exists()) {
-            deleteRecursively(tempContainer);
-        }
-        if (!tempContainer.mkdir()) {
-            throw new IOException("Could not create temp directory: " + tempContainer.getAbsolutePath());
-        }
-        return tempContainer;
-    }
-
-    /**
-     * Copy directory from {@code src} to {@code dest}.
-     *
-     * @param src Source directory
-     * @param dest Destination directory
-     */
-    private static void copyDirectory(File src, File dest) {
-        for (String current : src.list()) {
-            final File srcFile = new File(src, current);
-            final File destFile = new File(dest, current);
-
-            if (srcFile.isDirectory()) {
-                destFile.mkdir();
-                copyDirectory(srcFile, destFile);
-            } else {
-                try {
-                    final InputStream in = new BufferedInputStream(new FileInputStream(srcFile));
-                    final OutputStream out = new BufferedOutputStream(new FileOutputStream(destFile));
-
-                    try {
-                        int i;
-                        while ((i = in.read()) != -1) {
-                            out.write(i);
-                        }
-                    } catch (IOException e) {
-                        throw ServerLogger.ROOT_LOGGER.errorCopyingFile(srcFile.getAbsolutePath(), destFile.getAbsolutePath(), e);
-                    } finally {
-                        StreamUtils.safeClose(in);
-                        StreamUtils.safeClose(out);
-                    }
-
-                } catch (FileNotFoundException e) {
-                    throw new RuntimeException(e);
-                }
+    private static void copyDir(final Path from, final Path to) throws IOException {
+        Files.walkFileTree(from, new SimpleFileVisitor<Path>(){
+            @Override
+            public FileVisitResult preVisitDirectory(final Path dir, final BasicFileAttributes attrs) throws IOException {
+                Files.copy(dir, to.resolve(from.relativize(dir)));
+                return FileVisitResult.CONTINUE;
             }
-        }
-    }
 
-    /**
-     * Delete a file if exists.
-     *
-     * @param file the file to delete
-     */
-    static void deleteRecursively(File file) {
-        if (file.exists()) {
-            if (file.isDirectory()) {
-                for (String name : file.list()) {
-                    deleteRecursively(new File(file, name));
-                }
+            @Override
+            public FileVisitResult visitFile(final Path file, final BasicFileAttributes attrs) throws IOException {
+                Files.copy(file, to.resolve(from.relativize(file)));
+                return FileVisitResult.CONTINUE;
             }
-            file.delete();
-        }
+        });
     }
 }

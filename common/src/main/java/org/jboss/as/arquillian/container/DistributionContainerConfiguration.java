@@ -35,7 +35,6 @@ public class DistributionContainerConfiguration extends CommonContainerConfigura
     private String bundlePath = System.getProperty("bundle.path");
 
     public DistributionContainerConfiguration() {
-        super();
         // if no javaHome is set use java.home of already running jvm
         if (javaHome == null || javaHome.isEmpty()) {
             javaHome = System.getProperty("java.home");
@@ -84,10 +83,12 @@ public class DistributionContainerConfiguration extends CommonContainerConfigura
         this.modulePath = modulePath;
     }
 
+    @Deprecated
     public String getBundlePath() {
         return bundlePath;
     }
 
+    @Deprecated
     public void setBundlePath(String bundlePath) {
         this.bundlePath = bundlePath;
     }

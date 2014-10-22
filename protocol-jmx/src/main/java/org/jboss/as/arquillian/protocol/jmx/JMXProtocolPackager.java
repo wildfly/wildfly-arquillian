@@ -31,7 +31,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Properties;
 import java.util.Set;
 import java.util.jar.Attributes;
 import java.util.jar.JarFile;
@@ -47,7 +46,6 @@ import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.Authentication;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.arquillian.container.NetworkUtils;
-import org.jboss.as.arquillian.container.OSGiApplicationArchiveProcessor;
 import org.jboss.as.arquillian.protocol.jmx.JMXProtocolAS7.ServiceArchiveHolder;
 import org.jboss.as.arquillian.service.ArquillianService;
 import org.jboss.as.arquillian.service.DependenciesProvider;
@@ -56,17 +54,18 @@ import org.jboss.as.arquillian.service.JMXProtocolEndpointExtension;
 import org.jboss.logging.Logger;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.msc.service.ServiceActivator;
-import org.jboss.osgi.metadata.ManifestBuilder;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ArchivePath;
 import org.jboss.shrinkwrap.api.ArchivePaths;
 import org.jboss.shrinkwrap.api.Node;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.asset.UrlAsset;
 import org.jboss.shrinkwrap.api.container.ManifestContainer;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.osgi.framework.Constants;
+import org.jboss.shrinkwrap.descriptor.api.Descriptors;
+import org.jboss.shrinkwrap.descriptor.api.spec.se.manifest.ManifestDescriptor;
 
 /**
  * A {@link DeploymentPackager} for the JMXProtocol.
@@ -89,10 +88,7 @@ public class JMXProtocolPackager implements DeploymentPackager {
         defaultDependencies.add("deployment.arquillian-service");
         defaultDependencies.add("org.jboss.modules");
         defaultDependencies.add("org.jboss.msc");
-        defaultDependencies.add("org.osgi.core");
         defaultDependencies.add("org.wildfly.security.manager");
-
-        optionalDeps.add("org.osgi.core");
     }
 
     private static final Logger log = Logger.getLogger(JMXProtocolPackager.class);
@@ -139,7 +135,6 @@ public class JMXProtocolPackager implements DeploymentPackager {
         archiveDependencies.add(ModuleIdentifier.create("org.jboss.modules"));
         archiveDependencies.add(ModuleIdentifier.create("org.jboss.dmr"));
         archiveDependencies.add(ModuleIdentifier.create("org.jboss.msc"));
-        archiveDependencies.add(ModuleIdentifier.create("org.osgi.core"));
         archiveDependencies.add(ModuleIdentifier.create("org.wildfly.security.manager"));
 
         // Merge the auxiliary archives and collect the loadable extensions
@@ -168,25 +163,21 @@ public class JMXProtocolPackager implements DeploymentPackager {
         loadableExtensions.add(InContainerManagementClientExtension.class.getName());
 
         // Generate the manifest with it's dependencies
-        archive.setManifest(new Asset() {
-            public InputStream openStream() {
-                ManifestBuilder builder = ManifestBuilder.newInstance();
-                Iterator<ModuleIdentifier> itdep = archiveDependencies.iterator();
-                StringBuffer depspec = new StringBuffer();
-                while (itdep.hasNext()) {
-                    ModuleIdentifier dep = itdep.next();
-                    depspec.append(dep);
-                    if(optionalDeps.contains(dep.getName())) {
-                        depspec.append(" optional");
-                    }
-                    if(itdep.hasNext()) {
-                        depspec.append("," );
-                    }
-                }
-                builder.addManifestHeader("Dependencies", depspec.toString());
-                return builder.openStream();
+        ManifestDescriptor manifest = Descriptors.create(ManifestDescriptor.class);
+        Iterator<ModuleIdentifier> itdep = archiveDependencies.iterator();
+        StringBuilder depspec = new StringBuilder();
+        while (itdep.hasNext()) {
+            ModuleIdentifier dep = itdep.next();
+            depspec.append(dep);
+            if (optionalDeps.contains(dep.getName())) {
+                depspec.append(" optional");
             }
-        });
+            if (itdep.hasNext()) {
+                depspec.append(",");
+            }
+        }
+        manifest.attribute("Dependencies", depspec.toString());
+        archive.setManifest(new StringAsset(manifest.exportAsString()));
 
         // Add the ServiceActivator
         String serviceActivatorPath = "META-INF/services/" + ServiceActivator.class.getName();
@@ -195,29 +186,6 @@ public class JMXProtocolPackager implements DeploymentPackager {
             throw new RuntimeException("No arquillian-service/" + serviceActivatorPath + " found by classloader: " + this.getClass().getClassLoader());
         }
         archive.addAsResource(new UrlAsset(serviceActivatorURL), serviceActivatorPath);
-
-        // Add resource capabilities for registration with the Environment
-        archive.addAsResource(new Asset() {
-            public InputStream openStream() {
-                ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                try {
-                    Properties props = new Properties();
-                    props.setProperty(Constants.BUNDLE_SYMBOLICNAME, "arquillian-service");
-                    StringBuilder builder = new StringBuilder();
-                    builder.append("org.jboss.arquillian.container.test.api,org.jboss.arquillian.junit,");
-                    builder.append("org.jboss.arquillian.osgi,org.jboss.arquillian.test.api,");
-                    builder.append("org.jboss.as.arquillian.api,org.jboss.as.arquillian.container,");
-                    builder.append("org.jboss.shrinkwrap.api,org.jboss.shrinkwrap.api.asset,org.jboss.shrinkwrap.api.spec,");
-                    builder.append("org.junit,org.junit.runner");
-                    props.setProperty(Constants.EXPORT_PACKAGE, builder.toString());
-                    props.store(baos, null);
-                } catch (IOException ex) {
-                    throw new IllegalStateException("Cannot write osgi metadata", ex);
-                }
-                return new ByteArrayInputStream(baos.toByteArray());
-            }
-
-        }, "META-INF/jbosgi-xservice.properties");
 
         // Replace the loadable extensions with the collected set
         archive.delete(ArchivePaths.create(loadableExtensionsPath));
@@ -252,10 +220,6 @@ public class JMXProtocolPackager implements DeploymentPackager {
 
         final Manifest manifest = ManifestUtils.getOrCreateManifest(appArchive);
 
-        // Don't enrich with Modules Dependencies if this is an OSGi bundle
-        if (OSGiApplicationArchiveProcessor.isValidOSGiBundleArchive(appArchive)) {
-            return;
-        }
         Attributes attributes = manifest.getMainAttributes();
         if (attributes.getValue(Attributes.Name.MANIFEST_VERSION.toString()) == null) {
             attributes.putValue(Attributes.Name.MANIFEST_VERSION.toString(), "1.0");

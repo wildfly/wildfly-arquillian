@@ -57,10 +57,6 @@
         </dependency>
         <dependency>
             <groupId>org.jboss.arquillian.testenricher</groupId>
-            <artifactId>arquillian-testenricher-osgi</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.arquillian.testenricher</groupId>
             <artifactId>arquillian-testenricher-resource</artifactId>
         </dependency>
         <dependency>
@@ -96,15 +92,8 @@
             <artifactId>jboss-sasl</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.osgi</groupId>
-            <artifactId>org.osgi.core</artifactId>
+            <groupId>org.jboss.shrinkwrap.descriptors</groupId>
+            <artifactId>shrinkwrap-descriptors-impl-base</artifactId>
         </dependency>
-        <!-- Provided Dependencies -->
-        <dependency>
-            <groupId>org.jboss.arquillian.container</groupId>
-            <artifactId>arquillian-container-osgi</artifactId>
-            <scope>provided</scope>
-        </dependency>
-
     </dependencies>
 </project>

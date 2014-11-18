@@ -109,6 +109,12 @@ public class ManagedDomainDeployableContainer extends CommonDomainDeployableCont
                 commandBuilder.setHostConfiguration(config.getHostConfig());
             }
 
+            // Set server arguments if not null
+            final String serverArgs = config.getJbossArguments();
+            if (serverArgs != null) {
+                commandBuilder.addServerArguments(serverArgs.split("\\s+"));
+            }
+
             // Previous versions of arquillian set the jboss.home.dir property in the JVM properties.
             // Some tests may rely on this behavior, but could be considered to be removed as all the scripts add this
             // property after the modules path (-mp) has been defined. The command builder will set the property after

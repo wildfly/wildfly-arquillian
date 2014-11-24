@@ -37,6 +37,8 @@ public class ManagedDomainContainerConfiguration extends CommonDomainContainerCo
 
     private String javaVmArguments = System.getProperty("jboss.options");
 
+    private String jbossArguments;
+
     private int startupTimeoutInSeconds = 60;
 
     private int stopTimeoutInSeconds = 60;
@@ -114,6 +116,24 @@ public class ManagedDomainContainerConfiguration extends CommonDomainContainerCo
      */
     public void setJavaVmArguments(String javaVmArguments) {
         this.javaVmArguments = javaVmArguments;
+    }
+
+    /**
+     * A space delimited list of arguments to be passed to the server like command line options.
+     *
+     * @return the arguments the arguments to be passed or {@code null} if no arguments were set
+     */
+    public String getJbossArguments() {
+        return jbossArguments;
+    }
+
+    /**
+     * A space delimited list of arguments to be passed to the server like command line options.
+     *
+     * @param jbossArguments the space delimited arguments to set or {@code null} not pass any
+     */
+    public void setJbossArguments(String jbossArguments) {
+        this.jbossArguments = jbossArguments;
     }
 
     /**

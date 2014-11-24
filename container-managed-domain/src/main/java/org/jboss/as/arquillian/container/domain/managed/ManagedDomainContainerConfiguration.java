@@ -119,7 +119,7 @@ public class ManagedDomainContainerConfiguration extends CommonDomainContainerCo
     }
 
     /**
-     * A space delimited list of arguments to be passed to the server like command line options.
+     * A space delimited list of arguments to be passed to the process controller.
      *
      * @return the arguments the arguments to be passed or {@code null} if no arguments were set
      */
@@ -128,7 +128,7 @@ public class ManagedDomainContainerConfiguration extends CommonDomainContainerCo
     }
 
     /**
-     * A space delimited list of arguments to be passed to the server like command line options.
+     * A space delimited list of arguments to be passed to the process controller.
      *
      * @param jbossArguments the space delimited arguments to set or {@code null} not pass any
      */
@@ -224,7 +224,7 @@ public class ManagedDomainContainerConfiguration extends CommonDomainContainerCo
     }
 
     /**
-     * Set the server configuration file name. Equivalent to [-Djboss.host.default.config=...] on the command line.
+     * Set the host controller configuration file name. Equivalent to [-Djboss.host.default.config=...] on the command line.
      *
      * @param hostConfig the host xml file name
      */

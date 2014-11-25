@@ -31,10 +31,12 @@ import javax.management.MBeanServer;
 
 import org.jboss.arquillian.protocol.jmx.JMXTestRunner;
 import org.jboss.as.jmx.MBeanServerService;
+import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.as.server.deployment.SetupAction;
 import org.jboss.logging.Logger;
+import org.jboss.modules.Module;
 import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
@@ -217,6 +219,10 @@ public class ArquillianService implements Service<ArquillianService> {
             try {
                 final ContextManagerBuilder builder = new ContextManagerBuilder();
                 final DeploymentUnit depUnit = config.getDeploymentUnit();
+                final Module module = depUnit.getAttachment(Attachments.MODULE);
+                if (module != null) {
+                    builder.add(new TCCLSetupAction(module.getClassLoader()));
+                }
                 builder.addAll(depUnit);
                 ContextManager contextManager = builder.build();
                 contextManager.setup(properties);

@@ -40,7 +40,7 @@
 
     <properties>
         <version.com.google.guava>16.0.1</version.com.google.guava>
-        <version.org.wildfly.core>1.0.0.Alpha13</version.org.wildfly.core>
+        <version.org.wildfly.core>1.0.0.Alpha15</version.org.wildfly.core>
         <version.junit>4.11</version.junit>
         <version.org.jboss.arquillian.core>1.1.2.Final-wildfly-2</version.org.jboss.arquillian.core>
         <version.org.jboss.shrinkwrap.descriptors>2.0.0-alpha-6</version.org.jboss.shrinkwrap.descriptors>

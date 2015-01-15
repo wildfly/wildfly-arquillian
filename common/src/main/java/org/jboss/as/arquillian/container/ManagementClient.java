@@ -99,7 +99,8 @@ public class ManagementClient implements AutoCloseable, Closeable {
     private URI ejbUri;
 
     // cache static RootNode
-    private ModelNode rootNode = null;
+    //private ModelNode rootNode = null;
+    private ModelNode undertowSubsystem = null;
 
     private MBeanServerConnection connection;
     private JMXConnector connector;
@@ -133,15 +134,16 @@ public class ManagementClient implements AutoCloseable, Closeable {
                 throw new RuntimeException(e);
             }
             try {
-                if (rootNode == null) {
-                    readRootNode();
+                if (undertowSubsystem == null) {
+                    ModelNode address = new ModelNode();
+                    address.add("subsystem", UNDERTOW);
+                    undertowSubsystem = readResource(address);
                 }
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
-            ModelNode undertowNode = rootNode.get("subsystem", UNDERTOW);
-            if (undertowNode.isDefined()) {
-                List<Property> vhosts = undertowNode.get("server").asPropertyList();
+            if (undertowSubsystem.isDefined()) {
+                List<Property> vhosts = undertowSubsystem.get("server").asPropertyList();
                 ModelNode socketBinding = new ModelNode();
                 if (!vhosts.isEmpty()) {//if empty no virtual hosts defined
                     socketBinding = vhosts.get(0).getValue().get("http-listener", "default").get("socket-binding");
@@ -162,7 +164,9 @@ public class ManagementClient implements AutoCloseable, Closeable {
         HTTPContext context = new HTTPContext(webURI.getHost(), webURI.getPort());
         metaData.addContext(context);
         try {
-            ModelNode deploymentNode = readResource(createDeploymentAddress(deploymentName));
+            ModelNode address = new ModelNode();
+            address.add(DEPLOYMENT, deploymentName);
+            ModelNode deploymentNode = readResource(address);
 
             if (isWebArchive(deploymentName)) {
                 extractWebArchiveContexts(context, deploymentNode);
@@ -211,10 +215,6 @@ public class ManagementClient implements AutoCloseable, Closeable {
         }
     }
 
-    private void readRootNode() throws Exception {
-        rootNode = readResource(new ModelNode());
-    }
-
     private static ModelNode defined(final ModelNode node, final String message) {
         if (!node.isDefined()) { throw new IllegalStateException(message); }
         return node;
@@ -222,7 +222,10 @@ public class ManagementClient implements AutoCloseable, Closeable {
 
     private URI getBinding(final String protocol, final String socketBinding) {
         try {
-            final String socketBindingGroupName = rootNode.get("socket-binding-group").keys().iterator().next();
+            ModelNode address = new ModelNode();
+            address.add("socket-binding-group","*");
+            final ModelNode socketBindingGroups = readResource(address);
+            final String socketBindingGroupName = socketBindingGroups.asList().get(0).get("result").get("name").asString();
             final ModelNode operation = new ModelNode();
             operation.get(OP_ADDR).get("socket-binding-group").set(socketBindingGroupName);
             operation.get(OP_ADDR).get("socket-binding").set(socketBinding);
@@ -253,12 +256,6 @@ public class ManagementClient implements AutoCloseable, Closeable {
 
     private boolean isWebArchive(String deploymentName) {
         return deploymentName.endsWith(POSTFIX_WEB);
-    }
-
-    private ModelNode createDeploymentAddress(String deploymentName) {
-        ModelNode address = new ModelNode();
-        address.add(DEPLOYMENT, deploymentName);
-        return address;
     }
 
     private void extractEnterpriseArchiveContexts(HTTPContext context, ModelNode deploymentNode) {

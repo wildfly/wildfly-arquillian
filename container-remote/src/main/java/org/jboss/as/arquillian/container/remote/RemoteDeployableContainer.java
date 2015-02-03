@@ -33,7 +33,8 @@ public final class RemoteDeployableContainer extends
     }
 
     @Override
-    protected void stopInternal() throws LifecycleException {
+    protected void stopInternal(Integer timeout) throws LifecycleException {
+        // Do nothing.
     }
 
     @Override

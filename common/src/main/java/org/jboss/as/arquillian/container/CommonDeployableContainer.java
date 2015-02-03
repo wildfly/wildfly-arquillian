@@ -119,13 +119,21 @@ public abstract class CommonDeployableContainer<T extends CommonContainerConfigu
     @Override
     public final void stop() throws LifecycleException {
         try {
-            stopInternal();
+            stopInternal(null);
         } finally {
             safeCloseClient();
         }
     }
 
-    protected abstract void stopInternal() throws LifecycleException;
+    public final void stop(Integer timeout) throws LifecycleException {
+        try {
+            stopInternal(timeout);
+        } finally {
+            safeCloseClient();
+        }
+    }
+
+    protected abstract void stopInternal(Integer timeout) throws LifecycleException;
 
     protected T getContainerConfiguration() {
         return containerConfig;

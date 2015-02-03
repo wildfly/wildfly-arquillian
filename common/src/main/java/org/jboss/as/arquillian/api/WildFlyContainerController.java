@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2015, Red Hat Middleware LLC, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,31 +19,27 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+package org.jboss.as.arquillian.api;
 
-package org.jboss.as.arquillian.container;
+import org.jboss.arquillian.container.test.api.ContainerController;
 
 /**
- * Utility methods related to networking.
+ * {@inheritDoc}
+ * <p/>
+ * This extension to the original controller provides WildFly-specific lifecycle control methods.
  *
- * @author Brian Stansberry (c) 2011 Red Hat Inc.
+ * @author Radoslav Husar
+ * @version Jan 2015
  */
-public class NetworkUtils {
+public interface WildFlyContainerController extends ContainerController {
 
-    public static String formatPossibleIpv6Address(String address) {
-        if (address == null) {
-            return null;
-        }
-        if (!address.contains(":")) {
-            return address;
-        }
-        if (address.startsWith("[") && address.endsWith("]")) {
-            return address;
-        }
-        return "[" + address + "]";
-    }
+    /**
+     * Stops the given container with a timeout; corresponds to {@code :shutdown(timeout=Y)} management operation.
+     * <strong>Only compatible with WildFly 9 and newer!</strong>
+     *
+     * @param containerQualifier container qualifier
+     * @param timeout            timeout in seconds to wait during suspend phase
+     */
+    void stop(String containerQualifier, int timeout);
 
-    // No instantiation
-    private NetworkUtils() {
-
-    }
 }

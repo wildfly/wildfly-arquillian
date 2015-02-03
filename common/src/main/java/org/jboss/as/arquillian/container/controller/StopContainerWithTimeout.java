@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2015, Red Hat Middleware LLC, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,31 +19,27 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+package org.jboss.as.arquillian.container.controller;
 
-package org.jboss.as.arquillian.container;
+import org.jboss.arquillian.container.spi.Container;
+import org.jboss.arquillian.container.spi.event.ContainerControlEvent;
 
 /**
- * Utility methods related to networking.
+ * StopContainerWithTimeout coming from {@link WildFlyClientContainerController#stop(java.lang.String, int)}.
  *
- * @author Brian Stansberry (c) 2011 Red Hat Inc.
+ * @author Radoslav Husar
+ * @version Jan 2015
  */
-public class NetworkUtils {
+public class StopContainerWithTimeout extends ContainerControlEvent {
 
-    public static String formatPossibleIpv6Address(String address) {
-        if (address == null) {
-            return null;
-        }
-        if (!address.contains(":")) {
-            return address;
-        }
-        if (address.startsWith("[") && address.endsWith("]")) {
-            return address;
-        }
-        return "[" + address + "]";
+    private int timeout;
+
+    public StopContainerWithTimeout(Container container, int timeout) {
+        super(container);
+        this.timeout = timeout;
     }
 
-    // No instantiation
-    private NetworkUtils() {
-
+    public int getTimeout() {
+        return timeout;
     }
 }

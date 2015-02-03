@@ -243,7 +243,7 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
 
 
     @Override
-    protected void stopInternal() throws LifecycleException {
+    protected void stopInternal(Integer timeout) throws LifecycleException {
         if (shutdownThread != null) {
             Runtime.getRuntime().removeShutdownHook(shutdownThread);
             shutdownThread = null;
@@ -270,6 +270,9 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
                 // AS7-6620: Create the shutdown operation and run it asynchronously and wait for process to terminate
                 ModelNode op = new ModelNode();
                 op.get("operation").set("shutdown");
+                if (timeout != null) {
+                    op.get("timeout").set(timeout);
+                }
                 getManagementClient().getControllerClient().executeAsync(op, null);
 
                 process.waitFor();

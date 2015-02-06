@@ -40,15 +40,57 @@
 
     <properties>
         <version.com.google.guava>16.0.1</version.com.google.guava>
-        <version.org.wildfly.core>1.0.0.Alpha13</version.org.wildfly.core>
-        <version.junit>4.11</version.junit>
+        <version.org.wildfly.core>1.0.0.Alpha15</version.org.wildfly.core>
+        <version.junit>4.12</version.junit>
         <version.org.jboss.arquillian.core>1.1.2.Final-wildfly-2</version.org.jboss.arquillian.core>
         <version.org.jboss.shrinkwrap.descriptors>2.0.0-alpha-6</version.org.jboss.shrinkwrap.descriptors>
         <version.org.jboss.ejb-client>2.0.1.Final</version.org.jboss.ejb-client>
         <version.org.testng>6.8.8</version.org.testng>
         <version.org.jboss.spec.javax.servlet.jboss-servlet-api_3.1_spec>1.0.0.Final</version.org.jboss.spec.javax.servlet.jboss-servlet-api_3.1_spec>
         <version.org.jboss.spec.javax.ejb.jboss-ejb-api_3.2_spec>1.0.0.Final</version.org.jboss.spec.javax.ejb.jboss-ejb-api_3.2_spec>
+        <version.org.wildfly.checkstyle-config>1.0.2.Final</version.org.wildfly.checkstyle-config>
     </properties>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <!-- Checkstyle -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-checkstyle-plugin</artifactId>
+                    <version>${version.checkstyle.plugin}</version>
+                    <configuration>
+                        <configLocation>wildfly-checkstyle/checkstyle.xml</configLocation>
+                        <consoleOutput>true</consoleOutput>
+                        <failsOnError>true</failsOnError>
+                        <useFile/>
+                    </configuration>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.wildfly.checkstyle</groupId>
+                            <artifactId>wildfly-checkstyle-config</artifactId>
+                            <version>${version.org.wildfly.checkstyle-config}</version>
+                        </dependency>
+                    </dependencies>
+                    <executions>
+                        <execution>
+                            <id>check-style</id>
+                            <phase>compile</phase>
+                            <goals>
+                                <goal>checkstyle</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-checkstyle-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
     <modules>
         <module>common</module>
         <!-- <module>container-embedded</module>-->
@@ -65,7 +107,6 @@
     <packaging>pom</packaging>
     <dependencyManagement>
         <dependencies>
-
 
             <dependency>
                 <groupId>org.wildfly.arquillian</groupId>

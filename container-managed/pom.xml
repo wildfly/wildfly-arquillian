@@ -32,11 +32,14 @@
     </parent>
 
     <artifactId>wildfly-arquillian-container-managed</artifactId>
-
     <name>WildFly: Arquillian Managed Container</name>
-
     <packaging>jar</packaging>
 
+    <properties>
+        <jvmArgs>-Xmx1G -XX:MaxPermSize=512m -Djava.net.preferIPv4Stack=true</jvmArgs>
+        <jvmDebugArgs>-agentlib:jdwp=transport=dt_socket,address=8787,server=y,suspend=n</jvmDebugArgs>
+    </properties>
+    
     <dependencies>
         <dependency>
             <groupId>org.wildfly.arquillian</groupId>
@@ -115,8 +118,13 @@
     </dependencies>
 
     <build>
+        <testResources>
+            <testResource>
+                <directory>src/test/resources</directory>
+                <filtering>true</filtering>
+            </testResource>
+        </testResources>
         <plugins>
-
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>

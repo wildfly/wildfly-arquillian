@@ -33,11 +33,15 @@ import org.jboss.shrinkwrap.api.Archive;
  * @author thomas.diesler@jboss.com
  * @since 31-May-2011
  */
-public class JMXProtocolAS7 extends AbstractJMXProtocol {
+public class ExtendedJMXProtocol extends AbstractJMXProtocol<ExtendedJMXProtocolConfiguration> {
 
     @Inject
     @SuiteScoped
     private InstanceProducer<ServiceArchiveHolder> archiveHolderInst;
+
+    public Class<ExtendedJMXProtocolConfiguration> getProtocolConfigurationClass() {
+        return ExtendedJMXProtocolConfiguration.class;
+    }
 
     @Override
     public DeploymentPackager getPackager() {

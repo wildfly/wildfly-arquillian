@@ -17,21 +17,25 @@
  */
 package org.jboss.as.arquillian.protocol.jmx;
 
-import org.jboss.arquillian.container.test.spi.client.protocol.Protocol;
-import org.jboss.arquillian.core.spi.LoadableExtension;
+import org.jboss.arquillian.protocol.jmx.JMXProtocolConfiguration;
 
 /**
- * JMXProtocolClientExtension
+ * The JBossAS JMXProtocol extension.
  *
  * @author thomas.diesler@jboss.com
- * @since 31-May-2011
+ * @since 27-Feb-2015
  */
-public class JMXProtocolClientExtension implements LoadableExtension {
+public class ExtendedJMXProtocolConfiguration extends JMXProtocolConfiguration {
 
-    @Override
-    public void register(ExtensionBuilder builder) {
-        builder.service(Protocol.class, ExtendedJMXProtocol.class);
-        builder.observer(ArquillianServiceDeployer.class);
-        builder.observer(ServerKillerExtension.class);
+    public static final String PROPERTY_ENABLE_TCCL = "enableThreadContextClassLoader";
+
+    private boolean enableThreadContextClassLoader = true;
+
+    public boolean isEnableThreadContextClassLoader() {
+        return enableThreadContextClassLoader;
+    }
+
+    public void setEnableThreadContextClassLoader(boolean enableThreadContextClassLoader) {
+        this.enableThreadContextClassLoader = enableThreadContextClassLoader;
     }
 }

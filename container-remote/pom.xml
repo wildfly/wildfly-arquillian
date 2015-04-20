@@ -32,11 +32,8 @@
         <version>1.0.0.Alpha6-SNAPSHOT</version>
     </parent>
 
-    <groupId>org.wildfly.arquillian</groupId>
     <artifactId>wildfly-arquillian-container-remote</artifactId>
-
     <name>WildFly: Arquillian Remote Container</name>
-
     <packaging>jar</packaging>
 
     <properties>

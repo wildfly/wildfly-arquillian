@@ -28,77 +28,72 @@
   -Djboss.home=${workspace_loc:jboss-as-build}/target/jboss-as-9.0.0.Alpha1-SNAPSHOT
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
 
     <parent>
         <groupId>org.wildfly.arquillian</groupId>
         <artifactId>wildfly-arquillian-parent</artifactId>
         <version>1.0.0.Alpha6-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
 
-	<artifactId>wildfly-arquillian-container-embedded</artifactId>
+    <artifactId>wildfly-arquillian-container-embedded</artifactId>
 
-	<name>WildFly: Arquillian Embedded Container</name>
+    <name>WildFly: Arquillian Embedded Container</name>
 
-	<packaging>jar</packaging>
+    <packaging>jar</packaging>
 
-	<dependencies>
+    <dependencies>
+        <dependency>
+            <groupId>org.wildfly.arquillian</groupId>
+            <artifactId>wildfly-arquillian-common</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-embedded</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.logging</groupId>
+            <artifactId>jboss-logging</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-protocol</artifactId>
+        </dependency>
+        <!-- Test Dependencies -->
         <dependency>
             <groupId>javax.enterprise</groupId>
             <artifactId>cdi-api</artifactId>
-        </dependency>
-		<dependency>
-			<groupId>org.wildfly.arquillian</groupId>
-			<artifactId>wildfly-arquillian-common</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.wildfly.arquillian</groupId>
-			<artifactId>wildfly-embedded</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.jboss.logging</groupId>
-			<artifactId>jboss-logging</artifactId>
-		</dependency>
-        <dependency>
-            <groupId>org.wildfly.arquillian</groupId>
-            <artifactId>wildfly-protocol</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.wildfly.arquillian</groupId>
-            <artifactId>wildfly-core-build</artifactId>
-            <type>zip</type>
             <scope>test</scope>
         </dependency>
-		<!-- Test Dependencies -->
-		<dependency>
-			<groupId>org.jboss.arquillian.junit</groupId>
-			<artifactId>arquillian-junit-container</artifactId>
-			<scope>test</scope>
-		</dependency>
+        <dependency>
+            <groupId>org.jboss.arquillian.junit</groupId>
+            <artifactId>arquillian-junit-container</artifactId>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>org.wildfly.arquillian</groupId>
             <artifactId>wildfly-arquillian-protocol-jmx</artifactId>
             <scope>test</scope>
         </dependency>
-	</dependencies>
+    </dependencies>
 
-	<build>
-		<plugins>
+    <build>
+        <plugins>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-dependency-plugin</artifactId>
+                <groupId>org.wildfly.build</groupId>
+                <artifactId>wildfly-server-provisioning-maven-plugin</artifactId>
                 <executions>
                     <execution>
-                        <id>unpack-wildfly</id>
-                        <phase>generate-test-resources</phase>
+                        <id>server-provisioning</id>
                         <goals>
-                            <goal>unpack-dependencies</goal>
+                            <goal>build</goal>
                         </goals>
+                        <phase>process-test-resources</phase>
                         <configuration>
-                            <includeGroupIds>org.wildfly</includeGroupIds>
-                            <includeArtifactIds>wildfly-core-build</includeArtifactIds>
-                            <outputDirectory>${project.build.directory}</outputDirectory>
+                            <config-file>embedded-server-provisioning.xml</config-file>
+                            <server-name>wildfly-servlet</server-name>
                         </configuration>
                     </execution>
                 </executions>
@@ -111,11 +106,11 @@
                     <forkMode>always</forkMode>
                     <systemPropertyVariables>
                         <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
-                        <jboss.home>${basedir}/target/wildfly-core-${project.version}</jboss.home>
+                        <jboss.home>${basedir}/target/wildfly-servlet</jboss.home>
                     </systemPropertyVariables>
                     <redirectTestOutputToFile>false</redirectTestOutputToFile>
                 </configuration>
             </plugin>
-		</plugins>
-	</build>
+        </plugins>
+    </build>
 </project>

@@ -19,7 +19,7 @@ package org.jboss.as.arquillian.container.embedded;
 import org.jboss.arquillian.container.spi.ConfigurationException;
 import org.jboss.arquillian.container.spi.client.deployment.Validate;
 import org.jboss.as.arquillian.container.CommonContainerConfiguration;
-import org.jboss.as.embedded.EmbeddedStandAloneServerFactory;
+import org.wildfly.core.embedded.EmbeddedStandAloneServerFactory;
 
 /**
  * {@link org.jboss.arquillian.container.spi.client.container.ContainerConfiguration} implementation for JBoss AS Embedded
@@ -32,8 +32,6 @@ public class EmbeddedContainerConfiguration extends CommonContainerConfiguration
     private String jbossHome = System.getenv("JBOSS_HOME");
 
     private String modulePath = System.getProperty("module.path");
-
-    private String bundlePath = System.getProperty("bundle.path");
 
     private String cleanServerBaseDir = System.getProperty(EmbeddedStandAloneServerFactory.JBOSS_EMBEDDED_ROOT);
 
@@ -71,14 +69,6 @@ public class EmbeddedContainerConfiguration extends CommonContainerConfiguration
         this.modulePath = modulePath;
     }
 
-    public String getBundlePath() {
-        return bundlePath;
-    }
-
-    public void setBundlePath(String bundlePath) {
-        this.bundlePath = bundlePath;
-    }
-
     public String getCleanServerBaseDir() {
         return cleanServerBaseDir;
     }
@@ -97,8 +87,5 @@ public class EmbeddedContainerConfiguration extends CommonContainerConfiguration
         super.validate();
         Validate.configurationDirectoryExists(jbossHome, "jbossHome '" + jbossHome + "' must exist");
         Validate.configurationDirectoryExists(modulePath, "modulePath '" + modulePath + "' must exist");
-        if (bundlePath != null) {
-            Validate.configurationDirectoryExists(bundlePath, "bundlePath '" + bundlePath + "' must exist");
-        }
     }
 }

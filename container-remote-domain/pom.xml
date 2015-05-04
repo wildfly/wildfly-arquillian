@@ -30,6 +30,7 @@
         <groupId>org.wildfly.arquillian</groupId>
         <artifactId>wildfly-arquillian-parent</artifactId>
         <version>1.0.0.Alpha6-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
 
     <artifactId>wildfly-arquillian-container-domain-remote</artifactId>

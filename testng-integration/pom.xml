@@ -29,15 +29,12 @@
         <groupId>org.wildfly.arquillian</groupId>
         <artifactId>wildfly-arquillian-parent</artifactId>
         <version>1.0.0.Alpha6-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
 
     <artifactId>wildfly-arquillian-testng-integration</artifactId>
     <name>WildFly: Arquillian TestNG Integration</name>
     <packaging>jar</packaging>
-
-    <properties>
-        <jboss.home>${project.basedir}/../../${wildfly.build.output.dir}</jboss.home>
-    </properties>
 
     <dependencies>
 
@@ -71,19 +68,18 @@
     <build>
         <plugins>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-dependency-plugin</artifactId>
+                <groupId>org.wildfly.build</groupId>
+                <artifactId>wildfly-server-provisioning-maven-plugin</artifactId>
                 <executions>
                     <execution>
-                        <id>unpack-wildfly</id>
-                        <phase>generate-test-resources</phase>
+                        <id>server-provisioning</id>
                         <goals>
-                            <goal>unpack-dependencies</goal>
+                            <goal>build</goal>
                         </goals>
+                        <phase>process-test-resources</phase>
                         <configuration>
-                            <includeGroupIds>org.wildfly</includeGroupIds>
-                            <includeArtifactIds>wildfly-core-build</includeArtifactIds>
-                            <outputDirectory>${project.build.directory}</outputDirectory>
+                            <config-file>../server-provisioning.xml</config-file>
+                            <server-name>wildfly-core</server-name>
                         </configuration>
                     </execution>
                 </executions>
@@ -99,7 +95,7 @@
                         </property>
                     </systemProperties>
                     <systemPropertyVariables>
-                        <jboss.home>${basedir}/target/wildfly-core-${version.org.wildfly.core}</jboss.home>
+                        <jboss.home>${basedir}/target/wildfly-core</jboss.home>
                     </systemPropertyVariables>
                     <redirectTestOutputToFile>true</redirectTestOutputToFile>
                 </configuration>

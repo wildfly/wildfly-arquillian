@@ -22,6 +22,8 @@
 
 package org.jboss.as.arquillian.service;
 
+import static org.jboss.as.server.deployment.Services.JBOSS_DEPLOYMENT;
+
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
@@ -29,12 +31,14 @@ import java.util.Set;
 
 import javax.management.MBeanServer;
 
+import org.jboss.arquillian.container.test.spi.TestRunner;
 import org.jboss.arquillian.protocol.jmx.JMXTestRunner;
+import org.jboss.arquillian.test.spi.TestResult;
+import org.jboss.as.arquillian.protocol.jmx.ExtendedJMXProtocolConfiguration;
 import org.jboss.as.jmx.MBeanServerService;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.Phase;
-import org.jboss.as.server.deployment.SetupAction;
 import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.AbstractServiceListener;
@@ -49,8 +53,6 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.wildfly.security.manager.WildFlySecurityManager;
-
-import static org.jboss.as.server.deployment.Services.JBOSS_DEPLOYMENT;
 
 /**
  * Service responsible for creating and managing the life-cycle of the Arquillian service.
@@ -202,12 +204,26 @@ public class ArquillianService implements Service<ArquillianService> {
         }
 
         @Override
-        public byte[] runTestMethod(final String className, final String methodName) {
-            ArquillianConfig arqConfig = getArquillianConfig(className, 30000L);
+        public byte[] runTestMethod(final String className, final String methodName, Map<String, String> protocolProps) {
+            // Setup the ContextManager
+            ArquillianConfig config = getArquillianConfig(className, 30000L);
             Map<String, Object> properties = Collections.<String, Object>singletonMap(TEST_CLASS_PROPERTY, className);
-            ContextManager contextManager = initializeContextManager(arqConfig, properties);
+            ContextManager contextManager = setupContextManager(config, properties);
             try {
-                return super.runTestMethod(className, methodName);
+                ClassLoader runWithClassLoader = ClassLoader.getSystemClassLoader();
+                if (Boolean.parseBoolean(protocolProps.get(ExtendedJMXProtocolConfiguration.PROPERTY_ENABLE_TCCL))) {
+                    DeploymentUnit depUnit = config.getDeploymentUnit();
+                    Module module = depUnit.getAttachment(Attachments.MODULE);
+                    if (module != null) {
+                        runWithClassLoader = module.getClassLoader();
+                    }
+                }
+                ClassLoader tccl = WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(runWithClassLoader);
+                try {
+                    return super.runTestMethod(className, methodName, protocolProps);
+                } finally {
+                    WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(tccl);
+                }
             } finally {
                 if(contextManager != null) {
                     contextManager.teardown(properties);
@@ -215,18 +231,32 @@ public class ArquillianService implements Service<ArquillianService> {
             }
         }
 
-        private ContextManager initializeContextManager(final ArquillianConfig config, final Map<String, Object> properties) {
-            try {
-                final ContextManagerBuilder builder = new ContextManagerBuilder();
-                final DeploymentUnit depUnit = config.getDeploymentUnit();
-                final Module module = depUnit.getAttachment(Attachments.MODULE);
+        @Override
+        protected TestResult doRunTestMethod(TestRunner runner, Class<?> testClass, String methodName, Map<String, String> protocolProps) {
+            ClassLoader runWithClassLoader = ClassLoader.getSystemClassLoader();
+            if (Boolean.parseBoolean(protocolProps.get(ExtendedJMXProtocolConfiguration.PROPERTY_ENABLE_TCCL))) {
+                ArquillianConfig config = getArquillianConfig(testClass.getName(), 30000L);
+                DeploymentUnit depUnit = config.getDeploymentUnit();
+                Module module = depUnit.getAttachment(Attachments.MODULE);
                 if (module != null) {
-                    builder.add(new TCCLSetupAction(module.getClassLoader()));
+                    runWithClassLoader = module.getClassLoader();
                 }
-                builder.addAll(depUnit);
+            }
+            ClassLoader tccl = WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(runWithClassLoader);
+            try {
+                return super.doRunTestMethod(runner, testClass, methodName, protocolProps);
+            } finally {
+                WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(tccl);
+            }
+        }
+
+        private ContextManager setupContextManager(final ArquillianConfig config, final Map<String, Object> properties) {
+            try {
+                final DeploymentUnit depUnit = config.getDeploymentUnit();
+                final ContextManagerBuilder builder = new ContextManagerBuilder(config).addAll(depUnit);
                 ContextManager contextManager = builder.build();
                 contextManager.setup(properties);
-            return contextManager;
+                return contextManager;
             } catch (Throwable t) {
                 return null;
             }
@@ -243,44 +273,6 @@ public class ArquillianService implements Service<ArquillianService> {
                 throw new ClassNotFoundException("No Arquillian config found for: " + className);
 
             return arqConfig.loadClass(className);
-        }
-    }
-
-    /**
-     * Sets and restores the Thread Context ClassLoader
-     *
-     * @author <a href="mailto:alr@jboss.org">Andrew Lee Rubinger</a>
-     * @author Stuart Douglas
-     */
-    private static final class TCCLSetupAction implements SetupAction {
-        private final ThreadLocal<ClassLoader> oldClassLoader = new ThreadLocal<ClassLoader>();
-
-        private final ClassLoader classLoader;
-
-        TCCLSetupAction(final ClassLoader classLoader) {
-            this.classLoader = classLoader;
-        }
-
-        @Override
-        public int priority() {
-            return 10000;
-        }
-
-        @Override
-        public Set<ServiceName> dependencies() {
-            return Collections.emptySet();
-        }
-
-        @Override
-        public void setup(Map<String, Object> properties) {
-            oldClassLoader.set(WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(classLoader));
-        }
-
-        @Override
-        public void teardown(Map<String, Object> properties) {
-            ClassLoader old = oldClassLoader.get();
-            oldClassLoader.remove();
-            WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(old);
         }
     }
 }

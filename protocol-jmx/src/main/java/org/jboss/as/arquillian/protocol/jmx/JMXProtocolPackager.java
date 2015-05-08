@@ -46,7 +46,7 @@ import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.Authentication;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.arquillian.container.NetworkUtils;
-import org.jboss.as.arquillian.protocol.jmx.JMXProtocolAS7.ServiceArchiveHolder;
+import org.jboss.as.arquillian.protocol.jmx.ExtendedJMXProtocol.ServiceArchiveHolder;
 import org.jboss.as.arquillian.service.ArquillianService;
 import org.jboss.as.arquillian.service.DependenciesProvider;
 import org.jboss.as.arquillian.service.InContainerManagementClientExtension;

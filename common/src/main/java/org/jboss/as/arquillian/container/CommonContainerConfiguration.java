@@ -16,9 +16,6 @@
  */
 package org.jboss.as.arquillian.container;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-
 import org.jboss.arquillian.container.spi.ConfigurationException;
 import org.jboss.arquillian.container.spi.client.container.ContainerConfiguration;
 
@@ -56,14 +53,6 @@ public class CommonContainerConfiguration implements ContainerConfiguration {
 
     public void setManagementPort(int managementPort) {
         this.managementPort = managementPort;
-    }
-
-    private InetAddress getInetAddress(String name) {
-        try {
-            return InetAddress.getByName(name);
-        } catch (UnknownHostException e) {
-            throw new IllegalArgumentException("Unknown host: " + name);
-        }
     }
 
     public String getUsername() {

@@ -22,7 +22,6 @@ import java.net.UnknownHostException;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -39,7 +38,6 @@ import org.jboss.arquillian.core.api.annotation.Inject;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.descriptor.api.Descriptor;
-import org.jboss.util.NotImplementedException;
 import org.xnio.IoUtils;
 
 /**
@@ -154,12 +152,12 @@ public abstract class CommonDeployableContainer<T extends CommonContainerConfigu
 
     @Override
     public void deploy(Descriptor descriptor) throws DeploymentException {
-        throw new NotImplementedException();
+        throw new UnsupportedOperationException("not implemented");
     }
 
     @Override
     public void undeploy(Descriptor descriptor) throws DeploymentException {
-        throw new NotImplementedException();
+        throw new UnsupportedOperationException("not implemented");
     }
 
     private void safeCloseClient() {

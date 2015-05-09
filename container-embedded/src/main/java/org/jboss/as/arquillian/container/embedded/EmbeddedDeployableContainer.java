@@ -18,9 +18,9 @@ package org.jboss.as.arquillian.container.embedded;
 
 import org.jboss.arquillian.container.spi.client.container.LifecycleException;
 import org.jboss.as.arquillian.container.CommonDeployableContainer;
-import org.jboss.as.embedded.EmbeddedServerFactory;
-import org.jboss.as.embedded.EmbeddedStandAloneServerFactory;
-import org.jboss.as.embedded.StandaloneServer;
+import org.wildfly.core.embedded.EmbeddedServerFactory;
+import org.wildfly.core.embedded.EmbeddedStandAloneServerFactory;
+import org.wildfly.core.embedded.StandaloneServer;
 
 /**
  * {@link org.jboss.arquillian.container.spi.client.container.DeployableContainer} implementation to bootstrap JBoss Logging (installing the LogManager if possible), use the JBoss
@@ -44,7 +44,7 @@ public final class EmbeddedDeployableContainer extends CommonDeployableContainer
         if (config.getCleanServerBaseDir() != null) {
             SecurityActions.setSystemProperty(EmbeddedStandAloneServerFactory.JBOSS_EMBEDDED_ROOT, config.getCleanServerBaseDir());
         }
-        server = EmbeddedServerFactory.create(config.getJbossHome(), config.getModulePath(), config.getBundlePath());
+        server = EmbeddedServerFactory.create(config.getJbossHome(), config.getModulePath());
     }
 
     @Override

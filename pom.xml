@@ -40,7 +40,8 @@
 
     <properties>
         <version.com.google.guava>16.0.1</version.com.google.guava>
-        <version.org.wildfly.core>1.0.0.Alpha17</version.org.wildfly.core>
+        <version.org.wildfly.core>1.0.0.CR2</version.org.wildfly.core>
+        <version.org.wildfly.core.full>9.0.0.CR1</version.org.wildfly.core.full>
         <version.junit>4.12</version.junit>
         <version.org.jboss.arquillian.core>1.1.8.Final</version.org.jboss.arquillian.core>
         <version.org.jboss.shrinkwrap.descriptors>2.0.0-alpha-6</version.org.jboss.shrinkwrap.descriptors>
@@ -48,7 +49,9 @@
         <version.org.testng>6.8.8</version.org.testng>
         <version.org.jboss.spec.javax.servlet.jboss-servlet-api_3.1_spec>1.0.0.Final</version.org.jboss.spec.javax.servlet.jboss-servlet-api_3.1_spec>
         <version.org.jboss.spec.javax.ejb.jboss-ejb-api_3.2_spec>1.0.0.Final</version.org.jboss.spec.javax.ejb.jboss-ejb-api_3.2_spec>
+        <version.javax.enterprise>1.2</version.javax.enterprise>
         <version.org.wildfly.checkstyle-config>1.0.3.Final</version.org.wildfly.checkstyle-config>
+        <version.org.wildfly.build-tools>1.0.0.Alpha8</version.org.wildfly.build-tools>
     </properties>
 
     <build>
@@ -82,6 +85,11 @@
                         </execution>
                     </executions>
                 </plugin>
+                <plugin>
+                    <groupId>org.wildfly.build</groupId>
+                    <artifactId>wildfly-server-provisioning-maven-plugin</artifactId>
+                    <version>${version.org.wildfly.build-tools}</version>
+                </plugin>
             </plugins>
         </pluginManagement>
         <plugins>
@@ -93,7 +101,7 @@
     </build>
     <modules>
         <module>common</module>
-        <!-- <module>container-embedded</module>-->
+        <module>container-embedded</module>
         <module>container-managed</module>
         <module>container-remote</module>
         <module>protocol-jmx</module>
@@ -107,7 +115,6 @@
     <packaging>pom</packaging>
     <dependencyManagement>
         <dependencies>
-
             <dependency>
                 <groupId>org.wildfly.arquillian</groupId>
                 <artifactId>wildfly-arquillian-common</artifactId>
@@ -184,15 +191,18 @@
                 <version>${version.org.wildfly.core}</version>
             </dependency>
 
-            <!-- Needed until issues with a thin WildFly server pulling down
-                 artifacts from a remote repo are resolved. This ensures
-                 the needed WildFly Core artifacts are available locally
-                 when we provision a server for the testsuite -->
+            <!-- workaround to make sure we dont use jboss-common-core -->
             <dependency>
                 <groupId>org.wildfly.core</groupId>
-                <artifactId>wildfly-core-feature-pack</artifactId>
-                <type>pom</type>
+                <artifactId>wildfly-domain-management</artifactId>
                 <version>${version.org.wildfly.core}</version>
+                <scope>provided</scope>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.jboss</groupId>
+                        <artifactId>jboss-common-core</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
@@ -200,19 +210,6 @@
                 <artifactId>junit</artifactId>
                 <scope>test</scope>
                 <version>${version.junit}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.wildfly.core</groupId>
-                <artifactId>wildfly-core-build</artifactId>
-                <version>${version.org.wildfly.core}</version>
-                <type>zip</type>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
 
             <dependency>
@@ -373,12 +370,20 @@
                 <groupId>org.jboss.spec.javax.servlet</groupId>
                 <artifactId>jboss-servlet-api_3.1_spec</artifactId>
                 <version>${version.org.jboss.spec.javax.servlet.jboss-servlet-api_3.1_spec}</version>
+                <scope>test</scope>
             </dependency>
 
             <dependency>
                 <groupId>org.jboss.spec.javax.ejb</groupId>
                 <artifactId>jboss-ejb-api_3.2_spec</artifactId>
                 <version>${version.org.jboss.spec.javax.ejb.jboss-ejb-api_3.2_spec}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>javax.enterprise</groupId>
+                <artifactId>cdi-api</artifactId>
+                <version>${version.javax.enterprise}</version>
+                <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.testng</groupId>
@@ -399,28 +404,6 @@
             <artifactId>junit</artifactId>
             <scope>test</scope>
         </dependency>
-        <!-- Needed until issues with a thin WildFly server pulling down
-             artifacts from a remote repo are resolved. This ensures
-             the needed WildFly Core artifacts are available locally
-             when we provision a server for the testsuite -->
-        <dependency>
-            <groupId>org.wildfly.core</groupId>
-            <artifactId>wildfly-core-feature-pack</artifactId>
-            <type>pom</type>
-        </dependency>
-        <dependency>
-            <groupId>org.wildfly.core</groupId>
-            <artifactId>wildfly-core-build</artifactId>
-            <type>zip</type>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-
     </dependencies>
 
 </project>

@@ -16,12 +16,13 @@
  */
 package org.jboss.as.arquillian.container.embedded;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
+import java.io.File;
 
 import org.jboss.arquillian.container.spi.ConfigurationException;
 import org.junit.Test;
-
-import java.io.File;
 
 /**
  * @author <a href="mailto:tommy.tynja@diabol.se">Tommy Tynj&auml;</a>
@@ -44,14 +45,12 @@ public class EmbeddedContainerConfigurationTestCase {
     @Test
     public void shouldNotValidateBundlePathIfNonExisting() {
         final EmbeddedContainerConfiguration conf = new EmbeddedContainerConfiguration();
-        conf.setBundlePath(null);
         validate(conf);
     }
 
     @Test
     public void shouldValidateBundlePathIfExisting() {
         final EmbeddedContainerConfiguration conf = new EmbeddedContainerConfiguration();
-        conf.setBundlePath("/");
         validate(conf);
     }
 
@@ -66,7 +65,6 @@ public class EmbeddedContainerConfigurationTestCase {
     public void shouldValidateThatModulePathAndBundlePathExists() {
         final EmbeddedContainerConfiguration conf = new EmbeddedContainerConfiguration();
         createDir(conf.getModulePath());
-        createDir(conf.getBundlePath());
         validate(conf);
     }
 

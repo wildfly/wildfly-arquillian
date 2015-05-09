@@ -41,9 +41,8 @@ import org.jboss.arquillian.container.spi.client.container.LifecycleException;
 import org.jboss.as.arquillian.container.domain.CommonDomainDeployableContainer;
 import org.jboss.as.arquillian.container.domain.Domain;
 import org.jboss.as.arquillian.container.domain.Domain.Server;
-import org.jboss.as.server.logging.ServerLogger;
-import org.jboss.dmr.ModelNode;
 import org.jboss.as.arquillian.container.domain.ManagementClient;
+import org.jboss.dmr.ModelNode;
 import org.wildfly.core.launcher.DomainCommandBuilder;
 import org.wildfly.core.launcher.Launcher;
 
@@ -299,10 +298,10 @@ public class ManagedDomainDeployableContainer extends CommonDomainDeployableCont
         }
 
         if (Files.notExists(cleanBase)) {
-            throw ServerLogger.ROOT_LOGGER.serverBaseDirectoryDoesNotExist(cleanBase.toFile());
+            throw serverBaseDirectoryDoesNotExist(cleanBase.toFile());
         }
         if (!Files.isDirectory(cleanBase)) {
-            throw ServerLogger.ROOT_LOGGER.serverBaseDirectoryIsNotADirectory(cleanBase.toFile());
+            throw serverBaseDirectoryIsNotADirectory(cleanBase.toFile());
         }
 
         final Path currentConfigDir = commandBuilder.getConfigurationDirectory();
@@ -315,6 +314,14 @@ public class ManagedDomainDeployableContainer extends CommonDomainDeployableCont
         }
         commandBuilder.setBaseDirectory(cleanBase);
         commandBuilder.setConfigurationDirectory(configDir);
+    }
+
+    static IllegalStateException serverBaseDirectoryDoesNotExist(File f) {
+        return new IllegalStateException(String.format("Server base directory does not exist: %s", f));
+    }
+
+    static IllegalStateException serverBaseDirectoryIsNotADirectory(File file) {
+        return new IllegalStateException(String.format("Server base directory is not a directory: %s", file));
     }
 
     private static void copyDir(final Path from, final Path to) throws IOException {

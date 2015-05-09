@@ -36,7 +36,6 @@ import org.jboss.as.arquillian.container.domain.Domain.ServerGroup;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.descriptor.api.Descriptor;
-import org.jboss.util.NotImplementedException;
 
 /**
  * @author <a href="mailto:aslak@redhat.com">Aslak Knutsen</a>
@@ -117,12 +116,12 @@ public class ServerGroupContainer implements DeployableContainer<EmptyConfigurat
 
     @Override
     public void deploy(Descriptor descriptor) throws DeploymentException {
-        throw new NotImplementedException();
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public void undeploy(Descriptor descriptor) throws DeploymentException {
-        throw new NotImplementedException();
+        throw new UnsupportedOperationException();
     }
 
     private void waitForGroupMembers(boolean shouldBeStarted) {

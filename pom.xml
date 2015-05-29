@@ -40,7 +40,7 @@
 
     <properties>
         <version.com.google.guava>16.0.1</version.com.google.guava>
-        <version.org.wildfly.core>1.0.0.CR2</version.org.wildfly.core>
+        <version.org.wildfly.core.arq>1.0.0.CR2</version.org.wildfly.core.arq>
         <version.org.wildfly.core.full>9.0.0.CR1</version.org.wildfly.core.full>
         <version.junit>4.12</version.junit>
         <version.org.jboss.arquillian.core>1.1.8.Final</version.org.jboss.arquillian.core>
@@ -188,14 +188,14 @@
                 <artifactId>wildfly-core-parent</artifactId>
                 <scope>import</scope>
                 <type>pom</type>
-                <version>${version.org.wildfly.core}</version>
+                <version>${version.org.wildfly.core.arq}</version>
             </dependency>
 
             <!-- workaround to make sure we dont use jboss-common-core -->
             <dependency>
                 <groupId>org.wildfly.core</groupId>
                 <artifactId>wildfly-domain-management</artifactId>
-                <version>${version.org.wildfly.core}</version>
+                <version>${version.org.wildfly.core.arq}</version>
                 <scope>provided</scope>
                 <exclusions>
                     <exclusion>
@@ -215,7 +215,7 @@
             <dependency>
                 <groupId>org.wildfly.core</groupId>
                 <artifactId>wildfly-launcher</artifactId>
-                <version>${version.org.wildfly.core}</version>
+                <version>${version.org.wildfly.core.arq}</version>
             </dependency>
 
             <dependency>

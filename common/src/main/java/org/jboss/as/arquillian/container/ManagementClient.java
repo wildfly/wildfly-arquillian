@@ -140,7 +140,8 @@ public class ManagementClient implements AutoCloseable, Closeable {
                     undertowSubsystem = readResource(address);
                 }
             } catch (Exception e) {
-                throw new RuntimeException(e);
+                logger.warn("Unable to retrieve Undertow configuration from server");
+                undertowSubsystem = new ModelNode();
             }
             if (undertowSubsystem.isDefined()) {
                 List<Property> vhosts = undertowSubsystem.get("server").asPropertyList();
@@ -157,25 +158,27 @@ public class ManagementClient implements AutoCloseable, Closeable {
     }
 
     public ProtocolMetaData getProtocolMetaData(String deploymentName) {
-        URI webURI = getWebUri();
-
         ProtocolMetaData metaData = new ProtocolMetaData();
         metaData.addContext(new JMXContext(getConnection()));
-        HTTPContext context = new HTTPContext(webURI.getHost(), webURI.getPort());
-        metaData.addContext(context);
-        try {
-            ModelNode address = new ModelNode();
-            address.add(DEPLOYMENT, deploymentName);
-            ModelNode deploymentNode = readResource(address);
 
-            if (isWebArchive(deploymentName)) {
-                extractWebArchiveContexts(context, deploymentNode);
-            } else if (isEnterpriseArchive(deploymentName)) {
-                extractEnterpriseArchiveContexts(context, deploymentNode);
+        URI webURI = getWebUri();
+        if (webURI != null) {
+            HTTPContext context = new HTTPContext(webURI.getHost(), webURI.getPort());
+            metaData.addContext(context);
+            try {
+                ModelNode address = new ModelNode();
+                address.add(DEPLOYMENT, deploymentName);
+                ModelNode deploymentNode = readResource(address);
+
+                if (isWebArchive(deploymentName)) {
+                    extractWebArchiveContexts(context, deploymentNode);
+                } else if (isEnterpriseArchive(deploymentName)) {
+                    extractEnterpriseArchiveContexts(context, deploymentNode);
+                }
+
+            } catch (Exception e) {
+                throw new RuntimeException(e);
             }
-
-        } catch (Exception e) {
-            throw new RuntimeException(e);
         }
         return metaData;
     }

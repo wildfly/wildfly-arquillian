@@ -37,7 +37,6 @@ import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
-
 import javax.management.Attribute;
 import javax.management.AttributeList;
 import javax.management.AttributeNotFoundException;
@@ -98,12 +97,12 @@ public class ManagementClient implements AutoCloseable, Closeable {
     private URI webUri;
     private URI ejbUri;
 
-    // cache static RootNode
-    //private ModelNode rootNode = null;
     private ModelNode undertowSubsystem = null;
 
     private MBeanServerConnection connection;
     private JMXConnector connector;
+    private static final ModelNode UNDERTOW_SUBSYSTEM_ADDRESS = new ModelNode().add("subsystem", UNDERTOW);
+    private boolean undertowSubsystemPresent;
 
     public ManagementClient(ModelControllerClient client, final String mgmtAddress, final int managementPort, final String protocol) {
         if (client == null) {
@@ -123,6 +122,18 @@ public class ManagementClient implements AutoCloseable, Closeable {
         return client;
     }
 
+    protected void init(){
+        try {
+            undertowSubsystemPresent = undertowSubsystemPresent();
+            if (undertowSubsystemPresent) {
+                undertowSubsystem = readResource(UNDERTOW_SUBSYSTEM_ADDRESS);
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Could not init arquillian protocol" ,e);
+        }
+
+    }
+
     /**
      * @return The base URI or the web susbsystem. Usually http://localhost:8080
      */
@@ -133,16 +144,7 @@ public class ManagementClient implements AutoCloseable, Closeable {
             } catch (URISyntaxException e) {
                 throw new RuntimeException(e);
             }
-            try {
-                if (undertowSubsystem == null) {
-                    ModelNode address = new ModelNode();
-                    address.add("subsystem", UNDERTOW);
-                    undertowSubsystem = readResource(address);
-                }
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-            if (undertowSubsystem.isDefined()) {
+            if (undertowSubsystem != null) {
                 List<Property> vhosts = undertowSubsystem.get("server").asPropertyList();
                 ModelNode socketBinding = new ModelNode();
                 if (!vhosts.isEmpty()) {//if empty no virtual hosts defined
@@ -157,25 +159,27 @@ public class ManagementClient implements AutoCloseable, Closeable {
     }
 
     public ProtocolMetaData getProtocolMetaData(String deploymentName) {
-        URI webURI = getWebUri();
-
         ProtocolMetaData metaData = new ProtocolMetaData();
         metaData.addContext(new JMXContext(getConnection()));
-        HTTPContext context = new HTTPContext(webURI.getHost(), webURI.getPort());
-        metaData.addContext(context);
-        try {
-            ModelNode address = new ModelNode();
-            address.add(DEPLOYMENT, deploymentName);
-            ModelNode deploymentNode = readResource(address);
+        if (undertowSubsystemPresent) {
+            URI webURI = getWebUri();
+            HTTPContext context = new HTTPContext(webURI.getHost(), webURI.getPort());
+            metaData.addContext(context);
 
-            if (isWebArchive(deploymentName)) {
-                extractWebArchiveContexts(context, deploymentNode);
-            } else if (isEnterpriseArchive(deploymentName)) {
-                extractEnterpriseArchiveContexts(context, deploymentNode);
+            try {
+                ModelNode address = new ModelNode();
+                address.add(DEPLOYMENT, deploymentName);
+                ModelNode deploymentNode = readResource(address);
+
+                if (isWebArchive(deploymentName)) {
+                    extractWebArchiveContexts(context, deploymentNode);
+                } else if (isEnterpriseArchive(deploymentName)) {
+                    extractEnterpriseArchiveContexts(context, deploymentNode);
+                }
+
+            } catch (Exception e) {
+                throw new RuntimeException(e);
             }
-
-        } catch (Exception e) {
-            throw new RuntimeException(e);
         }
         return metaData;
     }
@@ -316,6 +320,13 @@ public class ManagementClient implements AutoCloseable, Closeable {
         operation.get(OP_ADDR).set(address);
 
         return executeForResult(operation);
+    }
+    private boolean undertowSubsystemPresent() throws IOException {
+        final ModelNode operation = new ModelNode();
+        operation.get(OP).set(READ_RESOURCE_OPERATION);
+        operation.get(OP_ADDR).set(UNDERTOW_SUBSYSTEM_ADDRESS);
+        final ModelNode result = client.execute(operation);
+        return SUCCESS.equals(result.get(OUTCOME).asString());
     }
 
     private ModelNode executeForResult(final ModelNode operation) throws Exception {

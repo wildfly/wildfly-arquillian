@@ -108,6 +108,7 @@ public abstract class CommonDeployableContainer<T extends CommonContainerConfigu
 
         try {
             startInternal();
+            managementClient.get().init();
         } catch (LifecycleException e) {
             safeCloseClient();
             throw e;

@@ -66,6 +66,7 @@ import org.jboss.arquillian.container.spi.client.protocol.metadata.JMXContext;
 import org.jboss.arquillian.container.spi.client.protocol.metadata.ProtocolMetaData;
 import org.jboss.arquillian.container.spi.client.protocol.metadata.Servlet;
 import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.logging.Logger;
@@ -74,6 +75,9 @@ import org.jboss.logging.Logger;
  * A helper class to join management related operations, like extract sub system ip/port (web/jmx)
  * and deployment introspection.
  *
+ * <p>
+ * Instances of this type are not thread-safe.
+ * </p>
  * @author <a href="aslak@redhat.com">Aslak Knutsen</a>
  */
 public class ManagementClient implements AutoCloseable, Closeable {
@@ -102,7 +106,7 @@ public class ManagementClient implements AutoCloseable, Closeable {
     private MBeanServerConnection connection;
     private JMXConnector connector;
     private static final ModelNode UNDERTOW_SUBSYSTEM_ADDRESS = new ModelNode().add("subsystem", UNDERTOW);
-    private boolean undertowSubsystemPresent;
+    private boolean undertowSubsystemPresent = false;
 
     public ManagementClient(ModelControllerClient client, final String mgmtAddress, final int managementPort, final String protocol) {
         if (client == null) {
@@ -122,11 +126,17 @@ public class ManagementClient implements AutoCloseable, Closeable {
         return client;
     }
 
+    /**
+     * Checks whether or not the Undertow subsystem is present and sets the internal state if it is. An invocation of
+     * this should happen after the server has been started.
+     */
     protected void init(){
         try {
-            undertowSubsystemPresent = undertowSubsystemPresent();
+            final ModelNode op = Operations.createReadResourceOperation(UNDERTOW_SUBSYSTEM_ADDRESS, true);
+            final ModelNode result = client.execute(op);
+            undertowSubsystemPresent = Operations.isSuccessfulOutcome(result);
             if (undertowSubsystemPresent) {
-                undertowSubsystem = readResource(UNDERTOW_SUBSYSTEM_ADDRESS);
+                undertowSubsystem = Operations.readResult(result);
             }
         } catch (Exception e) {
             throw new RuntimeException("Could not init arquillian protocol" ,e);
@@ -320,13 +330,6 @@ public class ManagementClient implements AutoCloseable, Closeable {
         operation.get(OP_ADDR).set(address);
 
         return executeForResult(operation);
-    }
-    private boolean undertowSubsystemPresent() throws IOException {
-        final ModelNode operation = new ModelNode();
-        operation.get(OP).set(READ_RESOURCE_OPERATION);
-        operation.get(OP_ADDR).set(UNDERTOW_SUBSYSTEM_ADDRESS);
-        final ModelNode result = client.execute(operation);
-        return SUCCESS.equals(result.get(OUTCOME).asString());
     }
 
     private ModelNode executeForResult(final ModelNode operation) throws Exception {

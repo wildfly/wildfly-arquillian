@@ -149,10 +149,19 @@ public class ManagementClient implements AutoCloseable, Closeable {
      */
     public URI getWebUri() {
         if (webUri == null) {
+            // fall back to default typical setting if we are unable to read it from undertow subsystem
             try {
                 webUri = new URI("http://localhost:8080");
             } catch (URISyntaxException e) {
                 throw new RuntimeException(e);
+            }
+
+            // try reading the URI from the undertow subsystem, if possible
+            if(undertowSubsystem == null) {
+                try {
+                    init();
+                } catch(Exception e) {
+                }
             }
             if (undertowSubsystem != null) {
                 List<Property> vhosts = undertowSubsystem.get("server").asPropertyList();

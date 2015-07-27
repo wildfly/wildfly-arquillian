@@ -36,6 +36,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import javax.management.Attribute;
 import javax.management.AttributeList;
@@ -92,12 +93,14 @@ public class ManagementClient implements AutoCloseable, Closeable {
 
     private static final String POSTFIX_WEB = ".war";
     private static final String POSTFIX_EAR = ".ear";
+    private static final ModelNode UNDERTOW_SUBSYSTEM_ADDRESS = new ModelNode().add("subsystem", UNDERTOW);
 
     private final String mgmtAddress;
     private final int mgmtPort;
     private final String mgmtProtocol;
     private final ModelControllerClient client;
 
+    private boolean initialized = false;
     private URI webUri;
     private URI ejbUri;
 
@@ -105,7 +108,6 @@ public class ManagementClient implements AutoCloseable, Closeable {
 
     private MBeanServerConnection connection;
     private JMXConnector connector;
-    private static final ModelNode UNDERTOW_SUBSYSTEM_ADDRESS = new ModelNode().add("subsystem", UNDERTOW);
     private boolean undertowSubsystemPresent = false;
 
     public ManagementClient(ModelControllerClient client, final String mgmtAddress, final int managementPort, final String protocol) {
@@ -130,45 +132,54 @@ public class ManagementClient implements AutoCloseable, Closeable {
      * Checks whether or not the Undertow subsystem is present and sets the internal state if it is. An invocation of
      * this should happen after the server has been started.
      */
-    protected void init(){
-        try {
-            final ModelNode op = Operations.createReadResourceOperation(UNDERTOW_SUBSYSTEM_ADDRESS, true);
-            final ModelNode result = client.execute(op);
-            undertowSubsystemPresent = Operations.isSuccessfulOutcome(result);
-            if (undertowSubsystemPresent) {
-                undertowSubsystem = Operations.readResult(result);
+    private void init(){
+        if (!initialized) {
+            initialized = true;
+            try {
+                final ModelNode op = Operations.createReadResourceOperation(UNDERTOW_SUBSYSTEM_ADDRESS, true);
+                final ModelNode result = client.execute(op);
+                undertowSubsystemPresent = Operations.isSuccessfulOutcome(result);
+                if (undertowSubsystemPresent) {
+                    undertowSubsystem = Operations.readResult(result);
+                }
+                URI webUri;
+                try {
+                    webUri = new URI("http://localhost:8080");
+                } catch (URISyntaxException e) {
+                    throw new RuntimeException(e);
+                }
+                if (undertowSubsystem != null && undertowSubsystem.hasDefined("server")) {
+                    List<Property> vhosts = undertowSubsystem.get("server").asPropertyList();
+                    ModelNode socketBinding = new ModelNode();
+                    if (!vhosts.isEmpty()) {//if empty no virtual hosts defined
+                        socketBinding = vhosts.get(0).getValue().get("http-listener", "default").get("socket-binding");
+                    }
+                    if (socketBinding.isDefined()) {
+                        webUri = getBinding("http", socketBinding.asString());
+                    }
+                }
+                this.webUri = webUri;
+                try {
+                    ejbUri = new URI("http-remoting", webUri.getUserInfo(), webUri.getHost(), webUri.getPort(), null, null, null);
+                } catch (URISyntaxException e) {
+                    throw new RuntimeException(e);
+                }
+            } catch (Exception e) {
+                throw new RuntimeException("Could not init arquillian protocol", e);
             }
-        } catch (Exception e) {
-            throw new RuntimeException("Could not init arquillian protocol" ,e);
         }
-
     }
 
     /**
      * @return The base URI or the web susbsystem. Usually http://localhost:8080
      */
     public URI getWebUri() {
-        if (webUri == null) {
-            try {
-                webUri = new URI("http://localhost:8080");
-            } catch (URISyntaxException e) {
-                throw new RuntimeException(e);
-            }
-            if (undertowSubsystem != null) {
-                List<Property> vhosts = undertowSubsystem.get("server").asPropertyList();
-                ModelNode socketBinding = new ModelNode();
-                if (!vhosts.isEmpty()) {//if empty no virtual hosts defined
-                    socketBinding = vhosts.get(0).getValue().get("http-listener", "default").get("socket-binding");
-                }
-                if (socketBinding.isDefined()) {
-                    webUri = getBinding("http", socketBinding.asString());
-                }
-            }
-        }
+        init();
         return webUri;
     }
 
     public ProtocolMetaData getProtocolMetaData(String deploymentName) {
+        init();
         ProtocolMetaData metaData = new ProtocolMetaData();
         metaData.addContext(new JMXContext(getConnection()));
         if (undertowSubsystemPresent) {
@@ -348,15 +359,16 @@ public class ManagementClient implements AutoCloseable, Closeable {
     }
 
     private MBeanServerConnection getConnection() {
+        MBeanServerConnection connection = this.connection;
         if (connection == null) {
             try {
-                final HashMap<String, Object> env = new HashMap<String, Object>();
-                if (Authentication.username != null && Authentication.username.length() > 0) {
+                final Map<String, Object> env = new HashMap<>();
+                if (Authentication.username != null && !Authentication.username.isEmpty()) {
                     // Only set this is there is a username as it disabled local authentication.
                     env.put(CallbackHandler.class.getName(), Authentication.getCallbackHandler());
                 }
-                connector = JMXConnectorFactory.connect(getRemoteJMXURL(), env);
-                connection = new MBeanConnectionProxy(connector.getMBeanServerConnection());
+                final JMXConnector connector = this.connector = JMXConnectorFactory.connect(getRemoteJMXURL(), env);
+                connection = this.connection = new MBeanConnectionProxy(connector.getMBeanServerConnection());
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -391,14 +403,7 @@ public class ManagementClient implements AutoCloseable, Closeable {
     }
 
     public URI getRemoteEjbURL() {
-        if (ejbUri == null) {
-            URI webUri = getWebUri();
-            try {
-                ejbUri = new URI("http-remoting", webUri.getUserInfo(), webUri.getHost(), webUri.getPort(),null,null,null);
-            } catch (URISyntaxException e) {
-                throw new RuntimeException(e);
-            }
-        }
+        init();
         return ejbUri;
     }
 
@@ -685,16 +690,17 @@ public class ManagementClient implements AutoCloseable, Closeable {
                 this.connection.getDefaultDomain();
                 return true;
             } catch (IOException ioe) {
+                logger.debug("JMX connection error.", ioe);
             }
-            this.connection = this.getConnection();
+            this.connection = reconnect();
             return false;
         }
 
-        private MBeanServerConnection getConnection() {
+        private MBeanServerConnection reconnect() {
             try {
-                final HashMap<String, Object> env = new HashMap<String, Object>();
+                final Map<String, Object> env = new HashMap<>();
                 env.put(CallbackHandler.class.getName(), Authentication.getCallbackHandler());
-                connector = JMXConnectorFactory.connect(getRemoteJMXURL(), env);
+                final JMXConnector connector = ManagementClient.this.connector = JMXConnectorFactory.connect(getRemoteJMXURL(), env);
                 connection = connector.getMBeanServerConnection();
             } catch (IOException e) {
                 throw new RuntimeException(e);

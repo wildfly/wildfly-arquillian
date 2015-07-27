@@ -108,8 +108,6 @@ public abstract class CommonDeployableContainer<T extends CommonContainerConfigu
 
         try {
             startInternal();
-            // Initialize the internal state of the client after the server has been started
-            client.init();
         } catch (LifecycleException e) {
             safeCloseClient();
             throw e;

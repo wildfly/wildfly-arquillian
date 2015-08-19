@@ -235,8 +235,8 @@ public class ManagementClient {
 
     private boolean canReadResource() {
         try {
-            readResource(new ModelNode(), false, ROOT_RECURSIVE_DEPTH);
-            return true;
+            ModelNode rsp = client.execute(generateReadResourceOperation(new ModelNode(), false, ROOT_RECURSIVE_DEPTH));
+            return SUCCESS.equals(rsp.get(OUTCOME).asString());
         } catch (Exception e) {
             return false;
         }
@@ -412,7 +412,7 @@ public class ManagementClient {
         return readResource(address, includeRuntime, null);
     }
 
-    private ModelNode readResource(ModelNode address, boolean includeRuntime, Integer recursiveDepth) throws Exception {
+    private ModelNode generateReadResourceOperation(ModelNode address, boolean includeRuntime, Integer recursiveDepth) {
         final ModelNode operation = new ModelNode();
         operation.get(OP).set(READ_RESOURCE_OPERATION);
         if(recursiveDepth == null) {
@@ -426,7 +426,11 @@ public class ManagementClient {
         operation.get(INCLUDE_RUNTIME).set(includeRuntime);
         operation.get(PROXIES).set(true);
         operation.get(OP_ADDR).set(address);
+        return operation;
+    }
 
+    private ModelNode readResource(ModelNode address, boolean includeRuntime, Integer recursiveDepth) throws Exception {
+        final ModelNode operation = generateReadResourceOperation(address, includeRuntime, recursiveDepth);
         return executeForResult(operation);
     }
 

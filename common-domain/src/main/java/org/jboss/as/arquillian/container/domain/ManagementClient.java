@@ -230,12 +230,25 @@ public class ManagementClient {
     }
 
     public boolean isDomainInRunningState() {
+        return anyServerGroupAvailable() && canReadResource();
+    }
+
+    private boolean canReadResource() {
+        try {
+            readResource(new ModelNode(), false, ROOT_RECURSIVE_DEPTH);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    private boolean anyServerGroupAvailable() {
         try {
             // some random values to read in hopes the domain controller is up and running..
             ModelNode op = new ModelNode();
             op.get(OP).set(READ_CHILDREN_NAMES_OPERATION);
             op.get(OP_ADDR).setEmptyList();
-            op.get(CHILD_TYPE).set("server-group");
+            op.get(CHILD_TYPE).set(SERVER_GROUP);
             ModelNode rsp = client.execute(op);
 
             return SUCCESS.equals(rsp.get(OUTCOME).asString()) && rsp.get("result").asList().size() > 0;

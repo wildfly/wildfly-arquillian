@@ -43,7 +43,7 @@
         <version.org.wildfly.core>1.0.0.Final</version.org.wildfly.core>
         <version.org.wildfly.core.full>9.0.0.CR1</version.org.wildfly.core.full>
         <version.junit>4.12</version.junit>
-        <version.org.jboss.arquillian.core>1.1.8.Final</version.org.jboss.arquillian.core>
+        <version.org.jboss.arquillian.core>1.1.9.Final</version.org.jboss.arquillian.core>
         <version.org.jboss.shrinkwrap.descriptors>2.0.0-alpha-6</version.org.jboss.shrinkwrap.descriptors>
         <version.org.jboss.ejb-client>2.0.2.Final</version.org.jboss.ejb-client>
         <version.org.testng>6.8.8</version.org.testng>

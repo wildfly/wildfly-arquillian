@@ -62,8 +62,9 @@ public final class EmbeddedDeployableContainer extends CommonDeployableContainer
     }
 
     @Override
-    protected void stopInternal() throws LifecycleException {
+    protected void stopInternal(Integer timeout) throws LifecycleException {
         try {
+            // Timeout is ignored in the embeddable case.
             server.stop();
         } catch (Throwable e) {
             throw new LifecycleException("Could not invoke stop on: " + server, e);

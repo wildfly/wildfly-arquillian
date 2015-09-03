@@ -109,6 +109,7 @@ public class ManagementClient implements AutoCloseable, Closeable {
     private MBeanServerConnection connection;
     private JMXConnector connector;
     private boolean undertowSubsystemPresent = false;
+    private boolean closed = false;
 
     public ManagementClient(ModelControllerClient client, final String mgmtAddress, final int managementPort, final String protocol) {
         if (client == null) {
@@ -124,15 +125,26 @@ public class ManagementClient implements AutoCloseable, Closeable {
     // Public API -------------------------------------------------------------------------||
     //-------------------------------------------------------------------------------------||
 
+    /**
+     * Returns the client used to connect to the server.
+     *
+     * @return the client
+     *
+     * @throws IllegalStateException if this has been {@linkplain #close() closed}
+     */
     public ModelControllerClient getControllerClient() {
+        checkState();
         return client;
     }
 
     /**
      * Checks whether or not the Undertow subsystem is present and sets the internal state if it is. An invocation of
      * this should happen after the server has been started.
+     *
+     * @throws IllegalStateException if this has been {@linkplain #close() closed}
      */
-    private void init(){
+    private void init() {
+        checkState();
         if (!initialized) {
             initialized = true;
             try {
@@ -172,12 +184,21 @@ public class ManagementClient implements AutoCloseable, Closeable {
 
     /**
      * @return The base URI or the web susbsystem. Usually http://localhost:8080
+     *
+     * @throws IllegalStateException if this has been {@linkplain #close() closed}
      */
     public URI getWebUri() {
         init();
         return webUri;
     }
 
+    /**
+     * Gets the meta-data.
+     *
+     * @return the meta-data
+     *
+     * @throws IllegalStateException if this has been {@linkplain #close() closed}
+     */
     public ProtocolMetaData getProtocolMetaData(String deploymentName) {
         init();
         ProtocolMetaData metaData = new ProtocolMetaData();
@@ -205,7 +226,18 @@ public class ManagementClient implements AutoCloseable, Closeable {
         return metaData;
     }
 
+    /**
+     * Checks whether or not the server is running.
+     * <p>
+     * Note that if this client has been {@linkplain #close() closed} the state of the server cannot be checked.
+     * </p>
+     *
+     * @return {@code true} if the server is running, otherwise {@code false}
+     *
+     * @throws IllegalStateException if this has been {@linkplain #close() closed}
+     */
     public boolean isServerInRunningState() {
+        checkState();
         try {
             ModelNode op = new ModelNode();
             op.get(OP).set(READ_ATTRIBUTE_OPERATION);
@@ -223,18 +255,30 @@ public class ManagementClient implements AutoCloseable, Closeable {
         }
     }
 
+    /**
+     * Checks whether or not the client has been closed.
+     *
+     * @return {@code true} if the client has been closed otherwise {@code false}
+     */
+    public boolean isClosed() {
+        return closed;
+    }
+
     @Override
     public void close() {
-        try {
-            getControllerClient().close();
-        } catch (IOException e) {
-            throw new RuntimeException("Could not close connection", e);
-        } finally {
-            if (connector != null) {
-                try {
-                    connector.close();
-                } catch (IOException e) {
-                    throw new RuntimeException("Could not close JMX connection", e);
+        if (!closed) {
+            try {
+                client.close();
+                closed = true;
+            } catch (IOException e) {
+                throw new RuntimeException("Could not close connection", e);
+            } finally {
+                if (connector != null) {
+                    try {
+                        connector.close();
+                    } catch (IOException e) {
+                        throw new RuntimeException("Could not close JMX connection", e);
+                    }
                 }
             }
         }
@@ -344,6 +388,7 @@ public class ManagementClient implements AutoCloseable, Closeable {
     }
 
     private ModelNode executeForResult(final ModelNode operation) throws Exception {
+        checkState();
         final ModelNode result = client.execute(operation);
         checkSuccessful(result, operation);
         return result.get(RESULT);
@@ -402,9 +447,22 @@ public class ManagementClient implements AutoCloseable, Closeable {
         return mgmtProtocol;
     }
 
+    /**
+     * Returns the URI for EJB's.
+     *
+     * @return the resolved EJB URI
+     *
+     * @throws IllegalStateException if this has been {@linkplain #close() closed}
+     */
     public URI getRemoteEjbURL() {
         init();
         return ejbUri;
+    }
+
+    private void checkState() {
+        if (closed) {
+            throw new IllegalStateException("The client connection has been closed.");
+        }
     }
 
     //-------------------------------------------------------------------------------------||

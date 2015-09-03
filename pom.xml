@@ -40,18 +40,20 @@
 
     <properties>
         <version.com.google.guava>16.0.1</version.com.google.guava>
-        <version.org.wildfly.core>1.0.0.Final</version.org.wildfly.core>
-        <version.org.wildfly.core.full>9.0.0.CR1</version.org.wildfly.core.full>
+        <version.org.wildfly.core>1.0.1.Final</version.org.wildfly.core>
+        <version.org.wildfly.core.full>9.0.1.Final</version.org.wildfly.core.full>
         <version.junit>4.12</version.junit>
         <version.org.jboss.arquillian.core>1.1.8.Final</version.org.jboss.arquillian.core>
-        <version.org.jboss.shrinkwrap.descriptors>2.0.0-alpha-6</version.org.jboss.shrinkwrap.descriptors>
+
+        <!-- keep this in sync with version that is used in arquillian -->
+        <version.org.jboss.shrinkwrap.descriptors>2.0.0-alpha-7</version.org.jboss.shrinkwrap.descriptors>
         <version.org.jboss.ejb-client>2.0.2.Final</version.org.jboss.ejb-client>
         <version.org.testng>6.8.8</version.org.testng>
         <version.org.jboss.spec.javax.servlet.jboss-servlet-api_3.1_spec>1.0.0.Final</version.org.jboss.spec.javax.servlet.jboss-servlet-api_3.1_spec>
         <version.org.jboss.spec.javax.ejb.jboss-ejb-api_3.2_spec>1.0.0.Final</version.org.jboss.spec.javax.ejb.jboss-ejb-api_3.2_spec>
         <version.javax.enterprise>1.2</version.javax.enterprise>
-        <version.org.wildfly.checkstyle-config>1.0.3.Final</version.org.wildfly.checkstyle-config>
-        <version.org.wildfly.build-tools>1.0.0.Alpha8</version.org.wildfly.build-tools>
+        <version.org.wildfly.checkstyle-config>1.0.4.Final</version.org.wildfly.checkstyle-config>
+        <version.org.wildfly.build-tools>1.0.0.Final</version.org.wildfly.build-tools>
     </properties>
 
     <build>

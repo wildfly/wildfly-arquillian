@@ -18,10 +18,9 @@ package org.jboss.as.arquillian.container;
 
 import static org.jboss.as.arquillian.container.Authentication.getCallbackHandler;
 
+import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.Properties;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -36,6 +35,7 @@ import org.jboss.arquillian.core.api.InstanceProducer;
 import org.jboss.arquillian.core.api.annotation.ApplicationScoped;
 import org.jboss.arquillian.core.api.annotation.Inject;
 import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.descriptor.api.Descriptor;
 import org.xnio.IoUtils;
@@ -63,6 +63,8 @@ public abstract class CommonDeployableContainer<T extends CommonContainerConfigu
     @Inject
     @ApplicationScoped
     private InstanceProducer<Context> jndiContext;
+
+    private ContainerDescription containerDescription = null;
 
     @Override
     public ProtocolDescription getDefaultProtocol() {
@@ -127,6 +129,27 @@ public abstract class CommonDeployableContainer<T extends CommonContainerConfigu
 
     protected abstract void stopInternal() throws LifecycleException;
 
+    /**
+     * Returns a description for the running container. If the container has not been started {@code null} will be
+     * returned.
+     *
+     * @return the description for the running container or {@code null} if the container has not yet been started
+     */
+    public ContainerDescription getContainerDescription() {
+        if (containerDescription == null) {
+            try {
+                final ManagementClient client = getManagementClient();
+                // The management client should be set when the container is started
+                if (client == null) return null;
+                containerDescription = StandardContainerDescription.lookup(client);
+            } catch (IOException e) {
+                Logger.getLogger(getClass()).warn("Failed to lookup the container description.", e);
+                containerDescription = StandardContainerDescription.NULL_DESCRIPTION;
+            }
+        }
+        return containerDescription;
+    }
+
     protected T getContainerConfiguration() {
         return containerConfig;
     }
@@ -164,8 +187,7 @@ public abstract class CommonDeployableContainer<T extends CommonContainerConfigu
         try {
             IoUtils.safeClose(getManagementClient());
         } catch (final Exception e) {
-            Logger.getLogger(this.getClass().getName()).log(Level.WARNING,
-                "Caught exception closing ModelControllerClient", e);
+            Logger.getLogger(getClass()).warn("Caught exception closing ModelControllerClient", e);
         }
     }
 }

@@ -30,12 +30,12 @@ import org.jboss.arquillian.test.spi.enricher.resource.ResourceProvider;
 import org.jboss.as.arquillian.api.WildFlyContainerController;
 
 /**
- * WildFlyClientContainerControllerProvider
+ * ResourceProvider for WildFlyContainerController instances for injections running in container.
  *
  * @author Radoslav Husar
  * @version Jan 2015
  */
-public class WildFlyClientContainerControllerProvider implements ResourceProvider {
+public class InContainerWildFlyContainerControllerProvider implements ResourceProvider {
 
     @Inject
     private Instance<WildFlyContainerController> controller;
@@ -49,7 +49,7 @@ public class WildFlyClientContainerControllerProvider implements ResourceProvide
     }
 
     /**
-     * @see org.jboss.arquillian.test.spi.enricher.resource.ResourceProvider#canProvide(Class)
+     * @see org.jboss.arquillian.test.spi.enricher.resource.ResourceProvider#canProvide(java.lang.Class)
      */
     @Override
     public boolean canProvide(Class<?> type) {

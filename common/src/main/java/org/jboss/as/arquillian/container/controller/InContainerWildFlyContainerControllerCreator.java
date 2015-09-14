@@ -21,38 +21,33 @@
  */
 package org.jboss.as.arquillian.container.controller;
 
-import java.lang.annotation.Annotation;
-
+import org.jboss.arquillian.core.api.Injector;
 import org.jboss.arquillian.core.api.Instance;
+import org.jboss.arquillian.core.api.InstanceProducer;
+import org.jboss.arquillian.core.api.annotation.ApplicationScoped;
 import org.jboss.arquillian.core.api.annotation.Inject;
-import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.arquillian.test.spi.enricher.resource.ResourceProvider;
+import org.jboss.arquillian.core.api.annotation.Observes;
+import org.jboss.arquillian.test.spi.event.suite.BeforeSuite;
 import org.jboss.as.arquillian.api.WildFlyContainerController;
 
 /**
- * WildFlyContainerContainerControllerProvider
+ * Produces instances of WildFlyContainerController when running in container.
  *
  * @author Radoslav Husar
  * @version Jan 2015
  */
-public class WildFlyContainerContainerControllerProvider implements ResourceProvider {
+public class InContainerWildFlyContainerControllerCreator {
 
     @Inject
-    private Instance<WildFlyContainerController> controller;
+    @ApplicationScoped
+    private InstanceProducer<WildFlyContainerController> controller;
 
-    /**
-     * @see org.jboss.arquillian.test.spi.enricher.resource.ResourceProvider#lookup(org.jboss.arquillian.test.api.ArquillianResource, java.lang.annotation.Annotation...)
-     */
-    @Override
-    public Object lookup(ArquillianResource resource, Annotation... qualifiers) {
-        return controller.get();
-    }
+    @Inject
+    private Instance<Injector> injector;
 
-    /**
-     * @see org.jboss.arquillian.test.spi.enricher.resource.ResourceProvider#canProvide(java.lang.Class)
-     */
-    @Override
-    public boolean canProvide(Class<?> type) {
-        return type.isAssignableFrom(WildFlyContainerController.class);
+    @SuppressWarnings("UnusedParameters")
+    public void create(@Observes BeforeSuite event) {
+        controller.set(injector.get().inject(new InContainerWildFlyContainerController()));
     }
 }
+

@@ -32,12 +32,12 @@ import org.jboss.arquillian.core.api.annotation.Observes;
 import org.jboss.as.arquillian.api.WildFlyContainerController;
 
 /**
- * WildFlyClientContainerControllerCreator
+ * Produces instances of WildFlyContainerController when running as client.
  *
  * @author Radoslav Husar
  * @version Jan 2015
  */
-public class WildFlyClientContainerControllerCreator {
+public class ClientWildFlyContainerControllerCreator {
 
     @Inject
     @ApplicationScoped
@@ -48,7 +48,7 @@ public class WildFlyClientContainerControllerCreator {
 
     @SuppressWarnings("UnusedParameters")
     public void create(@Observes SetupContainers event) {
-        controller.set(injector.get().inject(new WildFlyClientContainerController()));
+        controller.set(injector.get().inject(new ClientWildFlyContainerController()));
     }
 }
 

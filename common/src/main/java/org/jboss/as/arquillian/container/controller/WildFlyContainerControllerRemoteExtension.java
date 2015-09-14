@@ -35,8 +35,8 @@ public class WildFlyContainerControllerRemoteExtension implements RemoteLoadable
     @Override
     public void register(ExtensionBuilder builder) {
         builder
-                .service(ResourceProvider.class, WildFlyContainerContainerControllerProvider.class)
-                .observer(WildFlyContainerContainerControllerCreator.class)
+                .service(ResourceProvider.class, InContainerWildFlyContainerControllerProvider.class)
+                .observer(InContainerWildFlyContainerControllerCreator.class)
         ;
     }
 }

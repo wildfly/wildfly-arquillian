@@ -34,14 +34,14 @@ import org.jboss.arquillian.container.test.impl.client.container.ClientContainer
 import org.jboss.as.arquillian.api.WildFlyContainerController;
 
 /**
- * WildFlyClientContainerController
+ * Implementation of {@link WildFlyContainerController} used from client.
  *
  * @author Radoslav Husar
  * @version Jan 2015
  */
-public class WildFlyClientContainerController extends ClientContainerController implements WildFlyContainerController {
+public class ClientWildFlyContainerController extends ClientContainerController implements WildFlyContainerController {
 
-    private final Logger log = Logger.getLogger(WildFlyClientContainerController.class.getName());
+    private final Logger log = Logger.getLogger(ClientWildFlyContainerController.class.getName());
 
     /**
      * @see org.jboss.arquillian.container.test.impl.client.container.ClientContainerController#stop(java.lang.String)

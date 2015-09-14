@@ -20,8 +20,8 @@ import org.jboss.arquillian.container.spi.client.container.DeploymentExceptionTr
 import org.jboss.arquillian.core.spi.LoadableExtension;
 import org.jboss.arquillian.test.spi.TestEnricher;
 import org.jboss.arquillian.test.spi.enricher.resource.ResourceProvider;
-import org.jboss.as.arquillian.container.controller.WildFlyClientContainerControllerCreator;
-import org.jboss.as.arquillian.container.controller.WildFlyClientContainerControllerProvider;
+import org.jboss.as.arquillian.container.controller.ClientWildFlyContainerControllerCreator;
+import org.jboss.as.arquillian.container.controller.ClientWildFlyContainerControllerProvider;
 import org.jboss.as.arquillian.container.controller.WildFlyContainerLifecycleController;
 import org.jboss.as.arquillian.container.controller.command.WildFlyContainerCommandObserver;
 
@@ -44,8 +44,8 @@ public class CommonContainerExtension implements LoadableExtension {
 
         // WildFlyContainerController
         builder
-                .service(ResourceProvider.class, WildFlyClientContainerControllerProvider.class)
-                .observer(WildFlyClientContainerControllerCreator.class)
+                .service(ResourceProvider.class, ClientWildFlyContainerControllerProvider.class)
+                .observer(ClientWildFlyContainerControllerCreator.class)
                 .observer(WildFlyContainerCommandObserver.class)
                 .observer(WildFlyContainerLifecycleController.class)
         ;

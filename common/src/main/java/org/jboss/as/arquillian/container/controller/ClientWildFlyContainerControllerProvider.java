@@ -21,33 +21,38 @@
  */
 package org.jboss.as.arquillian.container.controller;
 
-import org.jboss.arquillian.core.api.Injector;
+import java.lang.annotation.Annotation;
+
 import org.jboss.arquillian.core.api.Instance;
-import org.jboss.arquillian.core.api.InstanceProducer;
-import org.jboss.arquillian.core.api.annotation.ApplicationScoped;
 import org.jboss.arquillian.core.api.annotation.Inject;
-import org.jboss.arquillian.core.api.annotation.Observes;
-import org.jboss.arquillian.test.spi.event.suite.BeforeSuite;
+import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.arquillian.test.spi.enricher.resource.ResourceProvider;
 import org.jboss.as.arquillian.api.WildFlyContainerController;
 
 /**
- * WildFlyContainerContainerControllerCreator
+ * ResourceProvider for WildFlyContainerController instances for injections running as client.
  *
  * @author Radoslav Husar
  * @version Jan 2015
  */
-public class WildFlyContainerContainerControllerCreator {
+public class ClientWildFlyContainerControllerProvider implements ResourceProvider {
 
     @Inject
-    @ApplicationScoped
-    private InstanceProducer<WildFlyContainerController> controller;
+    private Instance<WildFlyContainerController> controller;
 
-    @Inject
-    private Instance<Injector> injector;
+    /**
+     * @see org.jboss.arquillian.test.spi.enricher.resource.ResourceProvider#lookup(org.jboss.arquillian.test.api.ArquillianResource, java.lang.annotation.Annotation...)
+     */
+    @Override
+    public Object lookup(ArquillianResource resource, Annotation... qualifiers) {
+        return controller.get();
+    }
 
-    @SuppressWarnings("UnusedParameters")
-    public void create(@Observes BeforeSuite event) {
-        controller.set(injector.get().inject(new WildFlyContainerContainerController()));
+    /**
+     * @see org.jboss.arquillian.test.spi.enricher.resource.ResourceProvider#canProvide(Class)
+     */
+    @Override
+    public boolean canProvide(Class<?> type) {
+        return type.isAssignableFrom(WildFlyContainerController.class);
     }
 }
-

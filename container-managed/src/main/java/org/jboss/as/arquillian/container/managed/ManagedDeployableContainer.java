@@ -38,6 +38,7 @@ import java.util.regex.Pattern;
 
 import org.jboss.arquillian.container.spi.client.container.LifecycleException;
 import org.jboss.as.arquillian.container.CommonDeployableContainer;
+import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.as.server.logging.ServerLogger;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.core.launcher.Launcher;
@@ -63,6 +64,7 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
     private final Logger log = Logger.getLogger(ManagedDeployableContainer.class.getName());
     private Thread shutdownThread;
     private Process process;
+    private boolean timeoutSupported = false;
 
     @Override
     public Class<ManagedContainerConfiguration> getConfigurationClass() {
@@ -157,6 +159,7 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
                 destroyProcess(process);
                 throw new TimeoutException(String.format("Managed server was not started within [%d] s", getContainerConfiguration().getStartupTimeoutInSeconds()));
             }
+            timeoutSupported = isOperationAttributeSupported("shutdown", "timeout");
 
         } catch (Exception e) {
             throw new LifecycleException("Could not start container", e);
@@ -243,7 +246,7 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
 
 
     @Override
-    protected void stopInternal(Integer timeout) throws LifecycleException {
+    protected void stopInternal(final Integer timeout) throws LifecycleException {
         if (shutdownThread != null) {
             Runtime.getRuntime().removeShutdownHook(shutdownThread);
             shutdownThread = null;
@@ -268,10 +271,13 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
                 shutdown.start();
 
                 // AS7-6620: Create the shutdown operation and run it asynchronously and wait for process to terminate
-                ModelNode op = new ModelNode();
-                op.get("operation").set("shutdown");
-                if (timeout != null) {
-                    op.get("timeout").set(timeout);
+                final ModelNode op = Operations.createOperation("shutdown");
+                if (timeoutSupported) {
+                    if (timeout != null) {
+                        op.get("timeout").set(timeout);
+                    }
+                } else {
+                    log.severe(String.format("Timeout is not supported for %s on the shutdown operation.", getContainerDescription()));
                 }
                 getManagementClient().getControllerClient().executeAsync(op, null);
 

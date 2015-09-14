@@ -37,6 +37,11 @@ public interface WildFlyContainerController extends ContainerController {
      * Stops the given container with a timeout; corresponds to {@code :shutdown(timeout=Y)} management operation.
      * <strong>Only compatible with WildFly 9 and newer!</strong>
      *
+     * <p>
+     * Note that if the {@code stopTimeoutInSeconds} configuration property is set at a lower value than the timeout
+     * parameter the container process may be destroyed before the controlled shutdown finishes.
+     * </p>
+     *
      * @param containerQualifier container qualifier
      * @param timeout            timeout in seconds to wait during suspend phase
      */

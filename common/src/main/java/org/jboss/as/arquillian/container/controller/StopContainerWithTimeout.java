@@ -32,7 +32,7 @@ import org.jboss.arquillian.container.spi.event.ContainerControlEvent;
  */
 public class StopContainerWithTimeout extends ContainerControlEvent {
 
-    private int timeout;
+    private final int timeout;
 
     /**
      * @param container container to stop

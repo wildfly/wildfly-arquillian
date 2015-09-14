@@ -32,8 +32,8 @@ import org.jboss.arquillian.container.test.impl.client.deployment.command.Abstra
 public class StopWithTimeoutContainerCommand extends AbstractCommand<String> {
     private static final long serialVersionUID = 1L;
 
-    private String containerQualifier;
-    private int timeout;
+    private final String containerQualifier;
+    private final int timeout;
 
     public StopWithTimeoutContainerCommand(String containerQualifier, int timeout) {
         this.containerQualifier = containerQualifier;

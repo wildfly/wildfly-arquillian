@@ -34,6 +34,8 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -144,42 +146,49 @@ public class ManagementClient implements AutoCloseable, Closeable {
      * @throws IllegalStateException if this has been {@linkplain #close() closed}
      */
     private void init() {
-        checkState();
-        if (!initialized) {
-            initialized = true;
-            try {
-                final ModelNode op = Operations.createReadResourceOperation(UNDERTOW_SUBSYSTEM_ADDRESS, true);
-                final ModelNode result = client.execute(op);
-                undertowSubsystemPresent = Operations.isSuccessfulOutcome(result);
-                if (undertowSubsystemPresent) {
-                    undertowSubsystem = Operations.readResult(result);
-                }
-                URI webUri;
-                try {
-                    webUri = new URI("http://localhost:8080");
-                } catch (URISyntaxException e) {
-                    throw new RuntimeException(e);
-                }
-                if (undertowSubsystem != null && undertowSubsystem.hasDefined("server")) {
-                    List<Property> vhosts = undertowSubsystem.get("server").asPropertyList();
-                    ModelNode socketBinding = new ModelNode();
-                    if (!vhosts.isEmpty()) {//if empty no virtual hosts defined
-                        socketBinding = vhosts.get(0).getValue().get("http-listener", "default").get("socket-binding");
+        AccessController.doPrivileged(new PrivilegedAction<Object>() {
+            @Override
+            public Object run() {
+                checkState();
+
+                if (!initialized) {
+                    initialized = true;
+                    try {
+                        final ModelNode op = Operations.createReadResourceOperation(UNDERTOW_SUBSYSTEM_ADDRESS, true);
+                        final ModelNode result = client.execute(op);
+                        undertowSubsystemPresent = Operations.isSuccessfulOutcome(result);
+                        if (undertowSubsystemPresent) {
+                            undertowSubsystem = Operations.readResult(result);
+                        }
+                        URI webUri;
+                        try {
+                            webUri = new URI("http://localhost:8080");
+                        } catch (URISyntaxException e) {
+                            throw new RuntimeException(e);
+                        }
+                        if (undertowSubsystem != null && undertowSubsystem.hasDefined("server")) {
+                            List<Property> vhosts = undertowSubsystem.get("server").asPropertyList();
+                            ModelNode socketBinding = new ModelNode();
+                            if (!vhosts.isEmpty()) {//if empty no virtual hosts defined
+                                socketBinding = vhosts.get(0).getValue().get("http-listener", "default").get("socket-binding");
+                            }
+                            if (socketBinding.isDefined()) {
+                                webUri = getBinding("http", socketBinding.asString());
+                            }
+                        }
+                        ManagementClient.this.webUri = webUri;
+                        try {
+                            ejbUri = new URI("http-remoting", webUri.getUserInfo(), webUri.getHost(), webUri.getPort(), null, null, null);
+                        } catch (URISyntaxException e) {
+                            throw new RuntimeException(e);
+                        }
+                    } catch (Exception e) {
+                        throw new RuntimeException("Could not init arquillian protocol", e);
                     }
-                    if (socketBinding.isDefined()) {
-                        webUri = getBinding("http", socketBinding.asString());
-                    }
                 }
-                this.webUri = webUri;
-                try {
-                    ejbUri = new URI("http-remoting", webUri.getUserInfo(), webUri.getHost(), webUri.getPort(), null, null, null);
-                } catch (URISyntaxException e) {
-                    throw new RuntimeException(e);
-                }
-            } catch (Exception e) {
-                throw new RuntimeException("Could not init arquillian protocol", e);
+                return null;
             }
-        }
+        });
     }
 
     /**

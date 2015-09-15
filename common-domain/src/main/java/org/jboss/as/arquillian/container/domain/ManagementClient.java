@@ -230,12 +230,25 @@ public class ManagementClient {
     }
 
     public boolean isDomainInRunningState() {
+        return anyServerGroupAvailable() && canReadResource();
+    }
+
+    private boolean canReadResource() {
+        try {
+            ModelNode rsp = client.execute(generateReadResourceOperation(new ModelNode(), false, ROOT_RECURSIVE_DEPTH));
+            return SUCCESS.equals(rsp.get(OUTCOME).asString());
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    private boolean anyServerGroupAvailable() {
         try {
             // some random values to read in hopes the domain controller is up and running..
             ModelNode op = new ModelNode();
             op.get(OP).set(READ_CHILDREN_NAMES_OPERATION);
             op.get(OP_ADDR).setEmptyList();
-            op.get(CHILD_TYPE).set("server-group");
+            op.get(CHILD_TYPE).set(SERVER_GROUP);
             ModelNode rsp = client.execute(op);
 
             return SUCCESS.equals(rsp.get(OUTCOME).asString()) && rsp.get("result").asList().size() > 0;
@@ -399,7 +412,7 @@ public class ManagementClient {
         return readResource(address, includeRuntime, null);
     }
 
-    private ModelNode readResource(ModelNode address, boolean includeRuntime, Integer recursiveDepth) throws Exception {
+    private ModelNode generateReadResourceOperation(ModelNode address, boolean includeRuntime, Integer recursiveDepth) {
         final ModelNode operation = new ModelNode();
         operation.get(OP).set(READ_RESOURCE_OPERATION);
         if(recursiveDepth == null) {
@@ -413,7 +426,11 @@ public class ManagementClient {
         operation.get(INCLUDE_RUNTIME).set(includeRuntime);
         operation.get(PROXIES).set(true);
         operation.get(OP_ADDR).set(address);
+        return operation;
+    }
 
+    private ModelNode readResource(ModelNode address, boolean includeRuntime, Integer recursiveDepth) throws Exception {
+        final ModelNode operation = generateReadResourceOperation(address, includeRuntime, recursiveDepth);
         return executeForResult(operation);
     }
 

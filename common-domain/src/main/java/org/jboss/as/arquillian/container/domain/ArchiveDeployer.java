@@ -57,7 +57,7 @@ public class ArchiveDeployer {
             final InputStream input = archive.as(ZipExporter.class).exportAsInputStream();
             try {
                 InitialDeploymentPlanBuilder builder = deploymentManager.newDeploymentPlan();
-                DeploymentPlan plan = builder.add(archive.getName(), input).andDeploy().toServerGroup(target).build();
+                DeploymentPlan plan = builder.add(archive.getName(), input).andDeploy().toServerGroup(target).withRollback().build();
                 DeploymentAction deployAction = plan.getDeploymentActions().get(plan.getDeploymentActions().size() - 1);
                 return executeDeploymentPlan(plan, deployAction);
             } finally {

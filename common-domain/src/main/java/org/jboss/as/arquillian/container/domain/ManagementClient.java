@@ -17,7 +17,6 @@
 package org.jboss.as.arquillian.container.domain;
 
 import static org.jboss.as.controller.client.helpers.ClientConstants.AUTO_START;
-import static org.jboss.as.controller.client.helpers.ClientConstants.CHILD_TYPE;
 import static org.jboss.as.controller.client.helpers.ClientConstants.DEPLOYMENT;
 import static org.jboss.as.controller.client.helpers.ClientConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.client.helpers.ClientConstants.GROUP;
@@ -28,7 +27,6 @@ import static org.jboss.as.controller.client.helpers.ClientConstants.OP_ADDR;
 import static org.jboss.as.controller.client.helpers.ClientConstants.OUTCOME;
 import static org.jboss.as.controller.client.helpers.ClientConstants.PROXIES;
 import static org.jboss.as.controller.client.helpers.ClientConstants.READ_ATTRIBUTE_OPERATION;
-import static org.jboss.as.controller.client.helpers.ClientConstants.READ_CHILDREN_NAMES_OPERATION;
 import static org.jboss.as.controller.client.helpers.ClientConstants.READ_RESOURCE_OPERATION;
 import static org.jboss.as.controller.client.helpers.ClientConstants.RECURSIVE;
 import static org.jboss.as.controller.client.helpers.ClientConstants.RECURSIVE_DEPTH;
@@ -46,7 +44,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
-
 import javax.management.MBeanServerConnection;
 import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
@@ -58,7 +55,11 @@ import org.jboss.arquillian.container.spi.client.protocol.metadata.Servlet;
 import org.jboss.as.arquillian.container.domain.Domain.Server;
 import org.jboss.as.arquillian.container.domain.Domain.ServerGroup;
 import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.client.helpers.domain.DomainClient;
+import org.jboss.as.controller.client.helpers.domain.ServerIdentity;
+import org.jboss.as.controller.client.helpers.domain.ServerStatus;
 import org.jboss.dmr.ModelNode;
+import org.jboss.logging.Logger;
 
 /**
  * A helper class to join management related operations, like extract sub system ip/port (web/jmx) and deployment introspection.
@@ -230,18 +231,24 @@ public class ManagementClient {
     }
 
     public boolean isDomainInRunningState() {
+        final Map<ServerIdentity, ServerStatus> servers = new HashMap<>();
         try {
-            // some random values to read in hopes the domain controller is up and running..
-            ModelNode op = new ModelNode();
-            op.get(OP).set(READ_CHILDREN_NAMES_OPERATION);
-            op.get(OP_ADDR).setEmptyList();
-            op.get(CHILD_TYPE).set("server-group");
-            ModelNode rsp = client.execute(op);
-
-            return SUCCESS.equals(rsp.get(OUTCOME).asString()) && rsp.get("result").asList().size() > 0;
-        } catch (Exception ignored) {
-            return false;
+            final Map<ServerIdentity, ServerStatus> statuses = ((DomainClient) client).getServerStatuses();
+            for (ServerIdentity id : statuses.keySet()) {
+                final ServerStatus status = statuses.get(id);
+                switch (status) {
+                    case DISABLED:
+                    case STARTED: {
+                        servers.put(id, status);
+                        break;
+                    }
+                }
+            }
+            return statuses.size() == servers.size();
+        } catch (Exception e) {
+            Logger.getLogger(ManagementClient.class).debug("Interrupted determining if domain is running", e);
         }
+        return false;
     }
 
     public void close() {

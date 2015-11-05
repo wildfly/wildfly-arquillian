@@ -44,11 +44,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
-import javax.management.MBeanServerConnection;
-import javax.management.remote.JMXConnector;
-import javax.management.remote.JMXConnectorFactory;
-import javax.management.remote.JMXServiceURL;
-import javax.security.auth.callback.CallbackHandler;
+import java.util.concurrent.TimeUnit;
 
 import org.jboss.arquillian.container.spi.client.protocol.metadata.HTTPContext;
 import org.jboss.arquillian.container.spi.client.protocol.metadata.Servlet;
@@ -71,8 +67,6 @@ public class ManagementClient {
     private static final String SUBDEPLOYMENT = "subdeployment";
     private static final String UNDERTOW = "undertow";
 
-    private static final String JMX = "jmx";
-
     private static final String PROTOCOL_HTTP = "http";
 
     private static final String NAME = "name";
@@ -90,9 +84,6 @@ public class ManagementClient {
 
     // cache static RootNode
     private ModelNode rootNode = null;
-
-    private MBeanServerConnection connection;
-    private JMXConnector connector;
 
     public ManagementClient(ModelControllerClient client, final String mgmtAddress, final int managementPort) {
         if (client == null) {
@@ -230,6 +221,24 @@ public class ManagementClient {
         return false;
     }
 
+    public boolean awaitDomainInRunningState(long timeout, TimeUnit unit) {
+        long sleep = 1000;
+        boolean domainInRunningState = false;
+        long cutoffTime = System.currentTimeMillis() + unit.toMillis(timeout);
+        while (System.currentTimeMillis() < cutoffTime && !domainInRunningState) {
+            domainInRunningState = isDomainInRunningState();
+            if (!domainInRunningState) {
+                try {
+                    Thread.sleep(sleep);
+                } catch (InterruptedException ex) {
+                    break;
+                }
+                sleep = Math.max(sleep / 2, 100);
+            }
+        }
+        return domainInRunningState;
+    }
+
     public boolean isDomainInRunningState() {
         final Map<ServerIdentity, ServerStatus> servers = new HashMap<>();
         try {
@@ -256,14 +265,6 @@ public class ManagementClient {
             getControllerClient().close();
         } catch (IOException e) {
             throw new RuntimeException("Could not close connection", e);
-        } finally {
-            if (connector != null) {
-                try {
-                    connector.close();
-                } catch (IOException e) {
-                    throw new RuntimeException("Could not close JMX connection", e);
-                }
-            }
         }
     }
 
@@ -295,6 +296,24 @@ public class ManagementClient {
             throw new RuntimeException("Could not extract address information from server: " + server + " for protocol "
                     + protocol + ". Is the server running?", e);
         }
+    }
+
+    public boolean awaitRootNode(long timeout, TimeUnit unit) {
+        long sleep = 1000;
+        long cutoffTime = System.currentTimeMillis() + unit.toMillis(timeout);
+        while (System.currentTimeMillis() < cutoffTime && rootNode == null) {
+            try {
+                readRootNode();
+            } catch (Exception ex) {
+                try {
+                    Thread.sleep(sleep);
+                } catch (InterruptedException e) {
+                    break;
+                }
+                sleep = Math.max(sleep / 2, 100);
+            }
+        }
+        return rootNode != null;
     }
 
     private void readRootNode() throws Exception {
@@ -389,12 +408,12 @@ public class ManagementClient {
     // -------------------------------------------------------------------------------------||
 
     private void lazyLoadRootNode() {
-        try {
-            if (rootNode == null) {
+        while (rootNode == null) {
+            try {
                 readRootNode();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
             }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
         }
     }
 
@@ -449,40 +468,15 @@ public class ManagementClient {
 
     private void checkSuccessful(final ModelNode result, final ModelNode operation) throws UnSuccessfulOperationException {
         if (!SUCCESS.equals(result.get(OUTCOME).asString())) {
-            System.out.println(result);
+            //System.out.println(result);
             throw new UnSuccessfulOperationException(result.get(FAILURE_DESCRIPTION).toString());
         }
     }
 
+    @SuppressWarnings("serial")
     private static class UnSuccessfulOperationException extends Exception {
-        private static final long serialVersionUID = 1L;
-
-        public UnSuccessfulOperationException(String message) {
+        UnSuccessfulOperationException(String message) {
             super(message);
         }
     }
-
-    private MBeanServerConnection getConnection() {
-        if (connection == null) {
-            try {
-                final HashMap<String, Object> env = new HashMap<String, Object>();
-                env.put(CallbackHandler.class.getName(), Authentication.getCallbackHandler());
-                connector = JMXConnectorFactory.connect(getRemoteJMXURL(), env);
-                connection = connector.getMBeanServerConnection();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }
-        return connection;
-    }
-
-    private JMXServiceURL getRemoteJMXURL() {
-        try {
-            return new JMXServiceURL("service:jmx:remoting-jmx://" + NetworkUtils.formatPossibleIpv6Address(mgmtAddress) + ":"
-                    + mgmtPort);
-        } catch (Exception e) {
-            throw new RuntimeException("Could not create JMXServiceURL:" + this, e);
-        }
-    }
-
 }

@@ -49,7 +49,6 @@ import org.jboss.shrinkwrap.descriptor.api.Descriptor;
 
 /**
  * @author <a href="mailto:aslak@redhat.com">Aslak Knutsen</a>
- * @version $Revision: $
  */
 public abstract class CommonDomainDeployableContainer<T extends CommonDomainContainerConfiguration> implements
         DeployableContainer<T> {

@@ -40,9 +40,7 @@
     <packaging>jar</packaging>
 
     <properties>
-        <!-- Don't execute unit tests; the "remote" profile needs to be
-             enabled to execute them -->
-        <skipTests>true</skipTests>
+        <jboss.home>${project.build.directory}/wildfly-core</jboss.home>
     </properties>
 
     <dependencies>
@@ -51,16 +49,16 @@
             <artifactId>wildfly-arquillian-common-domain</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.jboss.arquillian.junit</groupId>
-            <artifactId>arquillian-junit-container</artifactId>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
             <groupId>org.jboss.marshalling</groupId>
             <artifactId>jboss-marshalling-river</artifactId>
         </dependency>
 
+        <!-- Test Scope -->
+        <dependency>
+            <groupId>org.jboss.arquillian.junit</groupId>
+            <artifactId>arquillian-junit-container</artifactId>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>javax.inject</groupId>
             <artifactId>javax.inject</artifactId>
@@ -71,7 +69,6 @@
             <artifactId>jboss-servlet-api_3.1_spec</artifactId>
             <scope>test</scope>
         </dependency>
-
     </dependencies>
 
     <build>
@@ -87,11 +84,51 @@
         </plugins>
     </build>
 
+    <!--
+        By default this provisions the server to target/wildfly-core.
+        You can then start this server manually in domain mode and
+        test it using the -Dremote profile.
+        
+        Can this be automated somehow?
+        
+        [WFBUILD-15] Add support for domain mode in wildfly-maven-plugin
+    -->
     <profiles>
+        <profile>
+            <id>not-remote</id>
+            <activation>
+                <property>
+                    <name>!remote</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.wildfly.build</groupId>
+                        <artifactId>wildfly-server-provisioning-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>server-provisioning</id>
+                                <goals>
+                                    <goal>build</goal>
+                                </goals>
+                                <phase>process-test-resources</phase>
+                                <configuration>
+                                    <config-file>server-provisioning.xml</config-file>
+                                    <server-name>wildfly-core</server-name>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
         <profile>
             <id>remote</id>
             <activation>
-                <activeByDefault>false</activeByDefault>
+                <property>
+                    <name>remote</name>
+                </property>
             </activation>
             <build>
                 <plugins>

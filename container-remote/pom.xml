@@ -33,7 +33,6 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <groupId>org.wildfly.arquillian</groupId>
     <artifactId>wildfly-arquillian-container-remote</artifactId>
 
     <name>WildFly: Arquillian Remote Container</name>

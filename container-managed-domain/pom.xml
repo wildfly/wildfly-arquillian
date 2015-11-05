@@ -137,7 +137,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>${version.surefire.plugin}</version>
                 <configuration>
                     <systemProperties>
                         <property>
@@ -148,7 +147,7 @@
                     <systemPropertyVariables>
                         <jboss.home>${basedir}/target/wildfly-core</jboss.home>
                     </systemPropertyVariables>
-                    <redirectTestOutputToFile>true</redirectTestOutputToFile>
+                    <redirectTestOutputToFile>false</redirectTestOutputToFile>
                 </configuration>
             </plugin>
         </plugins>

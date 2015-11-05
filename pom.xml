@@ -40,8 +40,8 @@
 
     <properties>
         <version.com.google.guava>16.0.1</version.com.google.guava>
-        <version.org.wildfly.core>1.0.1.Final</version.org.wildfly.core>
-        <version.org.wildfly.core.full>9.0.1.Final</version.org.wildfly.core.full>
+        <version.org.wildfly.core>1.0.2.Final</version.org.wildfly.core>
+        <version.org.wildfly.core.full>9.0.2.Final</version.org.wildfly.core.full>
         <version.junit>4.12</version.junit>
         <version.org.jboss.arquillian.core>1.1.10.Final</version.org.jboss.arquillian.core>
 
@@ -396,7 +396,6 @@
     </dependencyManagement>
 
     <dependencies>
-
         <dependency>
             <groupId>org.jboss.arquillian.core</groupId>
             <artifactId>arquillian-core-api</artifactId>
@@ -408,4 +407,10 @@
         </dependency>
     </dependencies>
 
+    <repositories>
+        <repository>
+            <id>jboss-public-repository</id>
+            <url>http://repository.jboss.org/nexus/content/groups/public/</url>
+        </repository>
+    </repositories>
 </project>

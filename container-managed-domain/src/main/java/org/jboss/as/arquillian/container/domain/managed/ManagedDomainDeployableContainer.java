@@ -84,8 +84,8 @@ public class ManagedDomainDeployableContainer extends CommonDomainDeployableCont
             final DomainCommandBuilder commandBuilder = DomainCommandBuilder.of(config.getJbossHome(), config.getJavaHome());
             if (config.getJavaVmArguments() != null) {
                 final String[] javaOpts = config.getJavaVmArguments().split("\\s+");
-                commandBuilder.addProcessControllerJavaOptions(javaOpts)
-                        .addHostControllerJavaOptions(javaOpts);
+                commandBuilder.setProcessControllerJavaOptions(javaOpts)
+                        .setHostControllerJavaOptions(javaOpts);
             }
 
             if (config.isSetupCleanServerBaseDir() || config.getCleanServerBaseDir() != null) {

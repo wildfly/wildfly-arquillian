@@ -96,12 +96,12 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
                 log.warning("Bundles path is deprecated and no longer used.");
             }
 
-            final String additionalJavaOpts = config.getJavaVmArguments();
-            final String additionalJbossOpts = config.getJbossArguments();
+            final String javaOpts = config.getJavaVmArguments();
+            final String jbossArguments = config.getJbossArguments();
 
             commandBuilder.setJavaHome(config.getJavaHome());
-            if (additionalJavaOpts != null) {
-                commandBuilder.addJavaOptions(additionalJavaOpts.split("\\s+"));
+            if (javaOpts != null) {
+                commandBuilder.setJavaOptions(javaOpts.split("\\s+"));
             }
 
             if (config.isEnableAssertions()) {
@@ -116,8 +116,8 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
             if (config.isAdminOnly())
                 commandBuilder.setAdminOnly();
 
-            if (additionalJbossOpts != null) {
-                commandBuilder.addServerArguments(additionalJbossOpts.split("\\s+"));
+            if (jbossArguments != null) {
+                commandBuilder.addServerArguments(jbossArguments.split("\\s+"));
             }
 
             if (config.getServerConfig() != null) {

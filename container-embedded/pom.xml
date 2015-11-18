@@ -91,7 +91,7 @@
                         </goals>
                         <phase>process-test-resources</phase>
                         <configuration>
-                            <config-file>embedded-server-provisioning.xml</config-file>
+                            <config-file>server-provisioning.xml</config-file>
                             <server-name>wildfly-servlet</server-name>
                         </configuration>
                     </execution>

@@ -19,7 +19,6 @@ package org.jboss.as.arquillian.container.domain.managed;
 
 import static org.wildfly.core.launcher.ProcessHelper.addShutdownHook;
 import static org.wildfly.core.launcher.ProcessHelper.destroyProcess;
-import static org.wildfly.core.launcher.ProcessHelper.processHasDied;
 
 import java.io.File;
 import java.io.IOException;
@@ -33,6 +32,7 @@ import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -125,26 +125,13 @@ public class ManagedDomainDeployableContainer extends CommonDomainDeployableCont
             new Thread(new ConsoleConsumer()).start();
             shutdownThread = addShutdownHook(process);
 
+            long before = System.currentTimeMillis();
             long startupTimeout = getContainerConfiguration().getStartupTimeoutInSeconds();
-            long timeout = startupTimeout * 1000;
-            boolean serverAvailable = false;
-            long sleep = 1000;
-            while (timeout > 0 && serverAvailable == false) {
-                long before = System.currentTimeMillis();
-                serverAvailable = getManagementClient().isDomainInRunningState();
-                timeout -= (System.currentTimeMillis() - before);
-                if (!serverAvailable) {
-                    if (processHasDied(process))
-                        break;
-                    Thread.sleep(sleep);
-                    timeout -= sleep;
-                    sleep = Math.max(sleep / 2, 100);
-                }
-            }
+            boolean serverAvailable = getManagementClient().awaitDomainInRunningState(startupTimeout, TimeUnit.SECONDS);
+            serverAvailable &= getManagementClient().awaitRootNode(startupTimeout * 1000 - (System.currentTimeMillis() - before), TimeUnit.MILLISECONDS);
             if (!serverAvailable) {
                 destroyProcess(process);
-                throw new TimeoutException(String.format("Managed Domain server was not started within [%d] s",
-                        config.getStartupTimeoutInSeconds()));
+                throw new TimeoutException(String.format("Managed Domain server was not started within [%d] s", config.getStartupTimeoutInSeconds()));
             }
         } catch (Exception e) {
             throw new LifecycleException("Could not start container", e);

@@ -92,8 +92,7 @@ public class ArchiveDeployer {
         Map<String, ServerGroupDeploymentPlanResult> actionResults = planResult.getServerGroupResults();
         for (Entry<String, ServerGroupDeploymentPlanResult> result : actionResults.entrySet()) {
             for (Entry<String, ServerDeploymentPlanResult> planServerResult : result.getValue().getServerResults().entrySet()) {
-                ServerUpdateResult actionResult = planServerResult.getValue().getDeploymentActionResults()
-                        .get(deployAction.getId());
+                ServerUpdateResult actionResult = planServerResult.getValue().getDeploymentActionResults().get(deployAction.getId());
                 if (actionResult != null) {
                     Exception deploymentException = (Exception) actionResult.getFailureResult();
                     if (deploymentException != null)

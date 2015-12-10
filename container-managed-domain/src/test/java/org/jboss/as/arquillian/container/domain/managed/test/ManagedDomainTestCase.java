@@ -20,67 +20,54 @@ package org.jboss.as.arquillian.container.domain.managed.test;
 import org.jboss.arquillian.container.test.api.ContainerController;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
+import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Ignore;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
  * For Domain server DeployableContainer implementations, the DeployableContainer will register
  * all groups/individual servers it controls as Containers in Arquillian's Registry during start.
- * 
+ *
  * @author <a href="mailto:aslak@redhat.com">Aslak Knutsen</a>
- * @version $Revision: $
  */
 @RunWith(Arquillian.class)
-@Ignore("These tests need to be fixed up as domain does not support JMX runner, and servlet is not available in core")
 public class ManagedDomainTestCase {
 
-    @Deployment(name = "dep1") @TargetsContainer("backend")
-    public static WebArchive create1() {
-        return ShrinkWrap.create(WebArchive.class);
-    }
-
-    @Deployment(name = "dep2") @TargetsContainer("other-server-group")
-    public static WebArchive create2() {
-        return ShrinkWrap.create(WebArchive.class);
+    @Deployment(name = "dep1") @TargetsContainer("main-server-group")
+    public static JavaArchive create1() {
+        return ShrinkWrap.create(JavaArchive.class);
     }
 
     @ArquillianResource
-    private ContainerController controller;
-    
-    /*
-     * ProtocolMetaData returned by deploy to main-server-group contains multiple HttpContext 
-     * named after the individual servers in the group. Adding @TargetsContainer specifies which 
-     * server info to use (container names can be overwritten using containerNameMap in configuration)
-     */
-    @Test @InSequence(1) @OperateOnDeployment("dep1") @TargetsContainer("backend-1")
-    public void shouldBeAbleToRunInTargetedServer() throws Exception {
+    ContainerController controller;
+
+    @Test @InSequence(1) @OperateOnDeployment("dep1") @TargetsContainer("master:server-one")
+    public void shouldRunInContainer1() throws Exception {
+        Assert.assertTrue(controller.isStarted("master:server-one"));
         System.out.println("in..container");
     }
 
-    @Test @InSequence(2)
-    public void shouldBeAbleToStartServer() {
-        // server-groups are registered as STARTED by default for managed deployments to work.. 
-        // In the eyes of the Domain they are always 'started' it's the servers in their group that are started or stopped, 
-        // but Arquillian see them as one Container and won't actually call start unless it is registered as stopped.... ??
-        //controller.stop("other-server-group");
-        //controller.start("other-server-group");
-        controller.start("frontend-1");
+    @Test @InSequence(2) @OperateOnDeployment("dep1") @TargetsContainer("master:server-two")
+    public void shouldRunInContainer2() throws Exception {
+        Assert.assertTrue(controller.isStarted("master:server-two"));
     }
 
-    @Test @InSequence(3) @OperateOnDeployment("dep2")
-    public void shouldBeAbleToRunInUndefinedServer() throws Exception {
-        System.out.println("in..container 2");
+    @Test @InSequence(3) @RunAsClient
+    public void shouldBeAbleToStop() throws Exception {
+        controller.stop("master:server-two");
+        Assert.assertFalse(controller.isStarted("master:server-two"));
     }
 
-    @Test @InSequence(4)
-    public void shouldBeAbleToStopServer() {
-        controller.stop("frontend-1");
+    @Test @InSequence(4) @OperateOnDeployment("dep1") @TargetsContainer("master:server-one")
+    public void shouldStartContainer() throws Exception {
+        Assert.assertFalse(controller.isStarted("master:server-two"));
+        controller.start("master:server-two");
     }
 }

@@ -32,41 +32,42 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * For Domain server DeployableContianer implementations, the DeployableContainer will register 
+ * For Domain server DeployableContianer implementations, the DeployableContainer will register
  * all groups/individual servers it controls as Containers in Arquillians Registry during start.
- * 
+ *
  * @author <a href="mailto:aslak@redhat.com">Aslak Knutsen</a>
- * @version $Revision: $
  */
-
-
 @RunWith(Arquillian.class)
 public class RemoteDomainTestCase {
 
-    @Deployment(name = "dep1") @TargetsContainer("main-server-group") 
+    @Deployment(name = "dep1") @TargetsContainer("main-server-group")
     public static JavaArchive create1() {
         return ShrinkWrap.create(JavaArchive.class);
     }
 
+    @ArquillianResource
+    ContainerController controller;
+
     @Test @InSequence(1) @OperateOnDeployment("dep1") @TargetsContainer("master:server-one")
     public void shouldRunInContainer1() throws Exception {
+        Assert.assertTrue(controller.isStarted("master:server-one"));
         System.out.println("in..container");
     }
 
-    @Test @InSequence(2) @OperateOnDeployment("dep1") @TargetsContainer("master:server-one")
-    public void shouldStartContainer(@ArquillianResource ContainerController controller) throws Exception {
-        Assert.assertFalse(controller.isStarted("master:server-two"));
-        controller.start("master:server-two");
-    }
-
-    @Test @InSequence(3) @OperateOnDeployment("dep1") @TargetsContainer("master:server-two")
-    public void shouldRunInContainer2(@ArquillianResource ContainerController controller) throws Exception {
+    @Test @InSequence(2) @OperateOnDeployment("dep1") @TargetsContainer("master:server-two")
+    public void shouldRunInContainer2() throws Exception {
         Assert.assertTrue(controller.isStarted("master:server-two"));
     }
 
-    @Test @InSequence(4) @RunAsClient
-    public void shouldBeAbleToStop(@ArquillianResource ContainerController controller) throws Exception {
+    @Test @InSequence(3) @RunAsClient
+    public void shouldBeAbleToStop() throws Exception {
         controller.stop("master:server-two");
         Assert.assertFalse(controller.isStarted("master:server-two"));
+    }
+
+    @Test @InSequence(4) @OperateOnDeployment("dep1") @TargetsContainer("master:server-one")
+    public void shouldStartContainer() throws Exception {
+        Assert.assertFalse(controller.isStarted("master:server-two"));
+        controller.start("master:server-two");
     }
 }

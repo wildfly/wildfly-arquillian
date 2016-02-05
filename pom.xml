@@ -56,6 +56,14 @@
         <version.org.wildfly.build-tools>1.0.0.Final</version.org.wildfly.build-tools>
     </properties>
 
+    <licenses>
+        <license>
+            <name>Apache License Version 2.0</name>
+            <url>http://repository.jboss.org/licenses/apache-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
     <build>
         <pluginManagement>
             <plugins>

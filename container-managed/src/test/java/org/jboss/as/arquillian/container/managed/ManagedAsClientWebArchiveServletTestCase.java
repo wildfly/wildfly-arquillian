@@ -27,6 +27,7 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -39,7 +40,6 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-@Ignore("We don't have a dependency on the full server, just the core, to avoid nasty circular dep")
 public class ManagedAsClientWebArchiveServletTestCase {
 
     private static final String CONTEXT_NAME = "foo-v1.2";
@@ -55,6 +55,7 @@ public class ManagedAsClientWebArchiveServletTestCase {
 
     @Test
     public void shouldBeAbleToInvokeServlet() throws Exception {
+        Assume.assumeTrue(Boolean.getBoolean("org.wildfly.execute.full.tests"));
         Assert.assertNotNull(deploymentUrl);
         Assert.assertTrue("deploymentUrl should end with " + CONTEXT_NAME + "/, but is " + deploymentUrl + 
                 ", the context URL seems to be wrong",

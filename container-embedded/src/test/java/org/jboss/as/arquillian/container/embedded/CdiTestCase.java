@@ -24,7 +24,7 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
-import org.junit.Ignore;
+import org.junit.Assume;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -34,7 +34,6 @@ import org.junit.runner.RunWith;
  * @author <a href="mailto:alr@jboss.org">Andrew Lee Rubinger</a>
  */
 @RunWith(Arquillian.class)
-@Ignore("We don't have a dependency on the full server, just the core, to avoid nasty circular dep")
 public class CdiTestCase {
 
     @Deployment
@@ -49,6 +48,7 @@ public class CdiTestCase {
 
     @Test
     public void shouldBeAbleToInject() throws Exception {
+        Assume.assumeTrue(Boolean.getBoolean("org.wildfly.execute.full.tests"));
         Assert.assertNotNull(service);
         final String name = "ALR";
         Assert.assertEquals(GreetingService.GREETING_PREPENDED + name, service.greet(name));

@@ -53,7 +53,18 @@
         <version.org.jboss.spec.javax.ejb.jboss-ejb-api_3.2_spec>1.0.0.Final</version.org.jboss.spec.javax.ejb.jboss-ejb-api_3.2_spec>
         <version.javax.enterprise>1.2</version.javax.enterprise>
         <version.org.wildfly.checkstyle-config>1.0.4.Final</version.org.wildfly.checkstyle-config>
-        <version.org.wildfly.build-tools>1.0.0.Final</version.org.wildfly.build-tools>
+        <version.org.wildfly.build-tools>1.1.2.Final</version.org.wildfly.build-tools>
+
+        <!-- Provisioning properties -->
+        <provisioning.config.dir>${project.parent.basedir}</provisioning.config.dir>
+        <org.wildfly.groupId>org.wildfly</org.wildfly.groupId>
+        <org.wildfly.artifactId>wildfly-servlet-feature-pack</org.wildfly.artifactId>
+        <org.wildfly.version>${version.org.wildfly.core.full}</org.wildfly.version>
+        <org.wildfly.dist-name>wildfly</org.wildfly.dist-name>
+        <jboss.home>${basedir}/target/${org.wildfly.dist-name}</jboss.home>
+
+        <!-- Other properties -->
+        <maven.test.redirectTestOutputToFile>true</maven.test.redirectTestOutputToFile>
     </properties>
 
     <licenses>
@@ -96,9 +107,29 @@
                     </executions>
                 </plugin>
                 <plugin>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <configuration>
+                        <redirectTestOutputToFile>${maven.test.redirectTestOutputToFile}</redirectTestOutputToFile>
+                    </configuration>
+                </plugin>
+                <plugin>
                     <groupId>org.wildfly.build</groupId>
                     <artifactId>wildfly-server-provisioning-maven-plugin</artifactId>
                     <version>${version.org.wildfly.build-tools}</version>
+                    <executions>
+                        <execution>
+                            <id>server-provisioning</id>
+                            <goals>
+                                <goal>build</goal>
+                            </goals>
+                            <phase>process-test-resources</phase>
+                            <configuration>
+                                <config-dir>${provisioning.config.dir}</config-dir>
+                                <config-file>server-provisioning.xml</config-file>
+                                <server-name>${org.wildfly.dist-name}</server-name>
+                            </configuration>
+                        </execution>
+                    </executions>
                 </plugin>
             </plugins>
         </pluginManagement>
@@ -415,6 +446,63 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+
+    <profiles>
+        <profile>
+            <id>wf9</id>
+            <activation>
+                <property>
+                    <name>wf9</name>
+                </property>
+            </activation>
+            <properties>
+                <org.wildfly.groupId>org.wildfly</org.wildfly.groupId>
+                <org.wildfly.artifactId>wildfly-feature-pack</org.wildfly.artifactId>
+                <org.wildfly.version>9.0.2.Final</org.wildfly.version>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <systemProperties>
+                                <org.wildfly.execute.full.tests>true</org.wildfly.execute.full.tests>
+                            </systemProperties>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>wf10</id>
+            <activation>
+                <property>
+                    <name>wf10</name>
+                </property>
+            </activation>
+            <properties>
+                <org.wildfly.groupId>org.wildfly</org.wildfly.groupId>
+                <org.wildfly.artifactId>wildfly-feature-pack</org.wildfly.artifactId>
+                <org.wildfly.version>10.0.0.Final</org.wildfly.version>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <systemProperties>
+                                <org.wildfly.execute.full.tests>true</org.wildfly.execute.full.tests>
+                                <org.wildfly.embedded.skip>true</org.wildfly.embedded.skip>
+                            </systemProperties>
+                            <excludes>
+                                <exclude>org.jboss.as.arquillian.container.embedded.*</exclude>
+                            </excludes>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 
     <repositories>
         <repository>

@@ -77,19 +77,6 @@
             <plugin>
                 <groupId>org.wildfly.build</groupId>
                 <artifactId>wildfly-server-provisioning-maven-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>server-provisioning</id>
-                        <goals>
-                            <goal>build</goal>
-                        </goals>
-                        <phase>process-test-resources</phase>
-                        <configuration>
-                            <config-file>server-provisioning.xml</config-file>
-                            <server-name>wildfly-servlet</server-name>
-                        </configuration>
-                    </execution>
-                </executions>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -99,9 +86,14 @@
                     <forkMode>always</forkMode>
                     <systemPropertyVariables>
                         <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
-                        <jboss.home>${basedir}/target/wildfly-servlet</jboss.home>
+                        <jboss.home>${jboss.home}</jboss.home>
                     </systemPropertyVariables>
-                    <redirectTestOutputToFile>false</redirectTestOutputToFile>
+                    <excludes>
+                        <!-- A change to the EmbeddedStandaloneServerFactory was made in WildFly Core 2.1.x.
+                        See https://github.com/wildfly/wildfly-core/pull/1093 -->
+                        <exclude>org/jboss/as/arquillian/container/embedded/CdiTestCase.java</exclude>
+                        <exclude>org/jboss/as/arquillian/container/embedded/DeploymentTestCase.java</exclude>
+                    </excludes>
                 </configuration>
             </plugin>
         </plugins>

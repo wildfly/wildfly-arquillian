@@ -64,19 +64,6 @@
             <plugin>
                 <groupId>org.wildfly.build</groupId>
                 <artifactId>wildfly-server-provisioning-maven-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>server-provisioning</id>
-                        <goals>
-                            <goal>build</goal>
-                        </goals>
-                        <phase>process-test-resources</phase>
-                        <configuration>
-                            <config-file>../server-provisioning.xml</config-file>
-                            <server-name>wildfly-core</server-name>
-                        </configuration>
-                    </execution>
-                </executions>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -89,9 +76,8 @@
                         </property>
                     </systemProperties>
                     <systemPropertyVariables>
-                        <jboss.home>${basedir}/target/wildfly-core</jboss.home>
+                        <jboss.home>${jboss.home}</jboss.home>
                     </systemPropertyVariables>
-                    <redirectTestOutputToFile>true</redirectTestOutputToFile>
                 </configuration>
             </plugin>
         </plugins>

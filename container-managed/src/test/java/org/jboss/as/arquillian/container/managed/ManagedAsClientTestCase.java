@@ -41,7 +41,6 @@ import org.xnio.IoUtils;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-@Ignore // Disable until JMX over Remoting is implemented
 public class ManagedAsClientTestCase extends AbstractContainerTestCase {
     private MBeanServerConnectionProvider provider;
 

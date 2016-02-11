@@ -43,7 +43,7 @@ public final class MBeanServerConnectionProvider implements Closeable {
     private JMXConnector jmxConnector;
 
     public static MBeanServerConnectionProvider defaultProvider() throws UnknownHostException {
-        return new MBeanServerConnectionProvider(InetAddress.getByName("127.0.0.1"), 1090);
+        return new MBeanServerConnectionProvider(InetAddress.getByName("127.0.0.1"), 9990);
     }
 
     public MBeanServerConnectionProvider(InetAddress hostAddr, int port) {
@@ -53,7 +53,7 @@ public final class MBeanServerConnectionProvider implements Closeable {
 
     public MBeanServerConnection getConnection() {
         String host = hostAddr.getHostAddress();
-        String urlString = System.getProperty("jmx.service.url", "service:jmx:rmi:///jndi/rmi://" + NetworkUtils.formatPossibleIpv6Address(host) + ":" + port + "/jmxrmi");
+        String urlString = System.getProperty("jmx.service.url", "service:jmx:remote+http://" + NetworkUtils.formatPossibleIpv6Address(host) + ":" + port);
         try {
             if (jmxConnector == null) {
                 log.debug("Connecting JMXConnector to: " + urlString);

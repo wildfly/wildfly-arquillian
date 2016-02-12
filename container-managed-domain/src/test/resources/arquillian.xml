@@ -23,7 +23,6 @@
         <configuration>
             <property name="jbossHome">${jboss.home}</property>
             <property name="allowConnectingToRunningServer">true</property>
-            <property name="enableAssertions">false</property>
             <property name="javaVmArguments">-Dorg.wildfly.execute.full.tests=${org.wildfly.execute.full.tests:false}</property>
         </configuration>
     </container>

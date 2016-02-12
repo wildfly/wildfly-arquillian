@@ -18,7 +18,7 @@ package org.jboss.as.arquillian.container.embedded;
 import org.jboss.arquillian.container.spi.ConfigurationException;
 import org.jboss.arquillian.container.spi.client.deployment.Validate;
 import org.jboss.as.arquillian.container.CommonContainerConfiguration;
-import org.wildfly.core.embedded.EmbeddedStandAloneServerFactory;
+import org.wildfly.core.embedded.EmbeddedStandaloneServerFactory;
 
 /**
  * {@link org.jboss.arquillian.container.spi.client.container.ContainerConfiguration} implementation for JBoss AS Embedded
@@ -32,7 +32,7 @@ public class EmbeddedContainerConfiguration extends CommonContainerConfiguration
 
     private String modulePath = System.getProperty("module.path");
 
-    private String cleanServerBaseDir = System.getProperty(EmbeddedStandAloneServerFactory.JBOSS_EMBEDDED_ROOT);
+    private String cleanServerBaseDir = System.getProperty(EmbeddedStandaloneServerFactory.JBOSS_EMBEDDED_ROOT);
 
     public EmbeddedContainerConfiguration() {
 

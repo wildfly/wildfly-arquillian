@@ -17,8 +17,8 @@ package org.jboss.as.arquillian.container.embedded;
 
 import org.jboss.arquillian.container.spi.client.container.LifecycleException;
 import org.jboss.as.arquillian.container.CommonDeployableContainer;
-import org.wildfly.core.embedded.EmbeddedServerFactory;
-import org.wildfly.core.embedded.EmbeddedStandAloneServerFactory;
+import org.wildfly.core.embedded.EmbeddedProcessFactory;
+import org.wildfly.core.embedded.EmbeddedStandaloneServerFactory;
 import org.wildfly.core.embedded.StandaloneServer;
 
 /**
@@ -41,9 +41,9 @@ public final class EmbeddedDeployableContainer extends CommonDeployableContainer
     public void setup(final EmbeddedContainerConfiguration config) {
         super.setup(config);
         if (config.getCleanServerBaseDir() != null) {
-            SecurityActions.setSystemProperty(EmbeddedStandAloneServerFactory.JBOSS_EMBEDDED_ROOT, config.getCleanServerBaseDir());
+            SecurityActions.setSystemProperty(EmbeddedStandaloneServerFactory.JBOSS_EMBEDDED_ROOT, config.getCleanServerBaseDir());
         }
-        server = EmbeddedServerFactory.create(config.getJbossHome(), config.getModulePath());
+        server = EmbeddedProcessFactory.createStandaloneServer(config.getJbossHome(), config.getModulePath());
     }
 
     @Override

@@ -82,7 +82,7 @@ import org.jboss.logging.Logger;
  * </p>
  * @author <a href="aslak@redhat.com">Aslak Knutsen</a>
  */
-public class ManagementClient implements AutoCloseable, Closeable {
+public class ManagementClient implements Closeable {
 
     private static final Logger logger = Logger.getLogger(ManagementClient.class);
 
@@ -310,10 +310,7 @@ public class ManagementClient implements AutoCloseable, Closeable {
             operation.get("include-runtime").set(true);
             ModelNode binding = executeForResult(operation);
             String ip = binding.get("bound-address").asString();
-            //it appears some system can return a binding with the zone specifier on the end
-            if (ip.contains(":") && ip.contains("%")) {
-                ip = ip.split("%")[0];
-            }
+            ip = formatIP(ip);
 
             final int port = defined(binding.get("bound-port"), socketBindingGroupName + " -> " + socketBinding + " -> bound-port is undefined").asInt();
 
@@ -321,6 +318,18 @@ public class ManagementClient implements AutoCloseable, Closeable {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    static String formatIP(String ip) {
+        //it appears some system can return a binding with the zone specifier on the end
+        if (ip.contains(":") && ip.contains("%")) {
+            ip = ip.split("%")[0];
+        }
+        if (ip.equals("0.0.0.0")) {
+            logger.debug("WildFly is bound to 0.0.0.0 which is correct, setting client to 127.0.0.1");
+            ip = "127.0.0.1";
+        }
+        return ip;
     }
 
     //-------------------------------------------------------------------------------------||

@@ -72,17 +72,44 @@
                     <systemPropertyVariables>
                         <jboss.home>${jboss.home}</jboss.home>
                     </systemPropertyVariables>
-                    <!-- Currently WildFly 10 Servlet will not boot due to a misconfigured default, these tests will need to be
-                    skipped for now -->
-                    <skip>true</skip>
                 </configuration>
+            </plugin>
+            <!-- Workaround for WFLY-6201 to allow tests to run with the servlet container only -->
+            <plugin>
+                <groupId>org.wildfly.plugins</groupId>
+                <artifactId>wildfly-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>fix-servlet</id>
+                        <phase>test-compile</phase>
+                        <goals>
+                            <goal>start</goal>
+                            <goal>execute-commands</goal>
+                            <goal>shutdown</goal>
+                        </goals>
+                        <configuration>
+                            <server-type>DOMAIN</server-type>
+                            <jboss-home>${jboss.home}</jboss-home>
+                            <server-args>
+                                <server-arg>--admin-only</server-arg>
+                            </server-args>
+                            <stdout>${project.build.testOutputDirectory}${file.separator}admin-only-config.log</stdout>
+                            <execute-commands>
+                                <fail-on-error>false</fail-on-error>
+                                <commands>
+                                    <command>/server-group=other-server-group:add(socket-binding-group=standard-sockets, profile=default)</command>
+                                </commands>
+                            </execute-commands>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
 
     <profiles>
         <profile>
-            <id>run-on-10-full</id>
+            <id>no-config</id>
             <activation>
                 <property>
                     <name>wf10</name>
@@ -92,9 +119,36 @@
             <build>
                 <plugins>
                     <plugin>
+                        <groupId>org.wildfly.plugins</groupId>
+                        <artifactId>wildfly-maven-plugin</artifactId>
+                        <configuration>
+                            <skip>true</skip>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>skip-on-9</id>
+            <activation>
+                <property>
+                    <name>wf9</name>
+                </property>
+            </activation>
+
+            <build>
+                <plugins>
+                    <plugin>
                         <artifactId>maven-surefire-plugin</artifactId>
                         <configuration>
-                            <skip>false</skip>
+                            <skip>true</skip>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.wildfly.plugins</groupId>
+                        <artifactId>wildfly-maven-plugin</artifactId>
+                        <configuration>
+                            <skip>true</skip>
                         </configuration>
                     </plugin>
                 </plugins>

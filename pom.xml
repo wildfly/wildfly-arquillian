@@ -44,6 +44,7 @@
         <version.org.wildfly.core.full>10.0.0.Final</version.org.wildfly.core.full>
         <version.junit>4.12</version.junit>
         <version.org.jboss.arquillian.core>1.1.10.Final</version.org.jboss.arquillian.core>
+        <version.org.wildfly.plugins.wildfly-maven-plugin>1.1.0.Alpha6</version.org.wildfly.plugins.wildfly-maven-plugin>
 
         <!-- keep this in sync with version that is used in arquillian -->
         <version.org.jboss.shrinkwrap.descriptors>2.0.0-alpha-8</version.org.jboss.shrinkwrap.descriptors>
@@ -134,6 +135,11 @@
                             </configuration>
                         </execution>
                     </executions>
+                </plugin>
+                <plugin>
+                    <groupId>org.wildfly.plugins</groupId>
+                    <artifactId>wildfly-maven-plugin</artifactId>
+                    <version>${version.org.wildfly.plugins.wildfly-maven-plugin}</version>
                 </plugin>
             </plugins>
         </pluginManagement>

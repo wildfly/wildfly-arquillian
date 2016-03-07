@@ -105,6 +105,11 @@ public class JMXProtocolPackager implements DeploymentPackager {
             try {
                 Collection<Archive<?>> auxArchives = testDeployment.getAuxiliaryArchives();
                 JavaArchive archive = generateArquillianServiceArchive(auxArchives);
+
+                for(ProtocolArchiveProcessor processor : protocolProcessors) {
+                    processor.process(testDeployment, archive);
+                }
+
                 archiveHolder.setArchive(archive);
             } catch (Exception ex) {
                 throw new IllegalStateException("Cannot generate arquillian service", ex);

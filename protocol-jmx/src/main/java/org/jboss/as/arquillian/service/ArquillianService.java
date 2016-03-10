@@ -115,6 +115,7 @@ public class ArquillianService implements Service<ArquillianService> {
                             }
                         }
                     }
+                    break;
                     case STARTING: {
                         ServiceName serviceName = serviceController.getName();
                         String simpleName = serviceName.getSimpleName();
@@ -125,6 +126,7 @@ public class ArquillianService implements Service<ArquillianService> {
                             ArquillianConfigBuilder.handleParseAnnotations(depUnit);
                         }
                     }
+                    break;
                 }
             }
         };

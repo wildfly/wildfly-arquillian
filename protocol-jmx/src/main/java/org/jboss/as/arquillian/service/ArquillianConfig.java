@@ -20,6 +20,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+import org.jboss.arquillian.container.test.spi.util.ServiceLoader;
 import org.jboss.arquillian.testenricher.msc.ServiceTargetAssociation;
 import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.Attachments;
@@ -41,11 +42,13 @@ import org.jboss.msc.service.StopContext;
  *
  * @author Thomas.Diesler@jboss.com
  */
-class ArquillianConfig implements Service<ArquillianConfig> {
+public class ArquillianConfig implements Service<ArquillianConfig> {
 
     private static final Logger log = Logger.getLogger(ArquillianConfig.class);
 
     static final AttachmentKey<ArquillianConfig> KEY = AttachmentKey.create(ArquillianConfig.class);
+
+    private final List<ArquillianConfigServiceCustomizer> serviceCustomizers = new ArrayList<ArquillianConfigServiceCustomizer>();
 
     private final ArquillianService arqService;
     private final DeploymentUnit depUnit;
@@ -63,11 +66,18 @@ class ArquillianConfig implements Service<ArquillianConfig> {
         this.depUnit = depUnit;
         this.serviceName = getServiceName(depUnit);
         this.testClasses.addAll(testClasses);
+
+        for(ArquillianConfigServiceCustomizer customizer : ServiceLoader.load(ArquillianConfigServiceCustomizer.class)) {
+            serviceCustomizers.add(customizer);
+        }
     }
 
     ServiceBuilder<ArquillianConfig> buildService(ServiceTarget serviceTarget, ServiceController<?> depController) {
         ServiceBuilder<ArquillianConfig> builder = serviceTarget.addService(getServiceName(), this);
         builder.addDependency(depController.getName());
+        for(ArquillianConfigServiceCustomizer customizer : serviceCustomizers) {
+            customizer.customizeService(this, builder, depController);
+        }
         return builder;
     }
 
@@ -90,6 +100,10 @@ class ArquillianConfig implements Service<ArquillianConfig> {
 
         Module module = depUnit.getAttachment(Attachments.MODULE);
         Class<?> testClass = module.getClassLoader().loadClass(className);
+
+        for(ArquillianConfigServiceCustomizer customizer : serviceCustomizers) {
+            customizer.customizeLoadClass(depUnit, testClass);
+        }
 
         ServiceTargetAssociation.setServiceTarget(serviceTarget);
         return testClass;

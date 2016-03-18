@@ -16,8 +16,14 @@
 package org.jboss.as.arquillian.container.domain;
 
 import org.jboss.arquillian.container.spi.client.container.DeploymentExceptionTransformer;
+import org.jboss.arquillian.container.test.spi.client.deployment.AuxiliaryArchiveAppender;
 import org.jboss.arquillian.core.spi.LoadableExtension;
 import org.jboss.arquillian.test.spi.enricher.resource.ResourceProvider;
+import org.wildfly.arquillian.domain.DomainArquillianDeploymentAppender;
+import org.wildfly.arquillian.domain.ServerGroupDeploymentObserver;
+import org.wildfly.arquillian.domain.container.controller.ClientDomainContainerControllerCreator;
+import org.wildfly.arquillian.domain.container.controller.command.DomainContainerCommandObserver;
+import org.wildfly.arquillian.domain.container.controller.DomainContainerControllerProvider;
 
 /**
  * The extensions used by the any jboss container.
@@ -29,7 +35,15 @@ public class CommonContainerExtension implements LoadableExtension {
 
     @Override
     public void register(final ExtensionBuilder builder) {
-        builder.service(DeploymentExceptionTransformer.class, ExceptionTransformer.class);
-        builder.service(ResourceProvider.class, ManagementClientProvider.class);
+        builder
+                // Register services
+                .service(DeploymentExceptionTransformer.class, ExceptionTransformer.class)
+                .service(ResourceProvider.class, ManagementClientProvider.class)
+                .service(ResourceProvider.class, DomainContainerControllerProvider.class)
+                .service(AuxiliaryArchiveAppender.class, DomainArquillianDeploymentAppender.class)
+                // Register observers
+                .observer(ClientDomainContainerControllerCreator.class)
+                .observer(DomainContainerCommandObserver.class)
+                .observer(ServerGroupDeploymentObserver.class);
     }
 }

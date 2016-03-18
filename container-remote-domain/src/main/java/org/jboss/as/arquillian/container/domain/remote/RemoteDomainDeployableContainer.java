@@ -17,8 +17,6 @@ package org.jboss.as.arquillian.container.domain.remote;
 
 import org.jboss.arquillian.container.spi.client.container.LifecycleException;
 import org.jboss.as.arquillian.container.domain.CommonDomainDeployableContainer;
-import org.jboss.as.arquillian.container.domain.Domain;
-import org.jboss.as.arquillian.container.domain.ManagementClient;
 
 /**
  * @author <a href="mailto:aslak@redhat.com">Aslak Knutsen</a>
@@ -34,11 +32,6 @@ public class RemoteDomainDeployableContainer extends CommonDomainDeployableConta
     @Override
     protected void startInternal() throws LifecycleException {
         // no-op
-    }
-
-    @Override
-    protected void waitForStart(Domain domain, ManagementClient client) throws LifecycleException {
-        // no-po
     }
 
     @Override

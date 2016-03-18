@@ -17,6 +17,8 @@ package org.jboss.as.arquillian.container.domain;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -41,9 +43,12 @@ import org.jboss.arquillian.core.spi.ServiceLoader;
 import org.jboss.as.arquillian.container.domain.Domain.Server;
 import org.jboss.as.arquillian.container.domain.Domain.ServerGroup;
 import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.client.helpers.DelegatingModelControllerClient;
 import org.jboss.as.controller.client.helpers.domain.DomainClient;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.descriptor.api.Descriptor;
+import org.wildfly.arquillian.domain.ServerGroupArchive;
+import org.wildfly.arquillian.domain.api.DomainManager;
 
 /**
  * @author <a href="mailto:aslak@redhat.com">Aslak Knutsen</a>
@@ -61,12 +66,16 @@ public abstract class CommonDomainDeployableContainer<T extends CommonDomainCont
     @Inject
     private Instance<Injector> injectorInst;
 
+    @Inject
+    private Instance<Container> containerInst;
+
     @Inject // we need to fire setup events to trigger the container context creation
     private Event<SetupContainer> setupEvent;
 
     private final Logger log = Logger.getLogger(CommonDomainDeployableContainer.class.getName());
     private T containerConfig;
     private ManagementClient managementClient;
+    private volatile ContainerDomainManager domainManager;
 
     @Inject
     @ContainerScoped
@@ -88,26 +97,29 @@ public abstract class CommonDomainDeployableContainer<T extends CommonDomainCont
     @Override
     public void setup(T config) {
         containerConfig = config;
-    }
-
-    @Override
-    public void start() throws LifecycleException {
 
         if (containerConfig.getUsername() != null) {
             Authentication.username = containerConfig.getUsername();
             Authentication.password = containerConfig.getPassword();
         }
 
-        DomainClient domainClient = DomainClient.Factory.create(containerConfig.getManagementAddress(),
-                containerConfig.getManagementPort(), Authentication.getCallbackHandler());
-
-        managementClient = new ManagementClient(domainClient, containerConfig.getManagementAddress().getHostAddress(),
-                containerConfig.getManagementPort());
-
+        // Register on setup so these can be injected into manual mode client tests
+        final DomainClient domainClient = DomainClient.Factory.create(new DelegatingModelControllerClient(DomainDelegateProvider.INSTANCE));
+        domainManager = new ContainerDomainManager(getContainerName(), isControllable(), domainClient);
+        managementClient = new ManagementClient(domainClient, domainManager);
         managementClientInst.set(managementClient);
 
         ArchiveDeployer archiveDeployer = new ArchiveDeployer(domainClient.getDeploymentManager());
         archiveDeployerInst.set(archiveDeployer);
+    }
+
+    @Override
+    public void start() throws LifecycleException {
+        // Configure the current client and set the delegate for the provider so the same management client can be used
+        // during starts and stops
+        final ModelControllerClient delegateClient = ModelControllerClient.Factory.create(containerConfig.getManagementAddress(),
+                containerConfig.getManagementPort(), Authentication.getCallbackHandler());
+        DomainDelegateProvider.INSTANCE.setDelegate(delegateClient);
 
         try {
             startInternal();
@@ -124,12 +136,9 @@ public abstract class CommonDomainDeployableContainer<T extends CommonDomainCont
         Domain domain = managementClient.createDomain(containerNameMap);
         domainInst.set(domain);
 
-        waitForStart(domain, managementClient);
-
         // Register all ServerGroups
         for (ServerGroup serverGroup: domain.getServerGroups()) {
-            Container serverContainer = createServerGroupContainer(registry, archiveDeployer, domain, serverGroup,
-                    containerConfig.getServerGroupOperationTimeoutInSeconds());
+            Container serverContainer = createServerGroupContainer(registry, archiveDeployerInst.get(), domain, serverGroup);
             String mode = mapMode(modeMap, serverContainer.getName());
             if(mode != null) {
                 serverContainer.getContainerConfiguration().setMode(mode);
@@ -140,7 +149,7 @@ public abstract class CommonDomainDeployableContainer<T extends CommonDomainCont
 
         // Register all Servers
         for (Server server : domain.getServers()) {
-            Container serverContainer = createServerContainer(registry, server, containerConfig.getServerOperationTimeoutInSeconds());
+            Container serverContainer = createServerContainer(registry, server);
             String mode = mapMode(modeMap, serverContainer.getName());
             if(mode != null) {
                 serverContainer.getContainerConfiguration().setMode(mode);
@@ -154,14 +163,15 @@ public abstract class CommonDomainDeployableContainer<T extends CommonDomainCont
                 serverContainer.setState(Container.State.STOPPED);
             }
         }
+        domainManager.setContainerStarted(true);
     }
 
     @Override
     public final void stop() throws LifecycleException {
+        domainManager.setContainerStarted(false);
         try {
-            stopInternal();
-
             updateDomainMembersState(State.STOPPED);
+            stopInternal();
         } finally {
             safeCloseClient();
         }
@@ -169,18 +179,37 @@ public abstract class CommonDomainDeployableContainer<T extends CommonDomainCont
 
     protected abstract void startInternal() throws LifecycleException;
 
-    protected abstract void waitForStart(Domain domain, ManagementClient client) throws LifecycleException;
-
     protected abstract void stopInternal() throws LifecycleException;
 
     @Override
     public ProtocolMetaData deploy(Archive<?> archive) throws DeploymentException {
-        throw new UnsupportedOperationException("Can not deploy directly from a Domain Controller");
+        // Get all the server groups we're deploying to
+        final Set<String> serverGroups = getServerGroups(archive);
+        if (!serverGroups.isEmpty()) {
+            final ProtocolMetaData metaData = new ProtocolMetaData();
+            final ArchiveDeployer deployer = archiveDeployerInst.get();
+            final String uniqueName = deployer.deploy(archive, serverGroups);
+            final Domain domain = domainInst.get();
+            for (String serverGroupName : serverGroups) {
+                for (Server server : domain.getServersInGroup(serverGroupName)) {
+                    metaData.addContext(new LazyHttpContext(server, uniqueName, managementClient));
+                }
+            }
+            return metaData;
+        }
+        throw new DeploymentException("Could not determine the server-group to deploy the archive to.");
     }
 
     @Override
     public void undeploy(Archive<?> archive) throws DeploymentException {
-        throw new UnsupportedOperationException("Can not undeploy directly from a Domain Controller");
+        // Get all the server groups we're deploying to
+        final Set<String> serverGroups = getServerGroups(archive);
+        if (!serverGroups.isEmpty()) {
+            final ArchiveDeployer deployer = archiveDeployerInst.get();
+            deployer.undeploy(archive.getName(), serverGroups);
+        } else {
+            throw new DeploymentException("Could not determine the server-group for the undeploy.");
+        }
     }
 
     @Override
@@ -191,6 +220,19 @@ public abstract class CommonDomainDeployableContainer<T extends CommonDomainCont
     @Override
     public void undeploy(Descriptor descriptor) throws DeploymentException {
         throw new UnsupportedOperationException("Can not undeploy directly from a Domain Controller");
+    }
+
+    /**
+     * Returns the domain manager used for this container.
+     *
+     * <p>
+     * Do note this may return {@code null} if {@link #setup(CommonDomainContainerConfiguration)} has not been invoked.
+     * </p>
+     *
+     * @return the domain manager used
+     */
+    public DomainManager getDomainManager() {
+        return domainManager;
     }
 
     protected T getContainerConfiguration() {
@@ -210,13 +252,15 @@ public abstract class CommonDomainDeployableContainer<T extends CommonDomainCont
             managementClient.close();
         } catch (Exception e) {
             log.log(Level.WARNING, "Caught exception closing ModelControllerClient", e);
+        } finally {
+            DomainDelegateProvider.INSTANCE.setDelegate(null);
         }
     }
 
-    private Container createServerContainer(ContainerRegistry registry, final Server server, final int operationTimeout) {
+    private Container createServerContainer(ContainerRegistry registry, final Server server) {
         ContainerDef def = new ContainerDefImpl("arquillian")
                                 .container(server.getContainerName())
-                                .setMode("custom");
+                                .setMode(getContainerMode());
 
         return registry.create(def, new ServiceLoader() {
 
@@ -228,7 +272,7 @@ public abstract class CommonDomainDeployableContainer<T extends CommonDomainCont
             @Override
             public <X> X onlyOne(Class<X> serviceClass) {
                 if (serviceClass == DeployableContainer.class) {
-                    return serviceClass.cast(injectorInst.get().inject(new ServerContainer(managementClient, server, operationTimeout)));
+                    return serviceClass.cast(injectorInst.get().inject(new ServerContainer(domainManager, server)));
                 }
                 return serviceLoaderInstance.get().onlyOne(serviceClass);
             }
@@ -241,10 +285,10 @@ public abstract class CommonDomainDeployableContainer<T extends CommonDomainCont
     }
 
     private Container createServerGroupContainer(ContainerRegistry registry, final ArchiveDeployer archiveDeployer,
-            final Domain domain, final ServerGroup serverGroup, final int operationTimeout) {
+            final Domain domain, final ServerGroup serverGroup) {
         ContainerDef def = new ContainerDefImpl("arquillian")
                                 .container(serverGroup.getContainerName())
-                                .setMode("suite");
+                                .setMode(getContainerMode());
 
         return registry.create(def, new ServiceLoader() {
 
@@ -257,7 +301,7 @@ public abstract class CommonDomainDeployableContainer<T extends CommonDomainCont
             public <X> X onlyOne(Class<X> serviceClass) {
                 if (serviceClass == DeployableContainer.class) {
                     return serviceClass.cast(injectorInst.get().inject(
-                            new ServerGroupContainer(managementClient, archiveDeployer, domain, serverGroup, operationTimeout)));
+                            new ServerGroupContainer(managementClient, archiveDeployer, domain, serverGroup, domainManager)));
                 }
                 return serviceLoaderInstance.get().onlyOne(serviceClass);
             }
@@ -295,5 +339,49 @@ public abstract class CommonDomainDeployableContainer<T extends CommonDomainCont
             }
         }
         return null;
+    }
+
+    private String getContainerMode() {
+        final Container container = containerInst.get();
+        return container.getContainerConfiguration().getMode();
+    }
+
+    private String getContainerName() {
+        final Container container = containerInst.get();
+        return container.getName();
+    }
+
+    private boolean isControllable() {
+        final String mode = getContainerMode();
+        return "manual".equalsIgnoreCase(mode) || "custom".equalsIgnoreCase(mode);
+    }
+
+    private static Set<String> getServerGroups(final Archive<?> archive) throws DeploymentException {
+        if (archive instanceof ServerGroupArchive) {
+            return ((ServerGroupArchive<?>) archive).getServerGroups();
+        }
+        throw new DeploymentException("Could not determine the server-group to deploy the archive to.");
+    }
+
+    private static class DomainDelegateProvider implements DelegatingModelControllerClient.DelegateProvider {
+        static final DomainDelegateProvider INSTANCE = new DomainDelegateProvider();
+        private final AtomicReference<ModelControllerClient> delegate;
+
+        private DomainDelegateProvider() {
+            this.delegate = new AtomicReference<>();
+        }
+
+        void setDelegate(final ModelControllerClient client) {
+            delegate.set(client);
+        }
+
+        @Override
+        public ModelControllerClient getDelegate() {
+            final ModelControllerClient result = delegate.get();
+            if (result == null) {
+                throw new IllegalStateException("The client has been closed. Ensure the container has been started.");
+            }
+            return result;
+        }
     }
 }

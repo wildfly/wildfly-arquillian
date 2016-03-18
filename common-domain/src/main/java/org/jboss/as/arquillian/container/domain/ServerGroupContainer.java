@@ -15,7 +15,6 @@
  */
 package org.jboss.as.arquillian.container.domain;
 
-import java.util.Iterator;
 import java.util.Set;
 
 import org.jboss.arquillian.container.spi.Container.State;
@@ -34,6 +33,7 @@ import org.jboss.as.arquillian.container.domain.Domain.ServerGroup;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.descriptor.api.Descriptor;
+import org.wildfly.arquillian.domain.api.DomainManager;
 
 /**
  * @author <a href="mailto:aslak@redhat.com">Aslak Knutsen</a>
@@ -54,14 +54,14 @@ public class ServerGroupContainer implements DeployableContainer<EmptyConfigurat
     private ArchiveDeployer deployer;
     private ServerGroup serverGroup;
     private Domain domain;
-    private int operationTimeout;
+    private final DomainManager domainManager;
 
-    public ServerGroupContainer(ManagementClient client, ArchiveDeployer deployer, Domain domain, ServerGroup serverGroup, int operationTimeout) {
+    public ServerGroupContainer(ManagementClient client, ArchiveDeployer deployer, Domain domain, ServerGroup serverGroup, final DomainManager domainManager) {
         this.client = client;
         this.deployer = deployer;
         this.domain = domain;
         this.serverGroup = serverGroup;
-        this.operationTimeout = operationTimeout;
+        this.domainManager = domainManager;
     }
 
     @Override
@@ -77,17 +77,17 @@ public class ServerGroupContainer implements DeployableContainer<EmptyConfigurat
 
     @Override
     public void start() throws LifecycleException {
-        client.startServerGroup(serverGroup.getName());
-
-        waitForGroupMembers(true);
+        if (domainManager.isDomainStarted()) {
+            domainManager.startServers(serverGroup.getName());
+        }
         updateGroupMembersContainerState(State.STARTED);
     }
 
     @Override
     public void stop() throws LifecycleException {
-        client.stopServerGroup(serverGroup.getName());
-
-        waitForGroupMembers(false);
+        if (domainManager.isDomainStarted()) {
+            domainManager.stopServers(serverGroup.getName());
+        }
         updateGroupMembersContainerState(State.STOPPED);
     }
 
@@ -120,34 +120,6 @@ public class ServerGroupContainer implements DeployableContainer<EmptyConfigurat
     @Override
     public void undeploy(Descriptor descriptor) throws DeploymentException {
         throw new UnsupportedOperationException();
-    }
-
-    private void waitForGroupMembers(boolean shouldBeStarted) {
-        Set<Server> servers = domain.getServersInGroup(serverGroup);
-
-        long timeout = operationTimeout * 1000;
-        long sleep = 100;
-
-        while (timeout > 0 && servers.size() > 0) {
-            Iterator<Server> serverIterator = servers.iterator();
-            while (serverIterator.hasNext()) {
-                Server server = serverIterator.next();
-                if (shouldBeStarted == client.isServerStarted(server)) {
-                    serverIterator.remove();
-                }
-            }
-            try {
-                Thread.sleep(sleep);
-                timeout -= sleep;
-            } catch (InterruptedException e) {
-                throw new RuntimeException("Failed waiting for servers to " + (shouldBeStarted ? "start" : "stop"), e);
-            }
-        }
-        if(timeout <= 0) {
-            throw new RuntimeException(
-                    "Servers in group did not " + (shouldBeStarted ? "start":"stop") +
-                    " within set timeout [serverGroupOperationTimeoutInSeconds=" + operationTimeout + "]. " + servers);
-        }
     }
 
     /**

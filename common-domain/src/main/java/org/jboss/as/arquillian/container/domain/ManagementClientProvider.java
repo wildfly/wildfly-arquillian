@@ -21,6 +21,7 @@ import org.jboss.arquillian.container.test.impl.enricher.resource.OperatesOnDepl
 import org.jboss.arquillian.core.api.Instance;
 import org.jboss.arquillian.core.api.annotation.Inject;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.wildfly.arquillian.domain.AbstractTargetsContainerProvider;
 
 /**
  * {@link OperatesOnDeploymentAwareProvider} implementation to
@@ -28,7 +29,7 @@ import org.jboss.arquillian.test.api.ArquillianResource;
  * annotated fields.
  * @author <a href="mailto:alr@jboss.org">Andrew Lee Rubinger</a>
  */
-public class ManagementClientProvider extends OperatesOnDeploymentAwareProvider {
+public class ManagementClientProvider extends AbstractTargetsContainerProvider {
 
     @Inject
     private Instance<ManagementClient> managementClient;

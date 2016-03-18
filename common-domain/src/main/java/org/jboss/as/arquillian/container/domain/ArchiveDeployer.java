@@ -17,20 +17,25 @@ package org.jboss.as.arquillian.container.domain;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.concurrent.Future;
 
 import org.jboss.arquillian.container.spi.client.container.DeploymentException;
+import org.jboss.as.controller.client.helpers.domain.DeployDeploymentPlanBuilder;
 import org.jboss.as.controller.client.helpers.domain.DeploymentAction;
 import org.jboss.as.controller.client.helpers.domain.DeploymentPlan;
 import org.jboss.as.controller.client.helpers.domain.DeploymentPlanBuilder;
 import org.jboss.as.controller.client.helpers.domain.DeploymentPlanResult;
 import org.jboss.as.controller.client.helpers.domain.DomainDeploymentManager;
-import org.jboss.as.controller.client.helpers.domain.InitialDeploymentPlanBuilder;
+import org.jboss.as.controller.client.helpers.domain.InitialDeploymentSetBuilder;
 import org.jboss.as.controller.client.helpers.domain.ServerDeploymentPlanResult;
+import org.jboss.as.controller.client.helpers.domain.ServerGroupDeploymentPlanBuilder;
 import org.jboss.as.controller.client.helpers.domain.ServerGroupDeploymentPlanResult;
 import org.jboss.as.controller.client.helpers.domain.ServerUpdateResult;
+import org.jboss.as.controller.client.helpers.domain.UndeployDeploymentPlanBuilder;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
@@ -39,24 +44,47 @@ import org.jboss.shrinkwrap.api.exporter.ZipExporter;
  * A deployer that uses the {@link org.jboss.as.controller.client.helpers.standalone.ServerDeploymentManager}
  *
  * @author Thomas.Diesler@jboss.com
+ * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  * @since 17-Nov-2010
  */
 public class ArchiveDeployer {
 
     private static final Logger log = Logger.getLogger(ArchiveDeployer.class);
 
-    private DomainDeploymentManager deploymentManager;
+    private final DomainDeploymentManager deploymentManager;
 
     public ArchiveDeployer(DomainDeploymentManager deploymentManager) {
         this.deploymentManager = deploymentManager;
     }
 
     public String deploy(Archive<?> archive, String target) throws DeploymentException {
+        return deploy(archive, Collections.singleton(target));
+    }
+
+    /**
+     * Deploys the archive to multiple server groups.
+     *
+     * @param archive      the archive to deploy
+     * @param serverGroups the server groups to deploy to
+     *
+     * @return a unique identifier for the deployment
+     *
+     * @throws DeploymentException if an error occurs during deployment
+     */
+    public String deploy(Archive<?> archive, Set<String> serverGroups) throws DeploymentException {
+        if (serverGroups.isEmpty()) {
+            throw new DeploymentException("No target server groups to deploy to.");
+        }
         try {
             final InputStream input = archive.as(ZipExporter.class).exportAsInputStream();
             try {
-                InitialDeploymentPlanBuilder builder = deploymentManager.newDeploymentPlan();
-                DeploymentPlan plan = builder.add(archive.getName(), input).andDeploy().toServerGroup(target).withRollback().build();
+                InitialDeploymentSetBuilder builder = deploymentManager.newDeploymentPlan().withRollbackAcrossGroups();
+                final DeployDeploymentPlanBuilder deployBuilder = builder.add(archive.getName(), input).andDeploy();
+                ServerGroupDeploymentPlanBuilder serverGroupBuilder = null;
+                for (String target : serverGroups) {
+                    serverGroupBuilder = (serverGroupBuilder == null ? deployBuilder.toServerGroup(target) : serverGroupBuilder.toServerGroup(target));
+                }
+                DeploymentPlan plan = serverGroupBuilder.build();
                 DeploymentAction deployAction = plan.getDeploymentActions().get(plan.getDeploymentActions().size() - 1);
                 return executeDeploymentPlan(plan, deployAction);
             } finally {
@@ -74,9 +102,29 @@ public class ArchiveDeployer {
     }
 
     public void undeploy(String runtimeName, String target) throws DeploymentException {
+        undeploy(runtimeName, Collections.singleton(target));
+    }
+
+    /**
+     * Undeploys the content specified by the {@code runtimeName} from the server groups.
+     *
+     * @param runtimeName the name of the deployment
+     * @param serverGroups the server groups to deploy to
+     *
+     * @throws DeploymentException if an error occurs during undeployment
+     */
+    public void undeploy(String runtimeName, Set<String> serverGroups) throws DeploymentException {
+        if (serverGroups.isEmpty()) {
+            throw new DeploymentException("No target server groups to deploy to.");
+        }
         try {
             DeploymentPlanBuilder builder = deploymentManager.newDeploymentPlan();
-            DeploymentPlan plan = builder.undeploy(runtimeName).remove(runtimeName).toServerGroup(target).build();
+            UndeployDeploymentPlanBuilder undeployBuilder = builder.undeploy(runtimeName);
+            ServerGroupDeploymentPlanBuilder serverGroupBuilder = null;
+            for (String target : serverGroups) {
+                serverGroupBuilder = (serverGroupBuilder == null ? undeployBuilder.toServerGroup(target) : serverGroupBuilder.toServerGroup(target));
+            }
+            DeploymentPlan plan = serverGroupBuilder.build();
             Future<DeploymentPlanResult> future = deploymentManager.execute(plan);
             future.get();
         } catch (Exception ex) {

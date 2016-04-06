@@ -147,8 +147,10 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
                 serverAvailable = getManagementClient().isServerInRunningState();
                 timeout -= (System.currentTimeMillis() - before);
                 if (!serverAvailable) {
-                    if (processHasDied(process))
-                        break;
+                    if (processHasDied(process)) {
+                        final String msg = String.format("The java process starting the managed server exited unexpectedly with code [%d]", process.exitValue());
+                        throw new LifecycleException(msg);
+                    }
                     Thread.sleep(sleep);
                     timeout -= sleep;
                     sleep = Math.max(sleep / 2, 100);
@@ -160,6 +162,8 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
             }
             timeoutSupported = isOperationAttributeSupported("shutdown", "timeout");
 
+        } catch (LifecycleException e) {
+            throw e;
         } catch (Exception e) {
             throw new LifecycleException("Could not start container", e);
         }

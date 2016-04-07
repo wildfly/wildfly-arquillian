@@ -29,17 +29,14 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.Iterator;
-import java.util.Set;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
 import org.jboss.arquillian.container.spi.client.container.LifecycleException;
 import org.jboss.as.arquillian.container.domain.CommonDomainDeployableContainer;
-import org.jboss.as.arquillian.container.domain.Domain;
-import org.jboss.as.arquillian.container.domain.Domain.Server;
-import org.jboss.as.arquillian.container.domain.ManagementClient;
+import org.jboss.as.controller.client.helpers.ClientConstants;
+import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.core.launcher.DomainCommandBuilder;
 import org.wildfly.core.launcher.Launcher;
@@ -150,11 +147,6 @@ public class ManagedDomainDeployableContainer extends CommonDomainDeployableCont
     }
 
     @Override
-    protected void waitForStart(Domain domain, ManagementClient client) throws LifecycleException {
-        waitForAutoStartServersToStart(domain, client);
-    }
-
-    @Override
     protected void stopInternal() throws LifecycleException {
         if (shutdownThread != null) {
             Runtime.getRuntime().removeShutdownHook(shutdownThread);
@@ -180,18 +172,13 @@ public class ManagedDomainDeployableContainer extends CommonDomainDeployableCont
                 shutdown.start();
 
                 // Fetch the local-host-name attribute (e.g. "master")
-                ModelNode op = new ModelNode();
-                op.get("operation").set("read-attribute");
-                op.get("name").set("local-host-name");
+                ModelNode op = Operations.createReadAttributeOperation(new ModelNode().setEmptyList(), "local-host-name");
                 ModelNode result = getManagementClient().getControllerClient().execute(op, null);
-                String hostName = result.get("result").asString();
-
-                // AS7-6620: Create the shutdown operation and run it asynchronously and wait for process to terminate
-                op = new ModelNode();
-                op.get("operation").set("shutdown");
-                ModelNode address = op.get("address");
-                address.add("host", hostName);
-                getManagementClient().getControllerClient().executeAsync(op, null);
+                if (Operations.isSuccessfulOutcome(result)) {
+                    final String hostName = Operations.readResult(result).asString();
+                    op = Operations.createOperation("shutdown", Operations.createAddress(ClientConstants.HOST, hostName));
+                    getManagementClient().getControllerClient().executeAsync(op, null);
+                }
 
                 process.waitFor();
                 process = null;
@@ -199,6 +186,9 @@ public class ManagedDomainDeployableContainer extends CommonDomainDeployableCont
                 shutdown.interrupt();
             }
         } catch (Exception e) {
+            if (process != null) {
+                process.destroyForcibly();
+            }
             throw new LifecycleException("Could not stop container", e);
         }
     }
@@ -229,34 +219,6 @@ public class ManagedDomainDeployableContainer extends CommonDomainDeployableCont
                 + "change to another type of container.\n"
                 + "To disable this check and allow Arquillian to connect to a running server, "
                 + "set allowConnectingToRunningServer to true in the container configuration");
-    }
-
-    private void waitForAutoStartServersToStart(Domain domain, ManagementClient client) {
-        Set<Server> servers = domain.getAutoStartServers();
-
-        long startupTimeout = getContainerConfiguration().getAutoServerStartupTimeoutInSeconds();
-        long timeout = startupTimeout * 1000;
-        long sleep = 100;
-
-        while (timeout > 0 && servers.size() > 0) {
-            Iterator<Server> serverIterator = servers.iterator();
-            while (serverIterator.hasNext()) {
-                Server server = serverIterator.next();
-                if (client.isServerStarted(server)) {
-                    serverIterator.remove();
-                }
-            }
-            try {
-                Thread.sleep(sleep);
-                timeout -= sleep;
-            } catch (InterruptedException e) {
-                throw new RuntimeException("Failed waiting for servers to start", e);
-            }
-        }
-        if (timeout <= 0) {
-            throw new RuntimeException(
-                    "Auto started servers did not start within set timeout [autoServerStartupTimeoutInSeconds=" + startupTimeout + "]. " + servers);
-        }
     }
 
     /**

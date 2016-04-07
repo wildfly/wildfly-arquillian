@@ -69,10 +69,39 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
-                    <systemPropertyVariables>
-                        <jboss.home>${jboss.home}</jboss.home>
-                    </systemPropertyVariables>
+                    <skip>true</skip>
                 </configuration>
+                <executions>
+                    <execution>
+                        <id>default</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>test</goal>
+                        </goals>
+                        <configuration>
+                            <skip>false</skip>
+                            <excludedGroups>org.jboss.as.arquillian.container.domain.managed.test.ManualMode</excludedGroups>
+                            <systemPropertyVariables>
+                                <jboss.home>${jboss.home}</jboss.home>
+                            </systemPropertyVariables>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>manual</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>test</goal>
+                        </goals>
+                        <configuration>
+                            <skip>false</skip>
+                            <groups>org.jboss.as.arquillian.container.domain.managed.test.ManualMode</groups>
+                            <systemPropertyVariables>
+                                <arquillian.xml>manual-arquillian.xml</arquillian.xml>
+                                <jboss.home>${jboss.home}</jboss.home>
+                            </systemPropertyVariables>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
             <!-- Workaround for WFLY-6201 to allow tests to run with the servlet container only -->
             <plugin>

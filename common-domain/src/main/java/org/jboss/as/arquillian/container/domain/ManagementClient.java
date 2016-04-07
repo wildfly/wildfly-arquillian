@@ -25,7 +25,6 @@ import static org.jboss.as.controller.client.helpers.ClientConstants.OP;
 import static org.jboss.as.controller.client.helpers.ClientConstants.OP_ADDR;
 import static org.jboss.as.controller.client.helpers.ClientConstants.OUTCOME;
 import static org.jboss.as.controller.client.helpers.ClientConstants.PROXIES;
-import static org.jboss.as.controller.client.helpers.ClientConstants.READ_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.client.helpers.ClientConstants.READ_RESOURCE_OPERATION;
 import static org.jboss.as.controller.client.helpers.ClientConstants.RECURSIVE;
 import static org.jboss.as.controller.client.helpers.ClientConstants.RECURSIVE_DEPTH;
@@ -43,22 +42,19 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
-import javax.management.MBeanServerConnection;
-import javax.management.remote.JMXConnector;
-import javax.management.remote.JMXConnectorFactory;
-import javax.management.remote.JMXServiceURL;
-import javax.security.auth.callback.CallbackHandler;
 
 import org.jboss.arquillian.container.spi.client.protocol.metadata.HTTPContext;
 import org.jboss.arquillian.container.spi.client.protocol.metadata.Servlet;
 import org.jboss.as.arquillian.container.domain.Domain.Server;
 import org.jboss.as.arquillian.container.domain.Domain.ServerGroup;
 import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.client.helpers.DelegatingModelControllerClient;
 import org.jboss.as.controller.client.helpers.domain.DomainClient;
 import org.jboss.as.controller.client.helpers.domain.ServerIdentity;
 import org.jboss.as.controller.client.helpers.domain.ServerStatus;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
+import org.wildfly.arquillian.domain.api.DomainManager;
 
 /**
  * A helper class to join management related operations, like extract sub system ip/port (web/jmx) and deployment introspection.
@@ -70,8 +66,6 @@ public class ManagementClient {
     private static final String SUBDEPLOYMENT = "subdeployment";
     private static final String UNDERTOW = "undertow";
 
-    private static final String JMX = "jmx";
-
     private static final String PROTOCOL_HTTP = "http";
 
     private static final String NAME = "name";
@@ -82,33 +76,47 @@ public class ManagementClient {
 
     private static final int ROOT_RECURSIVE_DEPTH = 3;
 
-    private final String mgmtAddress;
-    private final int mgmtPort;
-    private final ModelControllerClient client;
+    private final DomainClient client;
+    private final DomainClient userClient;
     private final Map<String, URI> subsystemURICache;
+    private final DomainManager domainManager;
 
     // cache static RootNode
     private ModelNode rootNode = null;
 
-    private MBeanServerConnection connection;
-    private JMXConnector connector;
-
-    public ManagementClient(ModelControllerClient client, final String mgmtAddress, final int managementPort) {
+    /**
+     * Creates a new management client.
+     *
+     * @param client        the client to delegate management operations to
+     * @param domainManager the domain manager
+     */
+    protected ManagementClient(final ModelControllerClient client, final DomainManager domainManager) {
         if (client == null) {
             throw new IllegalArgumentException("Client must be specified");
         }
-        this.client = client;
-        this.mgmtAddress = mgmtAddress;
-        this.subsystemURICache = new HashMap<String, URI>();
-        this.mgmtPort = managementPort;
+        this.client = (client instanceof DomainClient ? ((DomainClient) client) : DomainClient.Factory.create(client));
+        this.subsystemURICache = new HashMap<>();
+        userClient = DomainClient.Factory.create(new NonClosingDomainClient(client));
+        this.domainManager = domainManager;
+    }
+
+    /**
+     * Creates a new management client.
+     *
+     * @param client         the client to delegate management operations to
+     * @param mgmtAddress    not used
+     * @param managementPort not used
+     */
+    public ManagementClient(final ModelControllerClient client, final String mgmtAddress, final int managementPort) {
+        this(client, new ContainerDomainManager("UNKNOWN", false, client,  (client != null)));
     }
 
     // -------------------------------------------------------------------------------------||
     // Public API -------------------------------------------------------------------------||
     // -------------------------------------------------------------------------------------||
 
-    public ModelControllerClient getControllerClient() {
-        return client;
+    public DomainClient getControllerClient() {
+        return userClient;
     }
 
     public Domain createDomain(Map<String, String> containerNameMap) {
@@ -181,58 +189,58 @@ public class ManagementClient {
         return context;
     }
 
+    /**
+     * Starts the servers in the server group.
+     *
+     * @param groupName the server group to start the servers for
+     *
+     * @throws IllegalStateException if the lifecycle is controlled by Arquillian or no container has been started
+     */
     public void startServerGroup(String groupName) {
-        try {
-            executeOperation("start-servers", new ModelNode().add(SERVER_GROUP, groupName));
-        } catch (Exception e) {
-            throw new RuntimeException("Could not start server-group " + groupName, e);
-        }
+        domainManager.startServers(groupName);
     }
 
+    /**
+     * Stops the servers in the server group.
+     *
+     * @param groupName the server group to stop the servers for
+     *
+     * @throws IllegalStateException if the lifecycle is controlled by Arquillian or no container has been started
+     */
     public void stopServerGroup(String groupName) {
-        try {
-            executeOperation("stop-servers", new ModelNode().add(SERVER_GROUP, groupName));
-        } catch (Exception e) {
-            throw new RuntimeException("Could not stop server-group " + groupName, e);
-        }
+        domainManager.stopServers(groupName);
     }
 
+    /**
+     * Starts the server on the host.
+     *
+     * @param server the server to start
+     *
+     * @throws IllegalStateException if the lifecycle is controlled by Arquillian or no container has been started
+     */
     public void startServer(Server server) {
-        try {
-            executeOperation("start", new ModelNode().add(HOST, server.getHost()).add(SERVER_CONFIG, server.getName()));
-        } catch (Exception e) {
-            throw new RuntimeException("Could not start server " + server, e);
-        }
+        domainManager.startServer(server.getHost(), server.getName());
     }
 
+    /**
+     * Stops the server on the host.
+     *
+     * @param server the server to stop
+     *
+     * @throws IllegalStateException if the lifecycle is controlled by Arquillian or no container has been started
+     */
     public void stopServer(Server server) {
-        try {
-            executeOperation("stop", new ModelNode().add(HOST, server.getHost()).add(SERVER_CONFIG, server.getName()));
-        } catch (Exception e) {
-            throw new RuntimeException("Could not stop server " + server, e);
-        }
+        domainManager.stopServer(server.getHost(), server.getName());
     }
 
     public boolean isServerStarted(Server server) {
-        try {
-
-            ModelNode result = readAttribute("status", createHostServerConfigAddress(server.getHost(), server.getName()));
-            if(result.asString().equalsIgnoreCase("STARTED")) {
-                result = readAttribute("server-state", createHostServerAddress(server.getHost(), server.getName()));
-                if(result.asString().equalsIgnoreCase("running")) {
-                    return true;
-                }
-            }
-            return false;
-
-        } catch (Exception ignored) { }
-        return false;
+        return domainManager.isServerStarted(server.getHost(), server.getName());
     }
 
     public boolean isDomainInRunningState() {
         final Map<ServerIdentity, ServerStatus> servers = new HashMap<>();
         try {
-            final Map<ServerIdentity, ServerStatus> statuses = ((DomainClient) client).getServerStatuses();
+            final Map<ServerIdentity, ServerStatus> statuses = client.getServerStatuses();
             for (ServerIdentity id : statuses.keySet()) {
                 final ServerStatus status = statuses.get(id);
                 switch (status) {
@@ -252,17 +260,9 @@ public class ManagementClient {
 
     public void close() {
         try {
-            getControllerClient().close();
+            client.close();
         } catch (IOException e) {
             throw new RuntimeException("Could not close connection", e);
-        } finally {
-            if (connector != null) {
-                try {
-                    connector.close();
-                } catch (IOException e) {
-                    throw new RuntimeException("Could not close JMX connection", e);
-                }
-            }
         }
     }
 
@@ -315,14 +315,6 @@ public class ManagementClient {
 
     private boolean isWebArchive(String deploymentName) {
         return deploymentName.endsWith(POSTFIX_WEB);
-    }
-
-    private ModelNode createHostServerAddress(String host, String server) {
-        return new ModelNode().add(HOST, host).add(SERVER, server);
-    }
-
-    private ModelNode createHostServerConfigAddress(String host, String server) {
-        return new ModelNode().add(HOST, host).add(SERVER_CONFIG, server);
     }
 
     private ModelNode createHostServerDeploymentAddress(String host, String server, String deploymentName) {
@@ -423,23 +415,6 @@ public class ManagementClient {
         return executeForResult(operation);
     }
 
-    private ModelNode readAttribute(String attribute, ModelNode address) throws Exception {
-        final ModelNode operation = new ModelNode();
-        operation.get(OP).set(READ_ATTRIBUTE_OPERATION);
-        operation.get(NAME).set(attribute);
-        operation.get(OP_ADDR).set(address);
-
-        return executeForResult(operation);
-    }
-
-    private ModelNode executeOperation(String operation, ModelNode address) throws Exception {
-        final ModelNode request = new ModelNode();
-        request.get(OP).set(operation);
-        request.get(OP_ADDR).set(address);
-
-        return executeForResult(request);
-    }
-
     private ModelNode executeForResult(final ModelNode operation) throws Exception {
         final ModelNode result = client.execute(operation);
         checkSuccessful(result, operation);
@@ -448,7 +423,6 @@ public class ManagementClient {
 
     private void checkSuccessful(final ModelNode result, final ModelNode operation) throws UnSuccessfulOperationException {
         if (!SUCCESS.equals(result.get(OUTCOME).asString())) {
-            System.out.println(result);
             throw new UnSuccessfulOperationException(result.get(FAILURE_DESCRIPTION).toString());
         }
     }
@@ -461,26 +435,15 @@ public class ManagementClient {
         }
     }
 
-    private MBeanServerConnection getConnection() {
-        if (connection == null) {
-            try {
-                final HashMap<String, Object> env = new HashMap<String, Object>();
-                env.put(CallbackHandler.class.getName(), Authentication.getCallbackHandler());
-                connector = JMXConnectorFactory.connect(getRemoteJMXURL(), env);
-                connection = connector.getMBeanServerConnection();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }
-        return connection;
-    }
+    private static class NonClosingDomainClient extends DelegatingModelControllerClient {
 
-    private JMXServiceURL getRemoteJMXURL() {
-        try {
-            return new JMXServiceURL("service:jmx:remoting-jmx://" + NetworkUtils.formatPossibleIpv6Address(mgmtAddress) + ":"
-                    + mgmtPort);
-        } catch (Exception e) {
-            throw new RuntimeException("Could not create JMXServiceURL:" + this, e);
+        public NonClosingDomainClient(final ModelControllerClient delegate) {
+            super(delegate);
+        }
+
+        @Override
+        public void close() throws IOException {
+            // Do nothing
         }
     }
 

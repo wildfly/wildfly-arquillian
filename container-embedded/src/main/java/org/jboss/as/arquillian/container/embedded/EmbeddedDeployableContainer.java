@@ -15,6 +15,8 @@
  */
 package org.jboss.as.arquillian.container.embedded;
 
+import java.util.Arrays;
+
 import org.jboss.arquillian.container.spi.client.container.LifecycleException;
 import org.jboss.as.arquillian.container.CommonDeployableContainer;
 import org.wildfly.core.embedded.EmbeddedServerFactory;
@@ -43,7 +45,8 @@ public final class EmbeddedDeployableContainer extends CommonDeployableContainer
         if (config.getCleanServerBaseDir() != null) {
             SecurityActions.setSystemProperty(EmbeddedStandAloneServerFactory.JBOSS_EMBEDDED_ROOT, config.getCleanServerBaseDir());
         }
-        server = EmbeddedServerFactory.create(config.getJbossHome(), config.getModulePath());
+        final String[] cmdArgs = getCommandArgs(config);
+        server = EmbeddedServerFactory.create(config.getJbossHome(), config.getModulePath(), null, cmdArgs);
     }
 
     @Override
@@ -68,5 +71,24 @@ public final class EmbeddedDeployableContainer extends CommonDeployableContainer
         } catch (Throwable e) {
             throw new LifecycleException("Could not invoke stop on: " + server, e);
         }
+    }
+
+    private static String[] getCommandArgs(final EmbeddedContainerConfiguration config) {
+        final String configFile = config.getServerConfig();
+        final String arguments = config.getJbossArguments();
+        if (arguments == null) {
+            if (configFile == null) {
+                return new String[0];
+            }
+            return new String[]{"-c=" + configFile};
+        }
+        if (configFile == null) {
+            return arguments.split("\\s+");
+        }
+        String[] args =  arguments.split("\\s+");
+        final int i = args.length;
+        args = Arrays.copyOf(args, i + 1);
+        args[i] = "-c=" + configFile;
+        return args;
     }
 }

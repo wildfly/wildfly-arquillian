@@ -34,6 +34,10 @@ public class EmbeddedContainerConfiguration extends CommonContainerConfiguration
 
     private String cleanServerBaseDir = System.getProperty(EmbeddedStandaloneServerFactory.JBOSS_EMBEDDED_ROOT);
 
+    private String jbossArguments;
+
+    private String serverConfig = System.getProperty("jboss.server.config.file.name");
+
     public EmbeddedContainerConfiguration() {
 
         // if no jbossHome is set use jboss.home of already running jvm
@@ -74,6 +78,22 @@ public class EmbeddedContainerConfiguration extends CommonContainerConfiguration
 
     public void setCleanServerBaseDir(String cleanServerBaseDir) {
         this.cleanServerBaseDir = cleanServerBaseDir;
+    }
+
+    public String getJbossArguments() {
+        return jbossArguments;
+    }
+
+    public void setJbossArguments(final String jbossArguments) {
+        this.jbossArguments = jbossArguments;
+    }
+
+    public String getServerConfig() {
+        return serverConfig;
+    }
+
+    public void setServerConfig(final String serverConfig) {
+        this.serverConfig = serverConfig;
     }
 
     /**

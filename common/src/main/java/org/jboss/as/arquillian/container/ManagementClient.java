@@ -488,7 +488,7 @@ public class ManagementClient implements Closeable {
     private static class UnSuccessfulOperationException extends Exception {
         private static final long serialVersionUID = 1L;
 
-        public UnSuccessfulOperationException(String message) {
+        UnSuccessfulOperationException(String message) {
             super(message);
         }
     }

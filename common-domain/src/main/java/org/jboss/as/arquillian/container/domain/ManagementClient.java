@@ -430,14 +430,14 @@ public class ManagementClient {
     private static class UnSuccessfulOperationException extends Exception {
         private static final long serialVersionUID = 1L;
 
-        public UnSuccessfulOperationException(String message) {
+        UnSuccessfulOperationException(String message) {
             super(message);
         }
     }
 
     private static class NonClosingDomainClient extends DelegatingModelControllerClient {
 
-        public NonClosingDomainClient(final ModelControllerClient delegate) {
+        NonClosingDomainClient(final ModelControllerClient delegate) {
             super(delegate);
         }
 

@@ -15,9 +15,13 @@
  */
 package org.jboss.as.arquillian.container.managed;
 
-import static org.wildfly.core.launcher.ProcessHelper.addShutdownHook;
-import static org.wildfly.core.launcher.ProcessHelper.destroyProcess;
-import static org.wildfly.core.launcher.ProcessHelper.processHasDied;
+import org.jboss.arquillian.container.spi.client.container.LifecycleException;
+import org.jboss.as.arquillian.container.CommonDeployableContainer;
+import org.jboss.as.controller.client.helpers.Operations;
+import org.jboss.as.server.logging.ServerLogger;
+import org.jboss.dmr.ModelNode;
+import org.wildfly.core.launcher.Launcher;
+import org.wildfly.core.launcher.StandaloneCommandBuilder;
 
 import java.io.File;
 import java.io.IOException;
@@ -35,13 +39,9 @@ import java.util.concurrent.TimeoutException;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
-import org.jboss.arquillian.container.spi.client.container.LifecycleException;
-import org.jboss.as.arquillian.container.CommonDeployableContainer;
-import org.jboss.as.controller.client.helpers.Operations;
-import org.jboss.as.server.logging.ServerLogger;
-import org.jboss.dmr.ModelNode;
-import org.wildfly.core.launcher.Launcher;
-import org.wildfly.core.launcher.StandaloneCommandBuilder;
+import static org.wildfly.core.launcher.ProcessHelper.addShutdownHook;
+import static org.wildfly.core.launcher.ProcessHelper.destroyProcess;
+import static org.wildfly.core.launcher.ProcessHelper.processHasDied;
 
 /**
  * The managed deployable container.
@@ -318,14 +318,18 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
     }
 
     private void failDueToRunning() throws LifecycleException {
+        final int managementPort = getContainerConfiguration().getManagementPort();
         throw new LifecycleException(
-                "The server is already running! " +
-                        "Managed containers do not support connecting to running server instances due to the " +
-                        "possible harmful effect of connecting to the wrong server. Please stop server before running or " +
-                        "change to another type of container.\n" +
-                        "To disable this check and allow Arquillian to connect to a running server, " +
-                        "set allowConnectingToRunningServer to true in the container configuration"
-        );
+                String.format("The port %1$d is already in use. It means that either the server might be already running " +
+                                "or there is another process using port %1$d.\n" +
+                                "Managed containers do not support connecting to running server instances due to the " +
+                                "possible harmful effect of connecting to the wrong server.\n" +
+                                "Please stop server (or another process) before running, " +
+                                "change to another type of container (e.g. remote) or use jboss.socket.binding.port-offset variable " +
+                                "to change the default port.\n" +
+                                "To disable this check and allow Arquillian to connect to a running server, " +
+                                "set allowConnectingToRunningServer to true in the container configuration",
+                        managementPort));
     }
 
     /**

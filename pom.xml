@@ -396,7 +396,6 @@
     </dependencyManagement>
 
     <dependencies>
-
         <dependency>
             <groupId>org.jboss.arquillian.core</groupId>
             <artifactId>arquillian-core-api</artifactId>
@@ -408,4 +407,10 @@
         </dependency>
     </dependencies>
 
+    <repositories>
+        <repository>
+            <id>jboss-public-repository</id>
+            <url>http://repository.jboss.org/nexus/content/groups/public/</url>
+        </repository>
+    </repositories>
 </project>

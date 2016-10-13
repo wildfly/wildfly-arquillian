@@ -256,9 +256,10 @@ public class ManagementClient implements Closeable {
             return SUCCESS.equals(rsp.get(OUTCOME).asString())
                     && !CONTROLLER_PROCESS_STATE_STARTING.equals(rsp.get(RESULT).asString())
                     && !CONTROLLER_PROCESS_STATE_STOPPING.equals(rsp.get(RESULT).asString());
-        } catch (RuntimeException rte) {
-            throw rte;
-        } catch (IOException ex) {
+        } catch (IOException | AssertionError ex) {
+            if (logger.isDebugEnabled()) {
+                logger.debug("Failed to execution operation.", ex);
+            }
             return false;
         }
     }

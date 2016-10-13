@@ -59,10 +59,6 @@
           <artifactId>arquillian-container-test-impl-base</artifactId>
         </dependency>
         <dependency>
-          <groupId>org.jboss.arquillian.protocol</groupId>
-          <artifactId>arquillian-protocol-servlet</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.wildfly.arquillian</groupId>
             <artifactId>wildfly-arquillian-testenricher-msc</artifactId>
         </dependency>

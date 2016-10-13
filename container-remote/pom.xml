@@ -28,9 +28,7 @@
     </parent>
 
     <artifactId>wildfly-arquillian-container-remote</artifactId>
-
     <name>WildFly: Arquillian Remote Container</name>
-
     <packaging>jar</packaging>
 
     <properties>

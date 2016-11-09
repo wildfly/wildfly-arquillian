@@ -38,6 +38,8 @@ public class EmbeddedContainerConfiguration extends CommonContainerConfiguration
 
     private String serverConfig = System.getProperty("jboss.server.config.file.name");
 
+    private String systemPackages = System.getProperty("jboss.modules.system.pkgs");
+
     public EmbeddedContainerConfiguration() {
 
         // if no jbossHome is set use jboss.home of already running jvm
@@ -94,6 +96,18 @@ public class EmbeddedContainerConfiguration extends CommonContainerConfiguration
 
     public void setServerConfig(final String serverConfig) {
         this.serverConfig = serverConfig;
+    }
+
+    public String getSystemPackages() {
+        return systemPackages;
+    }
+
+    public void setSystemPackages(String systemPackages) {
+        this.systemPackages = systemPackages;
+    }
+
+    public String[] getSystemPackagesArray() {
+        return (systemPackages == null || systemPackages.isEmpty()) ? null : systemPackages.split(",");
     }
 
     /**

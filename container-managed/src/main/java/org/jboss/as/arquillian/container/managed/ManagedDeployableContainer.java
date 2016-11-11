@@ -321,12 +321,12 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
         final int managementPort = getContainerConfiguration().getManagementPort();
         throw new LifecycleException(
                 String.format("The port %1$d is already in use. It means that either the server might be already running " +
-                                "or there is another process using port %1$d.\n" +
+                                "or there is another process using port %1$d.%n" +
                                 "Managed containers do not support connecting to running server instances due to the " +
-                                "possible harmful effect of connecting to the wrong server.\n" +
+                                "possible harmful effect of connecting to the wrong server.%n" +
                                 "Please stop server (or another process) before running, " +
                                 "change to another type of container (e.g. remote) or use jboss.socket.binding.port-offset variable " +
-                                "to change the default port.\n" +
+                                "to change the default port.%n" +
                                 "To disable this check and allow Arquillian to connect to a running server, " +
                                 "set allowConnectingToRunningServer to true in the container configuration",
                         managementPort));

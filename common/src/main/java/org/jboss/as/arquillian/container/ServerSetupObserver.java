@@ -152,7 +152,13 @@ public class ServerSetupObserver {
         if(deployed == null) {
             return;
         }
-        int count = deployed.get(container.getName());
+        Integer count = deployed.get(container.getName());
+        if (count == null) {
+            // The deployment was already undeployed or never deployed
+            // AfterUnDeploy and BeforeUnDeploy events are fired by arquillian-core regardless of deployment status
+            log.debugf("No deployments found for container %s.", container.getName());
+            return;
+        }
         deployed.put(container.getName(), --count);
         if (count == 0 && afterClassRun) {
             for (int i = setupTasksInForce.size() - 1; i >= 0; i--) {

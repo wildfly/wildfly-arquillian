@@ -27,7 +27,6 @@ import javax.management.MBeanServer;
 import org.jboss.arquillian.container.test.spi.TestRunner;
 import org.jboss.arquillian.protocol.jmx.JMXTestRunner;
 import org.jboss.arquillian.test.spi.TestResult;
-import org.jboss.arquillian.testenricher.msc.ServiceTargetAssociation;
 import org.jboss.as.arquillian.protocol.jmx.ExtendedJMXProtocolConfiguration;
 import org.jboss.as.jmx.MBeanServerService;
 import org.jboss.as.server.deployment.Attachments;

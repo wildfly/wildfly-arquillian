@@ -103,15 +103,19 @@ public class ArquillianConfig implements Service<ArquillianConfig> {
 
     @Override
     public synchronized void start(StartContext context) throws StartException {
-        ServiceTargetAssociation.setServiceTarget(context.getChildTarget());
         arquillianService.getValue().registerArquillianConfig(this);
+        for(String testClass : testClasses) {
+            ServiceTargetAssociation.setServiceTarget(testClass, context.getChildTarget());
+        }
     }
 
     @Override
     public synchronized void stop(StopContext context) {
         context.getController().setMode(Mode.REMOVE);
         arquillianService.getValue().unregisterArquillianConfig(this);
-        ServiceTargetAssociation.removeServiceTarget();
+        for(String testClass : testClasses) {
+            ServiceTargetAssociation.clearServiceTarget(testClass);
+        }
     }
 
     @Override

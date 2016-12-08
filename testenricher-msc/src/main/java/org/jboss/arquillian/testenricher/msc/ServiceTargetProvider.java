@@ -42,6 +42,10 @@ public class ServiceTargetProvider implements ResourceProvider {
     @Inject
     private Instance<ServiceTarget> serviceTarget;
 
+    @Inject
+    @ClassInjection
+    private Class testClass;
+
     @Override
     public boolean canProvide(final Class<?> type) {
         return type.isAssignableFrom(ServiceTarget.class);
@@ -49,7 +53,8 @@ public class ServiceTargetProvider implements ResourceProvider {
 
     @Override
     public Object lookup(ArquillianResource resource, Annotation... qualifiers) {
-        serviceTargetProducer.set(ServiceTargetAssociation.getServiceTarget());
-        return serviceTarget.get();
+        ServiceTarget serviceTarget = ServiceTargetAssociation.getServiceTarget(testClass.getName());
+        serviceTargetProducer.set(serviceTarget);
+        return serviceTarget;
     }
 }

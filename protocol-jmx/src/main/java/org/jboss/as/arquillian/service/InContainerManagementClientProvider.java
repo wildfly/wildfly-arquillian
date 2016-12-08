@@ -71,7 +71,7 @@ public class InContainerManagementClientProvider implements ResourceProvider {
                     managementPort = "9990";
                 }
                 if (protocol == null) {
-                    protocol = "http-remoting";
+                    protocol = "remote+http";
                 }
                 ModelControllerClient modelControllerClient = null;
                 final int port = Integer.parseInt(managementPort);

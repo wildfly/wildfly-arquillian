@@ -19,7 +19,6 @@ package org.jboss.as.arquillian.service;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.Attachments;
@@ -30,8 +29,6 @@ import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
 import org.jboss.logging.Logger;
-import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.StabilityMonitor;
 
 /**
  * Uses the annotation index to check whether there is a class annotated
@@ -41,7 +38,7 @@ import org.jboss.msc.service.StabilityMonitor;
  * @author Thomas.Diesler@jboss.com
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
-public class ArquillianConfigBuilder {
+class ArquillianConfigBuilder {
 
     private static final Logger log = Logger.getLogger("org.jboss.as.arquillian");
 
@@ -58,10 +55,10 @@ public class ArquillianConfigBuilder {
 
     private static final AttachmentKey<Set<String>> CLASSES = AttachmentKey.create(Set.class);
 
-    ArquillianConfigBuilder(DeploymentUnit deploymentUnit) {
+    ArquillianConfigBuilder() {
     }
 
-    static ArquillianConfig processDeployment(ArquillianService arqService, DeploymentUnit depUnit) {
+    static ArquillianConfig processDeployment(DeploymentUnit depUnit) {
 
         // Get Test Class Names
         final Set<String> testClasses = depUnit.getAttachment(CLASSES);
@@ -71,24 +68,7 @@ public class ArquillianConfigBuilder {
             return null;
         }
 
-        // FIXME: Why do we get another service started event from a deployment INSTALLED service?
-        ArquillianConfig arqConfig = new ArquillianConfig(arqService, depUnit, testClasses);
-        ServiceController<?> service = arqService.getServiceContainer().getService(arqConfig.getServiceName());
-        if (service != null) {
-            service.setMode(ServiceController.Mode.REMOVE);
-            final StabilityMonitor monitor = new StabilityMonitor();
-            monitor.addController(service);
-            try {
-                monitor.awaitStability(20, TimeUnit.SECONDS);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            } finally {
-                monitor.removeController(service);
-            }
-        }
-
-        depUnit.putAttachment(ArquillianConfig.KEY, arqConfig);
-        return arqConfig;
+        return new ArquillianConfig(testClasses, depUnit.getName());
     }
 
     static void handleParseAnnotations(final DeploymentUnit deploymentUnit) {
@@ -108,7 +88,7 @@ public class ArquillianConfigBuilder {
         final Set<ClassInfo> testNgTests = compositeIndex.getAllKnownSubclasses(testNGClassName);
 
         // Get Test Class Names
-        final Set<String> testClasses = new HashSet<String>();
+        final Set<String> testClasses = new HashSet<>();
         // JUnit
         for (AnnotationInstance instance : runWithList) {
             final AnnotationTarget target = instance.target();

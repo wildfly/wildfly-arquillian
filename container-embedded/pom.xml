@@ -92,29 +92,4 @@
             </plugin>
         </plugins>
     </build>
-    <profiles>
-        <profile>
-            <id>skip-wf9</id>
-            <activation>
-                <property>
-                    <name>wf9</name>
-                </property>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <artifactId>maven-surefire-plugin</artifactId>
-                        <configuration>
-                            <excludes>
-                                <!-- A change to the EmbeddedStandaloneServerFactory was made in WildFly Core 2.1.x.
-                                See https://github.com/wildfly/wildfly-core/pull/1093 -->
-                                <exclude>org/jboss/as/arquillian/container/embedded/CdiTestCase.java</exclude>
-                                <exclude>org/jboss/as/arquillian/container/embedded/DeploymentTestCase.java</exclude>
-                            </excludes>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
 </project>

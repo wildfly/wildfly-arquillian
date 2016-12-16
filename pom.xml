@@ -39,9 +39,8 @@
     <name>WildFly: Arquillian</name>
 
     <properties>
-        <version.com.google.guava>16.0.1</version.com.google.guava>
         <version.org.wildfly.core>2.0.10.Final</version.org.wildfly.core>
-        <version.org.wildfly.core.full>10.0.0.Final</version.org.wildfly.core.full>
+        <version.org.wildfly.full>10.0.0.Final</version.org.wildfly.full>
         <version.junit>4.12</version.junit>
         <version.org.jboss.arquillian.core>1.1.11.Final</version.org.jboss.arquillian.core>
         <version.org.wildfly.plugins.wildfly-maven-plugin>1.1.0.Alpha9</version.org.wildfly.plugins.wildfly-maven-plugin>
@@ -60,12 +59,13 @@
         <provisioning.config.dir>${project.parent.basedir}</provisioning.config.dir>
         <org.wildfly.groupId>org.wildfly</org.wildfly.groupId>
         <org.wildfly.artifactId>wildfly-servlet-feature-pack</org.wildfly.artifactId>
-        <org.wildfly.version>${version.org.wildfly.core.full}</org.wildfly.version>
+        <org.wildfly.version>${version.org.wildfly.full}</org.wildfly.version>
         <org.wildfly.dist-name>wildfly</org.wildfly.dist-name>
         <jboss.home>${basedir}/target/${org.wildfly.dist-name}</jboss.home>
 
         <!-- Other properties -->
         <maven.test.redirectTestOutputToFile>true</maven.test.redirectTestOutputToFile>
+        <org.wildfly.execute.full.tests>true</org.wildfly.execute.full.tests>
     </properties>
 
     <licenses>
@@ -217,18 +217,6 @@
             </dependency>
 
             <!-- External dependencies -->
-
-            <dependency>
-                <groupId>com.google.guava</groupId>
-                <artifactId>guava</artifactId>
-                <version>${version.com.google.guava}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>com.google.code.findbugs</groupId>
-                        <artifactId>jsr305</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
 
             <dependency>
                 <groupId>org.wildfly.core</groupId>
@@ -452,59 +440,6 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
-
-    <profiles>
-        <profile>
-            <id>wf9</id>
-            <activation>
-                <property>
-                    <name>wf9</name>
-                </property>
-            </activation>
-            <properties>
-                <org.wildfly.groupId>org.wildfly</org.wildfly.groupId>
-                <org.wildfly.artifactId>wildfly-feature-pack</org.wildfly.artifactId>
-                <org.wildfly.version>9.0.2.Final</org.wildfly.version>
-            </properties>
-            <build>
-                <plugins>
-                    <plugin>
-                        <artifactId>maven-surefire-plugin</artifactId>
-                        <configuration>
-                            <systemProperties>
-                                <org.wildfly.execute.full.tests>true</org.wildfly.execute.full.tests>
-                            </systemProperties>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-        <profile>
-            <id>wf10</id>
-            <activation>
-                <property>
-                    <name>wf10</name>
-                </property>
-            </activation>
-            <properties>
-                <org.wildfly.groupId>org.wildfly</org.wildfly.groupId>
-                <org.wildfly.artifactId>wildfly-feature-pack</org.wildfly.artifactId>
-                <org.wildfly.version>10.0.0.Final</org.wildfly.version>
-            </properties>
-            <build>
-                <plugins>
-                    <plugin>
-                        <artifactId>maven-surefire-plugin</artifactId>
-                        <configuration>
-                            <systemProperties>
-                                <org.wildfly.execute.full.tests>true</org.wildfly.execute.full.tests>
-                            </systemProperties>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
 
     <repositories>
         <repository>

@@ -153,6 +153,10 @@ public class ServerSetupObserver {
             return;
         }
         int count = deployed.get(container.getName());
+        // this should never happen
+        if (count == 0) {
+            throw new RuntimeException("Deployment count on container " + container.getName() + " is negative; please check the test case for unexpected deploy / undeploy activity");
+        }
         deployed.put(container.getName(), --count);
         if (count == 0 && afterClassRun) {
             for (int i = setupTasksInForce.size() - 1; i >= 0; i--) {

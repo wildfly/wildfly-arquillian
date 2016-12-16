@@ -22,7 +22,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-
 import javax.management.MBeanServer;
 
 import org.jboss.arquillian.container.test.spi.TestRunner;
@@ -38,7 +37,6 @@ import org.jboss.modules.Module;
 import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
@@ -64,29 +62,22 @@ public class ArquillianService implements Service<ArquillianService> {
     private static final Logger log = Logger.getLogger("org.jboss.as.arquillian");
 
     private final InjectedValue<MBeanServer> injectedMBeanServer = new InjectedValue<MBeanServer>();
-    private final Set<ArquillianConfig> deployedTests = new HashSet<ArquillianConfig>();
-    private ServiceContainer serviceContainer;
-    private ServiceTarget serviceTarget;
-    private JMXTestRunner jmxTestRunner;
-    AbstractServiceListener<Object> listener;
+    private final Set<ArquillianConfig> deployedTests = new HashSet<>();
+    private volatile JMXTestRunner jmxTestRunner;
+    private volatile AbstractServiceListener<Object> listener;
 
     public static void addService(final ServiceTarget serviceTarget) {
         ArquillianService service = new ArquillianService();
         ServiceBuilder<?> builder = serviceTarget.addService(ArquillianService.SERVICE_NAME, service);
         builder.addDependency(MBeanServerService.SERVICE_NAME, MBeanServer.class, service.injectedMBeanServer);
+        builder.setInitialMode(ServiceController.Mode.ACTIVE);
         builder.install();
-    }
-
-    ServiceContainer getServiceContainer() {
-        return serviceContainer;
     }
 
     public synchronized void start(StartContext context) throws StartException {
         log.debugf("Starting Arquillian Test Runner");
 
         final MBeanServer mbeanServer = injectedMBeanServer.getValue();
-        serviceContainer = context.getController().getServiceContainer();
-        serviceTarget = context.getChildTarget();
         try {
             jmxTestRunner = new ExtendedJMXTestRunner();
             jmxTestRunner.registerMBean(mbeanServer);
@@ -94,43 +85,8 @@ public class ArquillianService implements Service<ArquillianService> {
             throw new StartException("Failed to start Arquillian Test Runner", t);
         }
 
-        final ArquillianService arqService = this;
-        listener = new AbstractServiceListener<Object>() {
-
-            @Override
-            public void transition(ServiceController<? extends Object> serviceController, ServiceController.Transition transition) {
-                switch (transition.getAfter()) {
-                    case UP: {
-                        ServiceName serviceName = serviceController.getName();
-                        String simpleName = serviceName.getSimpleName();
-                        if (JBOSS_DEPLOYMENT.isParentOf(serviceName) && simpleName.equals(Phase.INSTALL.toString())) {
-                            ServiceName parentName = serviceName.getParent();
-                            ServiceController<?> parentController = serviceContainer.getService(parentName);
-                            DeploymentUnit depUnit = (DeploymentUnit) parentController.getValue();
-                            ArquillianConfig arqConfig = ArquillianConfigBuilder.processDeployment(arqService, depUnit);
-                            if (arqConfig != null) {
-                                log.infof("Arquillian deployment detected: %s", arqConfig);
-                                ServiceBuilder<ArquillianConfig> builder = arqConfig.buildService(serviceTarget, serviceController);
-                                builder.install();
-                            }
-                        }
-                    }
-                    break;
-                    case STARTING: {
-                        ServiceName serviceName = serviceController.getName();
-                        String simpleName = serviceName.getSimpleName();
-                        if(JBOSS_DEPLOYMENT.isParentOf(serviceName) && simpleName.equals(Phase.DEPENDENCIES.toString())) {
-                            ServiceName parentName = serviceName.getParent();
-                            ServiceController<?> parentController = serviceContainer.getService(parentName);
-                            DeploymentUnit depUnit = (DeploymentUnit) parentController.getValue();
-                            ArquillianConfigBuilder.handleParseAnnotations(depUnit);
-                        }
-                    }
-                    break;
-                }
-            }
-        };
-        serviceContainer.addListener(listener);
+        listener = new ArquillianServiceListener(context.getChildTarget());
+        context.getController().getServiceContainer().addListener(listener);
     }
 
     public synchronized void stop(StopContext context) {
@@ -143,6 +99,7 @@ public class ArquillianService implements Service<ArquillianService> {
             log.errorf(ex, "Cannot stop Arquillian Test Runner");
         } finally {
             context.getController().getServiceContainer().removeListener(listener);
+
         }
     }
 
@@ -203,12 +160,12 @@ public class ArquillianService implements Service<ArquillianService> {
         public byte[] runTestMethod(final String className, final String methodName, Map<String, String> protocolProps) {
             // Setup the ContextManager
             ArquillianConfig config = getArquillianConfig(className, 30000L);
-            Map<String, Object> properties = Collections.<String, Object>singletonMap(TEST_CLASS_PROPERTY, className);
+            Map<String, Object> properties = Collections.singletonMap(TEST_CLASS_PROPERTY, className);
             ContextManager contextManager = setupContextManager(config, properties);
             try {
                 ClassLoader runWithClassLoader = ClassLoader.getSystemClassLoader();
                 if (Boolean.parseBoolean(protocolProps.get(ExtendedJMXProtocolConfiguration.PROPERTY_ENABLE_TCCL))) {
-                    DeploymentUnit depUnit = config.getDeploymentUnit();
+                    DeploymentUnit depUnit = config.getDeploymentUnit().getValue();
                     Module module = depUnit.getAttachment(Attachments.MODULE);
                     if (module != null) {
                         runWithClassLoader = module.getClassLoader();
@@ -232,7 +189,7 @@ public class ArquillianService implements Service<ArquillianService> {
             ClassLoader runWithClassLoader = ClassLoader.getSystemClassLoader();
             if (Boolean.parseBoolean(protocolProps.get(ExtendedJMXProtocolConfiguration.PROPERTY_ENABLE_TCCL))) {
                 ArquillianConfig config = getArquillianConfig(testClass.getName(), 30000L);
-                DeploymentUnit depUnit = config.getDeploymentUnit();
+                DeploymentUnit depUnit = config.getDeploymentUnit().getValue();
                 Module module = depUnit.getAttachment(Attachments.MODULE);
                 if (module != null) {
                     runWithClassLoader = module.getClassLoader();
@@ -248,7 +205,7 @@ public class ArquillianService implements Service<ArquillianService> {
 
         private ContextManager setupContextManager(final ArquillianConfig config, final Map<String, Object> properties) {
             try {
-                final DeploymentUnit depUnit = config.getDeploymentUnit();
+                final DeploymentUnit depUnit = config.getDeploymentUnit().getValue();
                 final ContextManagerBuilder builder = new ContextManagerBuilder(config).addAll(depUnit);
                 ContextManager contextManager = builder.build();
                 contextManager.setup(properties);
@@ -269,6 +226,51 @@ public class ArquillianService implements Service<ArquillianService> {
                 throw new ClassNotFoundException("No Arquillian config found for: " + className);
 
             return arqConfig.loadClass(className);
+        }
+    }
+
+    private static class ArquillianServiceListener extends AbstractServiceListener<Object> {
+        private ServiceTarget serviceTarget;
+
+        private ArquillianServiceListener(ServiceTarget serviceTarget) {
+            this.serviceTarget = serviceTarget;
+        }
+
+        @Override
+        public void transition(ServiceController<? extends Object> serviceController, ServiceController.Transition transition) {
+            switch (transition.getAfter()) {
+                case UP: {
+                    ServiceName serviceName = serviceController.getName();
+                    String simpleName = serviceName.getSimpleName();
+                    if (JBOSS_DEPLOYMENT.isParentOf(serviceName) && simpleName.equals(Phase.INSTALL.toString())) {
+                        ServiceName parentName = serviceName.getParent();
+                        ServiceController<?> parentController = serviceController.getServiceContainer().getService(parentName);
+                        DeploymentUnit depUnit = (DeploymentUnit) parentController.getValue();
+                        ArquillianConfig arqConfig = ArquillianConfigBuilder.processDeployment(depUnit);
+                        if (arqConfig != null) {
+                            log.infof("Arquillian deployment detected: %s", arqConfig);
+                            ServiceBuilder<ArquillianConfig> builder = serviceTarget.addService(arqConfig.getServiceName(), arqConfig)
+                                    .addDependency(ArquillianService.SERVICE_NAME, ArquillianService.class, arqConfig.getArquillianService())
+                                    .addDependency(parentController.getName(), DeploymentUnit.class, arqConfig.getDeploymentUnit());
+                            arqConfig.addDeps(builder, serviceController);
+                            builder.setInitialMode(ServiceController.Mode.ACTIVE);
+                            builder.install();
+                        }
+                    }
+                }
+                break;
+                case STARTING: {
+                    ServiceName serviceName = serviceController.getName();
+                    String simpleName = serviceName.getSimpleName();
+                    if(JBOSS_DEPLOYMENT.isParentOf(serviceName) && simpleName.equals(Phase.DEPENDENCIES.toString())) {
+                        ServiceName parentName = serviceName.getParent();
+                        ServiceController<?> parentController = serviceController.getServiceContainer().getService(parentName);
+                        DeploymentUnit depUnit = (DeploymentUnit) parentController.getValue();
+                        ArquillianConfigBuilder.handleParseAnnotations(depUnit);
+                    }
+                }
+                break;
+            }
         }
     }
 }

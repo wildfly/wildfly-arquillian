@@ -30,6 +30,7 @@ import org.jboss.arquillian.container.spi.event.container.BeforeDeploy;
 import org.jboss.arquillian.core.api.Instance;
 import org.jboss.arquillian.core.api.annotation.Inject;
 import org.jboss.arquillian.core.api.annotation.Observes;
+import org.jboss.arquillian.core.spi.EventContext;
 import org.jboss.arquillian.test.spi.context.ClassContext;
 import org.jboss.arquillian.test.spi.event.suite.AfterClass;
 import org.jboss.as.arquillian.api.ServerSetup;
@@ -115,36 +116,40 @@ public class ServerSetupObserver {
         active.put(container.getName(), client);
     }
 
-    public synchronized void afterTestClass(@Observes AfterClass afterClass) throws Exception {
-        if (setupTasksInForce.isEmpty()) {
-            return;
-        }
-        //clean up if there are no more deployments on the server
-        //otherwise we clean up after the last deployment is removed
-        final Iterator<Map.Entry<String, Integer>> it = deployed.entrySet().iterator();
-        while (it.hasNext()) {
-            Map.Entry<String, Integer> container = it.next();
-            if (container.getValue() == 0) {
-                if (active.containsKey(container.getKey())) {
-                    ManagementClient client = active.get(container.getKey());
-                    for (int i = setupTasksInForce.size() - 1; i >= 0; i--) {
-                        try {
-                            setupTasksInForce.get(i).tearDown(client, container.getKey());
-                        } catch (Exception e) {
-                            log.error("Setup task failed during tear down. Offending class '" + setupTasksAll.get(i) + "'", e);
+    public synchronized void afterTestClass(@Observes EventContext<AfterClass> eventContext) throws Exception {
+        try {
+            if (setupTasksInForce.isEmpty()) {
+                return;
+            }
+            //clean up if there are no more deployments on the server
+            //otherwise we clean up after the last deployment is removed
+            final Iterator<Map.Entry<String, Integer>> it = deployed.entrySet().iterator();
+            while (it.hasNext()) {
+                Map.Entry<String, Integer> container = it.next();
+                if (container.getValue() == 0) {
+                    if (active.containsKey(container.getKey())) {
+                        ManagementClient client = active.get(container.getKey());
+                        for (int i = setupTasksInForce.size() - 1; i >= 0; i--) {
+                            try {
+                                setupTasksInForce.get(i).tearDown(client, container.getKey());
+                            } catch (Exception e) {
+                                log.error("Setup task failed during tear down. Offending class '" + setupTasksAll.get(i) + "'", e);
+                            }
                         }
+                        active.remove(container.getKey());
+                        it.remove();
                     }
-                    active.remove(container.getKey());
-                    it.remove();
                 }
             }
-        }
-        afterClassRun = true;
-        if (deployed.isEmpty()) {
-            deployed = null;
-            setupTasksAll.clear();
-            setupTasksInForce.clear();
-            afterClassRun = false;
+            afterClassRun = true;
+            if (deployed.isEmpty()) {
+                deployed = null;
+                setupTasksAll.clear();
+                setupTasksInForce.clear();
+                afterClassRun = false;
+            }
+        } finally {
+            eventContext.proceed();
         }
     }
 

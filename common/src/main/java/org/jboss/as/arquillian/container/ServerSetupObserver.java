@@ -116,7 +116,7 @@ public class ServerSetupObserver {
     }
 
     public synchronized void afterTestClass(@Observes AfterClass afterClass) throws Exception {
-        if (setupTasksInForce.isEmpty()) {
+        if (deployed == null) {
             return;
         }
         //clean up if there are no more deployments on the server
@@ -134,9 +134,9 @@ public class ServerSetupObserver {
                             log.error("Setup task failed during tear down. Offending class '" + setupTasksAll.get(i) + "'", e);
                         }
                     }
-                    active.remove(container.getKey());
-                    it.remove();
                 }
+                active.remove(container.getKey());
+                it.remove();
             }
         }
         afterClassRun = true;

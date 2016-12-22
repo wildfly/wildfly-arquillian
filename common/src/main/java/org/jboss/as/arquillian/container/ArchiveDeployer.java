@@ -17,29 +17,37 @@ package org.jboss.as.arquillian.container;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collections;
+import java.util.IdentityHashMap;
+import java.util.Set;
 
 import org.jboss.arquillian.container.spi.client.container.DeploymentException;
 import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentHelper;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
+import org.wildfly.plugin.core.Deployment;
+import org.wildfly.plugin.core.DeploymentManager;
+import org.wildfly.plugin.core.DeploymentResult;
+import org.wildfly.plugin.core.UndeployDescription;
 
 /**
- * A deployer that uses the {@link ServerDeploymentHelper}.
+ * Allows deployment operations to be executed on a running server.
  *
  * <p>
  * The client is not closed by an instance of this and is the responsibility of the user to clean up the client instance.
  * </p>
  *
  * @author Thomas.Diesler@jboss.com
+ * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  * @since 17-Nov-2010
  */
+@SuppressWarnings({"WeakerAccess", "unused"})
 public class ArchiveDeployer {
 
     private static final Logger log = Logger.getLogger(ArchiveDeployer.class);
 
-    private final ServerDeploymentHelper deployer;
+    private final DeploymentManager deploymentManager;
     private final ManagementClient client;
 
     /**
@@ -55,7 +63,7 @@ public class ArchiveDeployer {
      */
     @Deprecated
     public ArchiveDeployer(ModelControllerClient modelControllerClient) {
-        this.deployer = new ServerDeploymentHelper(modelControllerClient);
+        this.deploymentManager = DeploymentManager.Factory.create(modelControllerClient);
         client = null;
     }
 
@@ -66,7 +74,7 @@ public class ArchiveDeployer {
      */
     public ArchiveDeployer(ManagementClient client) {
         this.client = client;
-        this.deployer = new ServerDeploymentHelper(client.getControllerClient());
+        this.deploymentManager = DeploymentManager.Factory.create(client.getControllerClient());
     }
 
     /**
@@ -107,11 +115,44 @@ public class ArchiveDeployer {
      * @param runtimeName the runtime name for the deployment
      */
     public void undeploy(String runtimeName) {
+        undeploy(runtimeName, true);
+    }
+
+    /**
+     * Removes an archive from the running container.
+     * <p>
+     * All exceptions are caught and logged as a warning. {@link Error Errors} will still be thrown however.
+     * </p>
+     *
+     * @param runtimeName   the runtime name for the deployment
+     * @param failOnMissing {@code true} if the undeploy should fail if the deployment was not found on the server,
+     *                      {@code false} if the deployment does not exist and the undeploy should be ignored
+     */
+    @SuppressWarnings("SameParameterValue")
+    public void undeploy(final String runtimeName, final boolean failOnMissing) {
+        checkState();
         try {
-            deployer.undeploy(runtimeName);
+            final DeploymentResult result = deploymentManager.undeploy(UndeployDescription.of(runtimeName).setFailOnMissing(failOnMissing));
+            if (!result.successful()) {
+                log.warnf("Failed to undeploy %s: %s", runtimeName, result.getFailureMessage());
+            }
         } catch (Exception ex) {
             log.warnf(ex, "Cannot undeploy: %s", runtimeName);
         }
+    }
+
+    /**
+     * Checks if the deployment content is on the server.
+     *
+     * @param name the name of the deployment
+     *
+     * @return {@code true} if the deployment content exists otherwise {@code false}
+     *
+     * @throws IOException if a failure occurs communicating with the server
+     */
+    public boolean hasDeployment(final String name) throws IOException {
+        checkState();
+        return deploymentManager.hasDeployment(name);
     }
 
     private String deployInternal(Archive<?> archive) throws DeploymentException {
@@ -131,15 +172,16 @@ public class ArchiveDeployer {
 
     private String deployInternal(String name, InputStream input) throws DeploymentException {
         checkState();
+        final DeploymentResult result;
         try {
-            return deployer.deploy(name, input);
+            result = deploymentManager.deploy(Deployment.of(input, name));
         } catch (Exception ex) {
-            Throwable rootCause = ex.getCause();
-            while (null != rootCause && rootCause.getCause() != null) {
-                rootCause = rootCause.getCause();
-            }
-            throw new DeploymentException("Cannot deploy: " + name, rootCause);
+            throw createException("Cannot deploy: " + name, ex);
         }
+        if (result.successful()) {
+            return name;
+        }
+        throw new DeploymentException(String.format("Cannot deploy %s: %s", name, result.getFailureMessage()));
     }
 
     private void checkState() {
@@ -147,5 +189,30 @@ public class ArchiveDeployer {
         if (client != null && client.isClosed()) {
             throw new IllegalStateException("The client connection has been closed.");
         }
+    }
+
+    /**
+     * Creates a deployment exception with the root cause of the exception adding any other causes as a suppressed
+     * exception.
+     *
+     * @param message the message for the exception
+     * @param cause   the first cause
+     *
+     * @return a deployment exception for the error
+     */
+    private static DeploymentException createException(final String message, final Throwable cause) {
+        final Set<Throwable> causes = Collections.newSetFromMap(new IdentityHashMap<>());
+        Throwable currentCause = cause;
+        Throwable rootCause = currentCause;
+        while (currentCause != null) {
+            currentCause = currentCause.getCause();
+            if (currentCause != null) {
+                causes.add(currentCause);
+                rootCause = currentCause;
+            }
+        }
+        final DeploymentException result = new DeploymentException(message, rootCause);
+        causes.forEach(result::addSuppressed);
+        return result;
     }
 }

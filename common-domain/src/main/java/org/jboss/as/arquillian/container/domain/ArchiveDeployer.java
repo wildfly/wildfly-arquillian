@@ -39,26 +39,72 @@ import org.jboss.as.controller.client.helpers.domain.UndeployDeploymentPlanBuild
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
+import org.wildfly.common.Assert;
+import org.wildfly.plugin.core.Deployment;
+import org.wildfly.plugin.core.DeploymentManager;
+import org.wildfly.plugin.core.DeploymentResult;
+import org.wildfly.plugin.core.UndeployDescription;
 
 /**
- * A deployer that uses the {@link org.jboss.as.controller.client.helpers.standalone.ServerDeploymentManager}
+ * Allows deployment operations to be executed on a running server.
+ *
+ * <p>
+ * The client is not closed by an instance of this and is the responsibility of the user to clean up the client instance.
+ * </p>
  *
  * @author Thomas.Diesler@jboss.com
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  * @since 17-Nov-2010
  */
+@SuppressWarnings({"WeakerAccess", "TypeMayBeWeakened", "DeprecatedIsStillUsed", "deprecation", "unused"})
 public class ArchiveDeployer {
 
     private static final Logger log = Logger.getLogger(ArchiveDeployer.class);
 
-    private final DomainDeploymentManager deploymentManager;
+    // This should be removed at some point, but for compatibility we'll keep it
+    @Deprecated
+    private final DomainDeploymentManager deploymentManagerDeprecated;
+    private final DeploymentManager deploymentManager;
 
+    /**
+     * Creates a new deployer.
+     *
+     * @param deploymentManager the deployment manager to use
+     *
+     * @see #ArchiveDeployer(ManagementClient)
+     * @deprecated the {@link DomainDeploymentManager} will no longer be used in future releases, use the
+     * {@link #ArchiveDeployer(ManagementClient)} constructor
+     */
+    @Deprecated
     public ArchiveDeployer(DomainDeploymentManager deploymentManager) {
-        this.deploymentManager = deploymentManager;
+        Assert.checkNotNullParam("deploymentManager", deploymentManager);
+        this.deploymentManagerDeprecated = deploymentManager;
+        this.deploymentManager = null;
     }
 
-    public String deploy(Archive<?> archive, String target) throws DeploymentException {
-        return deploy(archive, Collections.singleton(target));
+    /**
+     * Creates a new deployer.
+     *
+     * @param client the client used to communicate with the server
+     */
+    public ArchiveDeployer(final ManagementClient client) {
+        Assert.checkNotNullParam("client", client);
+        deploymentManagerDeprecated = null;
+        this.deploymentManager = DeploymentManager.Factory.create(client.getControllerClient());
+    }
+
+    /**
+     * Deploys the archive to the server group.
+     *
+     * @param archive     the archive to deploy
+     * @param serverGroup the server group to deploy to
+     *
+     * @return a unique identifier for the deployment
+     *
+     * @throws DeploymentException if an error occurs during deployment
+     */
+    public String deploy(Archive<?> archive, String serverGroup) throws DeploymentException {
+        return deploy(archive, Collections.singleton(serverGroup));
     }
 
     /**
@@ -77,39 +123,62 @@ public class ArchiveDeployer {
         }
         try {
             final InputStream input = archive.as(ZipExporter.class).exportAsInputStream();
-            try {
-                InitialDeploymentSetBuilder builder = deploymentManager.newDeploymentPlan().withRollbackAcrossGroups();
-                final DeployDeploymentPlanBuilder deployBuilder = builder.add(archive.getName(), input).andDeploy();
-                ServerGroupDeploymentPlanBuilder serverGroupBuilder = null;
-                for (String target : serverGroups) {
-                    serverGroupBuilder = (serverGroupBuilder == null ? deployBuilder.toServerGroup(target) : serverGroupBuilder.toServerGroup(target));
+            // If a deployment manager is available use it, otherwise default to the previous behavior
+            if (deploymentManager != null) {
+                final String name = archive.getName();
+                final DeploymentResult result = deploymentManager.deploy(Deployment.of(input, name)
+                        .setServerGroups(serverGroups));
+                if (!result.successful()) {
+                    throw new DeploymentException("Could not deploy to container: " + result.getFailureMessage());
                 }
-                DeploymentPlan plan = serverGroupBuilder.build();
-                DeploymentAction deployAction = plan.getDeploymentActions().get(plan.getDeploymentActions().size() - 1);
-                return executeDeploymentPlan(plan, deployAction);
-            } finally {
-                if (input != null)
-                    try {
-                        input.close();
-                    } catch (IOException e) {
-                        log.warnf(e, "Failed to close resource %s", input);
+                return name;
+            } else {
+                // Fallback behavior if constructed with a DomainDeploymentManager
+                try {
+                    InitialDeploymentSetBuilder builder = deploymentManagerDeprecated.newDeploymentPlan().withRollbackAcrossGroups();
+                    final DeployDeploymentPlanBuilder deployBuilder = builder.add(archive.getName(), input).andDeploy();
+                    ServerGroupDeploymentPlanBuilder serverGroupBuilder = null;
+                    for (String target : serverGroups) {
+                        serverGroupBuilder = (serverGroupBuilder == null ? deployBuilder.toServerGroup(target) : serverGroupBuilder.toServerGroup(target));
                     }
+                    @SuppressWarnings("ConstantConditions")
+                    DeploymentPlan plan = serverGroupBuilder.build();
+                    DeploymentAction deployAction = plan.getDeploymentActions().get(plan.getDeploymentActions().size() - 1);
+                    return executeDeploymentPlan(plan, deployAction);
+                } finally {
+                    if (input != null)
+                        try {
+                            input.close();
+                        } catch (IOException e) {
+                            log.warnf(e, "Failed to close resource %s", input);
+                        }
+                }
             }
 
+        } catch (DeploymentException e) {
+            throw e;
         } catch (Exception e) {
             throw new DeploymentException("Could not deploy to container", e);
         }
     }
 
-    public void undeploy(String runtimeName, String target) throws DeploymentException {
-        undeploy(runtimeName, Collections.singleton(target));
+    /**
+     * Undeploys the content specified by the {@code runtimeName} from the server group.
+     *
+     * @param runtimeName the name of the deployment
+     * @param serverGroup the server group to undeploy to
+     *
+     * @throws DeploymentException if an error occurs during undeployment
+     */
+    public void undeploy(final String runtimeName, final String serverGroup) throws DeploymentException {
+        undeploy(runtimeName, Collections.singleton(serverGroup));
     }
 
     /**
      * Undeploys the content specified by the {@code runtimeName} from the server groups.
      *
-     * @param runtimeName the name of the deployment
-     * @param serverGroups the server groups to deploy to
+     * @param runtimeName  the name of the deployment
+     * @param serverGroups the server groups to undeploy to
      *
      * @throws DeploymentException if an error occurs during undeployment
      */
@@ -118,22 +187,58 @@ public class ArchiveDeployer {
             throw new DeploymentException("No target server groups to deploy to.");
         }
         try {
-            DeploymentPlanBuilder builder = deploymentManager.newDeploymentPlan();
-            UndeployDeploymentPlanBuilder undeployBuilder = builder.undeploy(runtimeName);
-            ServerGroupDeploymentPlanBuilder serverGroupBuilder = null;
-            for (String target : serverGroups) {
-                serverGroupBuilder = (serverGroupBuilder == null ? undeployBuilder.toServerGroup(target) : serverGroupBuilder.toServerGroup(target));
+            if (deploymentManager != null) {
+                final DeploymentResult result = deploymentManager.undeploy(UndeployDescription.of(runtimeName)
+                        .addServerGroups(runtimeName));
+                if (!result.successful()) {
+                    log.warnf("Cannot undeploy %s: %s", runtimeName, result.getFailureMessage());
+                }
+            } else {
+                DeploymentPlanBuilder builder = deploymentManagerDeprecated.newDeploymentPlan();
+                UndeployDeploymentPlanBuilder undeployBuilder = builder.undeploy(runtimeName);
+                ServerGroupDeploymentPlanBuilder serverGroupBuilder = null;
+                for (String target : serverGroups) {
+                    serverGroupBuilder = (serverGroupBuilder == null ? undeployBuilder.toServerGroup(target) : serverGroupBuilder.toServerGroup(target));
+                }
+                @SuppressWarnings("ConstantConditions")
+                DeploymentPlan plan = serverGroupBuilder.build();
+                Future<DeploymentPlanResult> future = deploymentManagerDeprecated.execute(plan);
+                future.get();
             }
-            DeploymentPlan plan = serverGroupBuilder.build();
-            Future<DeploymentPlanResult> future = deploymentManager.execute(plan);
-            future.get();
         } catch (Exception ex) {
-            log.warn("Cannot undeploy: " + runtimeName + ":" + ex.getMessage());
+            log.warnf("Cannot undeploy %s: %s", runtimeName, ex.getLocalizedMessage());
         }
     }
 
+    /**
+     * Checks if the deployment content is on the server.
+     *
+     * @param name the name of the deployment
+     *
+     * @return {@code true} if the deployment content exists otherwise {@code false}
+     *
+     * @throws IOException if a failure occurs communicating with the server
+     */
+    public boolean hasDeployment(final String name) throws IOException {
+        return deploymentManager.hasDeployment(name);
+    }
+
+    /**
+     * Checks if the deployment content is on the server.
+     *
+     * @param name        the name of the deployment
+     * @param serverGroup the server group to check for the deployment on
+     *
+     * @return {@code true} if the deployment content exists otherwise {@code false}
+     *
+     * @throws IOException if a failure occurs communicating with the server
+     */
+    public boolean hasDeployment(final String name, final String serverGroup) throws IOException {
+        return deploymentManager.hasDeployment(name, serverGroup);
+    }
+
     private String executeDeploymentPlan(DeploymentPlan plan, DeploymentAction deployAction) throws Exception {
-        Future<DeploymentPlanResult> future = deploymentManager.execute(plan);
+        Future<DeploymentPlanResult> future = deploymentManagerDeprecated.execute(plan);
         DeploymentPlanResult planResult = future.get();
 
         Map<String, ServerGroupDeploymentPlanResult> actionResults = planResult.getServerGroupResults();

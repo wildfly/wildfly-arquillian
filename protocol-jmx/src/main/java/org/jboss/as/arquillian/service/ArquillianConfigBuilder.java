@@ -68,7 +68,16 @@ class ArquillianConfigBuilder {
             return null;
         }
 
-        return new ArquillianConfig(testClasses, depUnit.getName());
+        return new ArquillianConfig(testClasses, createDeploymentUnitName(depUnit));
+    }
+
+    private static String createDeploymentUnitName(DeploymentUnit depUnit) {
+        String depUnitName = depUnit.getName();
+        DeploymentUnit parent;
+        if((parent = depUnit.getParent()) != null) {
+            depUnitName = parent.getName() + "." + depUnitName;
+        }
+        return depUnitName;
     }
 
     static void handleParseAnnotations(final DeploymentUnit deploymentUnit) {

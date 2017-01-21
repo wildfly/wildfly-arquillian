@@ -188,6 +188,11 @@ public class ServerGroupArchive<T extends Archive<T>> implements Archive<T> {
     }
 
     @Override
+    public T filter(final Filter<ArchivePath> filter) {
+        return delegate.filter(filter);
+    }
+
+    @Override
     public T add(final Archive<?> archive, final ArchivePath path, final Class<? extends StreamExporter> exporter) throws IllegalArgumentException {
         return delegate.add(archive, path, exporter);
     }
@@ -260,6 +265,11 @@ public class ServerGroupArchive<T extends Archive<T>> implements Archive<T> {
     @Override
     public Archive<T> shallowCopy() {
         return delegate.shallowCopy();
+    }
+
+    @Override
+    public Archive<T> shallowCopy(final Filter<ArchivePath> filter) {
+        return delegate.shallowCopy(filter);
     }
 
     @Override

@@ -99,7 +99,7 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
             final String jbossArguments = config.getJbossArguments();
 
             commandBuilder.setJavaHome(config.getJavaHome());
-            if (javaOpts != null) {
+            if (javaOpts != null && !javaOpts.trim().isEmpty()) {
                 commandBuilder.setJavaOptions(javaOpts.split("\\s+"));
             }
 
@@ -115,7 +115,7 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
             if (config.isAdminOnly())
                 commandBuilder.setAdminOnly();
 
-            if (jbossArguments != null) {
+            if (jbossArguments != null && !jbossArguments.trim().isEmpty()) {
                 commandBuilder.addServerArguments(jbossArguments.split("\\s+"));
             }
 

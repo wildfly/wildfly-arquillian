@@ -77,8 +77,9 @@ public class ManagedDomainDeployableContainer extends CommonDomainDeployableCont
 
         try {
             final DomainCommandBuilder commandBuilder = DomainCommandBuilder.of(config.getJbossHome(), config.getJavaHome());
-            if (config.getJavaVmArguments() != null) {
-                final String[] javaOpts = config.getJavaVmArguments().split("\\s+");
+            final String javaVmArguments = config.getJavaVmArguments();
+            if (javaVmArguments != null && !javaVmArguments.trim().isEmpty()) {
+                final String[] javaOpts = javaVmArguments.split("\\s+");
                 commandBuilder.setProcessControllerJavaOptions(javaOpts)
                         .setHostControllerJavaOptions(javaOpts);
             }
@@ -105,7 +106,7 @@ public class ManagedDomainDeployableContainer extends CommonDomainDeployableCont
 
             // Set server arguments if not null
             final String serverArgs = config.getJbossArguments();
-            if (serverArgs != null) {
+            if (serverArgs != null && !serverArgs.trim().isEmpty()) {
                 commandBuilder.addServerArguments(serverArgs.split("\\s+"));
             }
 

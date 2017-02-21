@@ -16,6 +16,7 @@
 package org.jboss.as.arquillian.container.domain;
 
 import java.net.InetAddress;
+import java.net.URI;
 import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map;
@@ -29,11 +30,12 @@ import org.jboss.arquillian.container.spi.client.container.ContainerConfiguratio
  */
 public class CommonDomainContainerConfiguration implements ContainerConfiguration {
 
-    private InetAddress managementAddress;
+    private String managementAddress;
     private int managementPort;
 
     private String username;
     private String password;
+    private String wildflyConfig;
 
     private Map<String, String> containerNameMap;
 
@@ -44,16 +46,20 @@ public class CommonDomainContainerConfiguration implements ContainerConfiguratio
     private int serverOperationTimeoutInSeconds = 120;
 
     public CommonDomainContainerConfiguration() {
-        managementAddress = getInetAddress("127.0.0.1");
+        managementAddress = "127.0.0.1";
         managementPort = 9990 + Integer.decode(System.getProperty("jboss.socket.binding.port-offset", "0"));
     }
 
     public InetAddress getManagementAddress() {
+        return getInetAddress(managementAddress);
+    }
+
+    String getManagementHostName() {
         return managementAddress;
     }
 
     public void setManagementAddress(String host) {
-        this.managementAddress = getInetAddress(host);
+        this.managementAddress = host;
     }
 
     public int getManagementPort() {
@@ -152,6 +158,24 @@ public class CommonDomainContainerConfiguration implements ContainerConfiguratio
 
     public int getServerOperationTimeoutInSeconds() {
         return serverOperationTimeoutInSeconds;
+    }
+
+    /**
+     * The {@linkplain URI URI} path for the WildFly configuration.
+     *
+     * @return the URI for the path or {@code null} if no path was set
+     */
+    public String getWildflyConfig() {
+        return wildflyConfig;
+    }
+
+    /**
+     * Set the {@linkplain URI URI} path for the WildFly configuration.
+     *
+     * @param wildflyConfig the URI path
+     */
+    public void setWildflyConfig(final String wildflyConfig) {
+        this.wildflyConfig = wildflyConfig;
     }
 
     @Override

@@ -15,6 +15,8 @@
  */
 package org.jboss.as.arquillian.container;
 
+import java.net.URI;
+
 import org.jboss.arquillian.container.spi.ConfigurationException;
 import org.jboss.arquillian.container.spi.client.container.ContainerConfiguration;
 
@@ -26,12 +28,13 @@ import org.jboss.arquillian.container.spi.client.container.ContainerConfiguratio
  */
 public class CommonContainerConfiguration implements ContainerConfiguration {
 
-    private String managementProtocol = "http-remoting";
+    private String managementProtocol = "remote+http";
     private String managementAddress;
     private int managementPort;
 
     private String username;
     private String password;
+    private String wildflyConfig;
 
     public CommonContainerConfiguration() {
         managementAddress = "127.0.0.1";
@@ -76,6 +79,24 @@ public class CommonContainerConfiguration implements ContainerConfiguration {
 
     public void setManagementProtocol(final String managementProtocol) {
         this.managementProtocol = managementProtocol;
+    }
+
+    /**
+     * The {@linkplain URI URI} path for the WildFly configuration.
+     *
+     * @return the URI for the path or {@code null} if no path was set
+     */
+    public String getWildflyConfig() {
+        return wildflyConfig;
+    }
+
+    /**
+     * Set the {@linkplain URI URI} path for the WildFly configuration.
+     *
+     * @param wildflyConfig the URI path
+     */
+    public void setWildflyConfig(final String wildflyConfig) {
+        this.wildflyConfig = wildflyConfig;
     }
 
     @Override

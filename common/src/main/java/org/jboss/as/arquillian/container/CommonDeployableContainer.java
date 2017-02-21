@@ -18,7 +18,8 @@ package org.jboss.as.arquillian.container;
 import static org.jboss.as.arquillian.container.Authentication.getCallbackHandler;
 
 import java.io.IOException;
-import java.net.UnknownHostException;
+import java.net.URI;
+import java.security.GeneralSecurityException;
 import java.util.Properties;
 import javax.naming.Context;
 import javax.naming.InitialContext;
@@ -34,6 +35,7 @@ import org.jboss.arquillian.core.api.InstanceProducer;
 import org.jboss.arquillian.core.api.annotation.ApplicationScoped;
 import org.jboss.arquillian.core.api.annotation.Inject;
 import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.client.ModelControllerClientConfiguration;
 import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
@@ -41,6 +43,10 @@ import org.jboss.dmr.Property;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.descriptor.api.Descriptor;
+import org.wildfly.client.config.ConfigXMLParseException;
+import org.wildfly.plugin.core.ContextualModelControllerClient;
+import org.wildfly.security.auth.client.AuthenticationContext;
+import org.wildfly.security.auth.client.ElytronXmlParser;
 import org.xnio.IoUtils;
 
 /**
@@ -81,23 +87,38 @@ public abstract class CommonDeployableContainer<T extends CommonContainerConfigu
 
     @Override
     public final void start() throws LifecycleException {
+        // Create a client configuration builder from the container configuration
+        final ModelControllerClientConfiguration.Builder clientConfigBuilder = new ModelControllerClientConfiguration.Builder()
+                .setProtocol(containerConfig.getManagementProtocol())
+                .setHostName(containerConfig.getManagementAddress())
+                .setPort(containerConfig.getManagementPort());
+
+        // Check for username and password authentication
         if(containerConfig.getUsername() != null) {
             Authentication.username = containerConfig.getUsername();
             Authentication.password = containerConfig.getPassword();
+            clientConfigBuilder.setHandler(getCallbackHandler());
         }
 
-        ModelControllerClient modelControllerClient = null;
-        try {
-            modelControllerClient = ModelControllerClient.Factory.create(
-                    containerConfig.getManagementProtocol(),
-                    containerConfig.getManagementAddress(),
-                    containerConfig.getManagementPort(),
-                    getCallbackHandler());
-        } catch (UnknownHostException e) {
-            throw new RuntimeException(e);
+        final ModelControllerClient modelControllerClient;
+
+        final String wildflyConfigUri = containerConfig.getWildflyConfig();
+        final AuthenticationContext authenticationContext;
+
+        // Check for an Elytron configuration
+        if (wildflyConfigUri != null) {
+            try {
+                authenticationContext = ElytronXmlParser.parseAuthenticationClientConfiguration(URI.create(wildflyConfigUri)).create();
+                modelControllerClient = new ContextualModelControllerClient(ModelControllerClient.Factory.create(clientConfigBuilder.build()), authenticationContext);
+            } catch (ConfigXMLParseException | GeneralSecurityException e) {
+                throw new LifecycleException("Failed to configure authentication.", e);
+            }
+        } else {
+            authenticationContext = null;
+            modelControllerClient = ModelControllerClient.Factory.create(clientConfigBuilder.build());
         }
 
-        ManagementClient client = new ManagementClient(modelControllerClient, containerConfig.getManagementAddress(), containerConfig.getManagementPort(), containerConfig.getManagementProtocol());
+        ManagementClient client = new ManagementClient(modelControllerClient, containerConfig.getManagementAddress(), containerConfig.getManagementPort(), containerConfig.getManagementProtocol(), authenticationContext);
         managementClient.set(client);
 
         ArchiveDeployer deployer = new ArchiveDeployer(client);

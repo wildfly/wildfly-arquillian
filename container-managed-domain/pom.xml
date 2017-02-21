@@ -31,6 +31,11 @@
 
     <packaging>jar</packaging>
 
+    <properties>
+        <maven.test.skip>false</maven.test.skip>
+        <skipTests>${maven.test.skip}</skipTests>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.wildfly.arquillian</groupId>
@@ -107,6 +112,10 @@
             <plugin>
                 <groupId>org.wildfly.plugins</groupId>
                 <artifactId>wildfly-maven-plugin</artifactId>
+                <configuration>
+                    <!-- Don't execute if we're skipping tests -->
+                    <skip>${skipTests}</skip>
+                </configuration>
                 <executions>
                     <execution>
                         <id>fix-servlet</id>

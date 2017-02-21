@@ -45,7 +45,7 @@
         <version.org.jboss.arquillian.core>1.1.12.Final</version.org.jboss.arquillian.core>
         <version.org.wildfly.client.wildfly-client-config>1.0.0.Beta1</version.org.wildfly.client.wildfly-client-config>
         <version.org.wildfly.common.wildfly-common>1.2.0.Beta5</version.org.wildfly.common.wildfly-common>
-        <version.org.wildfly.plugins.wildfly-maven-plugin>1.2.0.Alpha1</version.org.wildfly.plugins.wildfly-maven-plugin>
+        <version.org.wildfly.plugins.wildfly-maven-plugin>1.2.0.Alpha4</version.org.wildfly.plugins.wildfly-maven-plugin>
         <version.org.wildfly.security.wildfly-elytron>1.1.0.Beta33</version.org.wildfly.security.wildfly-elytron>
 
         <!-- keep this in sync with version that is used in arquillian -->
@@ -160,6 +160,7 @@
         <module>common-domain</module>
         <module>container-remote-domain</module>
         <module>container-managed-domain</module>
+        <module>integration-tests</module>
     </modules>
 
     <packaging>pom</packaging>

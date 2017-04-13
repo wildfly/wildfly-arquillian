@@ -239,6 +239,11 @@
                     </exclusion>
                 </exclusions>
             </dependency>
+            <dependency>
+                <groupId>org.wildfly.plugins</groupId>
+                <artifactId>wildfly-plugin-core</artifactId>
+                <version>${version.org.wildfly.plugins.wildfly-maven-plugin}</version>
+            </dependency>
 
             <dependency>
                 <groupId>junit</groupId>

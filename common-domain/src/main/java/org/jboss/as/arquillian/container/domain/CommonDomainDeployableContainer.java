@@ -109,7 +109,7 @@ public abstract class CommonDomainDeployableContainer<T extends CommonDomainCont
         managementClient = new ManagementClient(domainClient, domainManager);
         managementClientInst.set(managementClient);
 
-        ArchiveDeployer archiveDeployer = new ArchiveDeployer(domainClient.getDeploymentManager());
+        ArchiveDeployer archiveDeployer = new ArchiveDeployer(managementClient);
         archiveDeployerInst.set(archiveDeployer);
     }
 

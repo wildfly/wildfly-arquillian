@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.security.GeneralSecurityException;
 import java.util.Properties;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -36,6 +37,7 @@ import org.jboss.arquillian.core.api.annotation.ApplicationScoped;
 import org.jboss.arquillian.core.api.annotation.Inject;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.ModelControllerClientConfiguration;
+import org.jboss.as.controller.client.helpers.DelegatingModelControllerClient;
 import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
@@ -47,7 +49,6 @@ import org.wildfly.client.config.ConfigXMLParseException;
 import org.wildfly.plugin.core.ContextualModelControllerClient;
 import org.wildfly.security.auth.client.AuthenticationContext;
 import org.wildfly.security.auth.client.ElytronXmlParser;
-import org.xnio.IoUtils;
 
 /**
  * A JBossAS deployable container
@@ -73,7 +74,9 @@ public abstract class CommonDeployableContainer<T extends CommonContainerConfigu
     @ApplicationScoped
     private InstanceProducer<Context> jndiContext;
 
+    private final StandaloneDelegateProvider mccProvider = new StandaloneDelegateProvider();
     private ContainerDescription containerDescription = null;
+    private AuthenticationContext authenticationContext = null;
 
     @Override
     public ProtocolDescription getDefaultProtocol() {
@@ -83,6 +86,22 @@ public abstract class CommonDeployableContainer<T extends CommonContainerConfigu
     @Override
     public void setup(T config) {
         containerConfig = config;
+        final String wildflyConfigUri = containerConfig.getWildflyConfig();
+
+        // Check for an Elytron configuration
+        if (wildflyConfigUri != null) {
+            try {
+                authenticationContext = ElytronXmlParser.parseAuthenticationClientConfiguration(URI.create(wildflyConfigUri)).create();
+            } catch (ConfigXMLParseException | GeneralSecurityException e) {
+                throw new RuntimeException("Failed to configure authentication.", e);
+            }
+        }
+
+        final ManagementClient client = new ManagementClient(new DelegatingModelControllerClient(mccProvider),
+                containerConfig.getManagementAddress(), containerConfig.getManagementPort(), containerConfig.getManagementProtocol(), authenticationContext);
+        managementClient.set(client);
+
+        archiveDeployer.set(new ArchiveDeployer(client));
     }
 
     @Override
@@ -102,27 +121,13 @@ public abstract class CommonDeployableContainer<T extends CommonContainerConfigu
 
         final ModelControllerClient modelControllerClient;
 
-        final String wildflyConfigUri = containerConfig.getWildflyConfig();
-        final AuthenticationContext authenticationContext;
-
         // Check for an Elytron configuration
-        if (wildflyConfigUri != null) {
-            try {
-                authenticationContext = ElytronXmlParser.parseAuthenticationClientConfiguration(URI.create(wildflyConfigUri)).create();
-                modelControllerClient = new ContextualModelControllerClient(ModelControllerClient.Factory.create(clientConfigBuilder.build()), authenticationContext);
-            } catch (ConfigXMLParseException | GeneralSecurityException e) {
-                throw new LifecycleException("Failed to configure authentication.", e);
-            }
+        if (authenticationContext != null) {
+            modelControllerClient = new ContextualModelControllerClient(ModelControllerClient.Factory.create(clientConfigBuilder.build()), authenticationContext);
         } else {
-            authenticationContext = null;
             modelControllerClient = ModelControllerClient.Factory.create(clientConfigBuilder.build());
         }
-
-        ManagementClient client = new ManagementClient(modelControllerClient, containerConfig.getManagementAddress(), containerConfig.getManagementPort(), containerConfig.getManagementProtocol(), authenticationContext);
-        managementClient.set(client);
-
-        ArchiveDeployer deployer = new ArchiveDeployer(client);
-        archiveDeployer.set(deployer);
+        mccProvider.setDelegate(modelControllerClient);
 
         try {
             final Properties jndiProps = new Properties();
@@ -275,9 +280,12 @@ public abstract class CommonDeployableContainer<T extends CommonContainerConfigu
 
     private void safeCloseClient() {
         try {
-            IoUtils.safeClose(getManagementClient());
+            // Reset the client, this should close the internal resources and setup reinitialization
+            getManagementClient().reset();
         } catch (final Exception e) {
-            Logger.getLogger(getClass()).warn("Caught exception closing ModelControllerClient", e);
+            Logger.getLogger(getClass()).warn("Caught exception closing ManagementClient", e);
+        } finally {
+            mccProvider.setDelegate(null);
         }
     }
 
@@ -290,5 +298,26 @@ public abstract class CommonDeployableContainer<T extends CommonContainerConfigu
             result.append('/').append(property.getName()).append('=').append(property.getValue().asString());
         }
         return result.toString();
+    }
+
+    private static class StandaloneDelegateProvider implements DelegatingModelControllerClient.DelegateProvider {
+        private final AtomicReference<ModelControllerClient> delegate;
+
+        private StandaloneDelegateProvider() {
+            this.delegate = new AtomicReference<>();
+        }
+
+        void setDelegate(final ModelControllerClient client) {
+            delegate.set(client);
+        }
+
+        @Override
+        public ModelControllerClient getDelegate() {
+            final ModelControllerClient result = delegate.get();
+            if (result == null) {
+                throw new IllegalStateException("The container has not been started. The client is not usable.");
+            }
+            return result;
+        }
     }
 }

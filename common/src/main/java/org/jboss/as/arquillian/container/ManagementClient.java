@@ -153,6 +153,16 @@ public class ManagementClient implements Closeable {
     }
 
     /**
+     * Resets the client. {@linkplain #close() Closes} open resources and resets flags so that the client itself can be
+     * reinitialized later if desired.
+     */
+    void reset() {
+        close();
+        initialized = false;
+        closed = false;
+    }
+
+    /**
      * Checks whether or not the Undertow subsystem is present and sets the internal state if it is. An invocation of
      * this should happen after the server has been started.
      *

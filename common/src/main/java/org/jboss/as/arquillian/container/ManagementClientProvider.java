@@ -28,7 +28,7 @@ import org.jboss.arquillian.test.api.ArquillianResource;
  * annotated fields.
  * @author <a href="mailto:alr@jboss.org">Andrew Lee Rubinger</a>
  */
-public class ManagementClientProvider extends OperatesOnDeploymentAwareProvider {
+public class ManagementClientProvider extends AbstractTargetsContainerProvider {
 
     @Inject
     private Instance<ManagementClient> managementClient;

@@ -72,6 +72,8 @@ import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.logging.Logger;
+import org.wildfly.common.context.Contextual;
+import org.wildfly.security.auth.client.AuthenticationContext;
 
 /**
  * A helper class to join management related operations, like extract sub system ip/port (web/jmx)
@@ -100,6 +102,7 @@ public class ManagementClient implements Closeable {
     private final int mgmtPort;
     private final String mgmtProtocol;
     private final ModelControllerClient client;
+    private final AuthenticationContext context;
 
     private boolean initialized = false;
     private URI webUri;
@@ -120,6 +123,17 @@ public class ManagementClient implements Closeable {
         this.mgmtAddress = mgmtAddress;
         this.mgmtPort = managementPort;
         this.mgmtProtocol = protocol;
+        this.context = null;
+    }
+    public ManagementClient(ModelControllerClient client, final String mgmtAddress, final int managementPort, final String protocol, final AuthenticationContext context) {
+        if (client == null) {
+            throw new IllegalArgumentException("Client must be specified");
+        }
+        this.client = client;
+        this.mgmtAddress = mgmtAddress;
+        this.mgmtPort = managementPort;
+        this.mgmtProtocol = protocol;
+        this.context = context;
     }
 
     //-------------------------------------------------------------------------------------||
@@ -429,7 +443,9 @@ public class ManagementClient implements Closeable {
                     // Only set this is there is a username as it disabled local authentication.
                     env.put(CallbackHandler.class.getName(), Authentication.getCallbackHandler());
                 }
-                final JMXConnector connector = this.connector = JMXConnectorFactory.connect(getRemoteJMXURL(), env);
+                final Contextual<?> context = this.context;
+                final JMXServiceURL serviceURL = getRemoteJMXURL();
+                final JMXConnector connector = this.connector = ContextualJMXConnectorFactory.connect(context, serviceURL, env);
                 connection = this.connection = new MBeanConnectionProxy(connector.getMBeanServerConnection());
             } catch (IOException e) {
                 throw new RuntimeException(e);
@@ -440,7 +456,7 @@ public class ManagementClient implements Closeable {
 
     public JMXServiceURL getRemoteJMXURL() {
         try {
-            if (mgmtProtocol.equals("http-remoting")) {
+            if ("http-remoting".equals(mgmtProtocol) || "remote+http".equals(mgmtProtocol)) {
                 return new JMXServiceURL("service:jmx:remote+http://" + NetworkUtils.formatPossibleIpv6Address(mgmtAddress) + ":" + mgmtPort);
             } else if (mgmtProtocol.equals("https-remoting")) {
                 return new JMXServiceURL("service:jmx:remote+https://" + NetworkUtils.formatPossibleIpv6Address(mgmtAddress) + ":" + mgmtPort);

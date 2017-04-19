@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright 2017 Red Hat, Inc.
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~   http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>elytron</artifactId>
+        <groupId>org.wildfly.arquillian</groupId>
+        <version>2.1.0.Alpha2-SNAPSHOT</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>elytron-domain</artifactId>
+    <name>WildFly: Arquillian Elytron Domain Integration Tests</name>
+
+    <dependencies>
+        <!-- Test Dependencies -->
+        <dependency>
+            <groupId>org.jboss.arquillian.junit</groupId>
+            <artifactId>arquillian-junit-container</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.arquillian.protocol</groupId>
+            <artifactId>arquillian-protocol-servlet</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.spec.javax.ejb</groupId>
+            <artifactId>jboss-ejb-api_3.2_spec</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.spec.javax.servlet</groupId>
+            <artifactId>jboss-servlet-api_3.1_spec</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.arquillian</groupId>
+            <artifactId>wildfly-arquillian-container-domain-managed</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <testResources>
+            <testResource>
+                <directory>src/test/resources</directory>
+                <filtering>true</filtering>
+            </testResource>
+        </testResources>
+        <plugins>
+            <plugin>
+                <groupId>org.wildfly.build</groupId>
+                <artifactId>wildfly-server-provisioning-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <systemPropertyVariables>
+                        <jboss.home>${jboss.home}</jboss.home>
+                        <wildfly.config>${project.baseUri}/src/test/resources/elytron-wildfly-config.xml</wildfly.config>
+                    </systemPropertyVariables>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.wildfly.plugins</groupId>
+                <artifactId>wildfly-maven-plugin</artifactId>
+                <configuration>
+                    <offline>true</offline>
+                    <jboss-home>${jboss.home}</jboss-home>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>configure-elytron</id>
+                        <goals>
+                            <goal>execute-commands</goal>
+                        </goals>
+                        <phase>test-compile</phase>
+                        <configuration>
+                            <stdout>${project.basedir}/target/config.log</stdout>
+                            <commands>
+                                <command>embed-host-controller</command>
+                                <command>/host=master/subsystem=elytron/filesystem-realm=testRealm:add(path=fs-realm-users,relative-to=jboss.domain.config.dir)</command>
+                                <command>/host=master/subsystem=elytron/filesystem-realm=testRealm/identity=test-admin:add()</command>
+                                <command>/host=master/subsystem=elytron/filesystem-realm=testRealm/identity=test-admin:set-password(clear={password="admin.12345"})</command>
+                                <command>/host=master/subsystem=elytron/security-domain=testSecurityDomain:add(realms=[{realm=testRealm}],default-realm=testRealm,permission-mapper=default-permission-mapper)</command>
+                                <command>/host=master/subsystem=elytron/sasl-authentication-factory=test-sasl-auth:add(sasl-server-factory=configured,security-domain=testSecurityDomain,mechanism-configurations=[{mechanism-name=DIGEST-MD5,mechanism-realm-configurations=[{realm-name=testRealm}]}])</command>
+                                <command>/host=master/core-service=management/management-interface=http-interface:write-attribute(name=http-upgrade.sasl-authentication-factory, value=test-sasl-auth)</command>
+                                <command>stop-embedded-host-controller</command>
+                            </commands>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+
+</project>

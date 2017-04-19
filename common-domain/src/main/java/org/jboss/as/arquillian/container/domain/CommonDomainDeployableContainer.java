@@ -15,6 +15,8 @@
  */
 package org.jboss.as.arquillian.container.domain;
 
+import java.net.URI;
+import java.security.GeneralSecurityException;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
@@ -43,12 +45,17 @@ import org.jboss.arquillian.core.spi.ServiceLoader;
 import org.jboss.as.arquillian.container.domain.Domain.Server;
 import org.jboss.as.arquillian.container.domain.Domain.ServerGroup;
 import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.client.ModelControllerClientConfiguration;
 import org.jboss.as.controller.client.helpers.DelegatingModelControllerClient;
 import org.jboss.as.controller.client.helpers.domain.DomainClient;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.descriptor.api.Descriptor;
 import org.wildfly.arquillian.domain.ServerGroupArchive;
 import org.wildfly.arquillian.domain.api.DomainManager;
+import org.wildfly.client.config.ConfigXMLParseException;
+import org.wildfly.plugin.core.ContextualModelControllerClient;
+import org.wildfly.security.auth.client.AuthenticationContext;
+import org.wildfly.security.auth.client.ElytronXmlParser;
 
 /**
  * @author <a href="mailto:aslak@redhat.com">Aslak Knutsen</a>
@@ -98,11 +105,6 @@ public abstract class CommonDomainDeployableContainer<T extends CommonDomainCont
     public void setup(T config) {
         containerConfig = config;
 
-        if (containerConfig.getUsername() != null) {
-            Authentication.username = containerConfig.getUsername();
-            Authentication.password = containerConfig.getPassword();
-        }
-
         // Register on setup so these can be injected into manual mode client tests
         final DomainClient domainClient = DomainClient.Factory.create(new DelegatingModelControllerClient(DomainDelegateProvider.INSTANCE));
         domainManager = new ContainerDomainManager(getContainerName(), isControllable(), domainClient);
@@ -115,10 +117,36 @@ public abstract class CommonDomainDeployableContainer<T extends CommonDomainCont
 
     @Override
     public void start() throws LifecycleException {
+        // Create a client configuration builder from the container configuration
+        final ModelControllerClientConfiguration.Builder clientConfigBuilder = new ModelControllerClientConfiguration.Builder()
+                .setHostName(containerConfig.getManagementHostName())
+                .setPort(containerConfig.getManagementPort());
+
+        if (containerConfig.getUsername() != null) {
+            Authentication.username = containerConfig.getUsername();
+            Authentication.password = containerConfig.getPassword();
+            clientConfigBuilder.setHandler(Authentication.getCallbackHandler());
+        }
+
         // Configure the current client and set the delegate for the provider so the same management client can be used
         // during starts and stops
-        final ModelControllerClient delegateClient = ModelControllerClient.Factory.create(containerConfig.getManagementAddress(),
-                containerConfig.getManagementPort(), Authentication.getCallbackHandler());
+        final ModelControllerClient delegateClient;
+
+        final String wildflyConfig = containerConfig.getWildflyConfig();
+        final AuthenticationContext authenticationContext;
+
+        // Check for an Elytron configuration
+        if (wildflyConfig != null) {
+            try {
+                authenticationContext = ElytronXmlParser.parseAuthenticationClientConfiguration(URI.create(wildflyConfig)).create();
+                delegateClient = new ContextualModelControllerClient(ModelControllerClient.Factory.create(clientConfigBuilder.build()), authenticationContext);
+            } catch (ConfigXMLParseException | GeneralSecurityException e) {
+                throw new LifecycleException("Failed to configure authentication.", e);
+            }
+        } else {
+            authenticationContext = null;
+            delegateClient = ModelControllerClient.Factory.create(clientConfigBuilder.build());
+        }
         DomainDelegateProvider.INSTANCE.setDelegate(delegateClient);
 
         try {

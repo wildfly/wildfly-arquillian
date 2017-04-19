@@ -19,14 +19,22 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.lang.annotation.Annotation;
+import java.net.URI;
 import java.net.URL;
+import java.security.GeneralSecurityException;
 
 import org.jboss.arquillian.core.api.annotation.Observes;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.arquillian.test.spi.enricher.resource.ResourceProvider;
 import org.jboss.arquillian.test.spi.event.suite.AfterSuite;
+import org.jboss.as.arquillian.container.Authentication;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.client.ModelControllerClientConfiguration;
+import org.wildfly.client.config.ConfigXMLParseException;
+import org.wildfly.plugin.core.ContextualModelControllerClient;
+import org.wildfly.security.auth.client.AuthenticationContext;
+import org.wildfly.security.auth.client.ElytronXmlParser;
 
 import static org.jboss.as.arquillian.container.Authentication.getCallbackHandler;
 
@@ -64,6 +72,7 @@ public class InContainerManagementClientProvider implements ResourceProvider {
                 managementPort = (String) inputStream.readObject();
                 address = (String) inputStream.readObject();
                 protocol = (String) inputStream.readObject();
+                String wildflyConfig = (String) inputStream.readObject();
                 if (address == null) {
                     address = "localhost";
                 }
@@ -73,13 +82,30 @@ public class InContainerManagementClientProvider implements ResourceProvider {
                 if (protocol == null) {
                     protocol = "remote+http";
                 }
-                ModelControllerClient modelControllerClient = null;
                 final int port = Integer.parseInt(managementPort);
-                modelControllerClient = ModelControllerClient.Factory.create(
-                        protocol,
-                        address,
-                        port,
-                        getCallbackHandler());
+
+                // Configure a client for in-container tests based on the serialized data within the deployment
+                final ModelControllerClientConfiguration.Builder builder = new ModelControllerClientConfiguration.Builder()
+                        .setHostName(address)
+                        .setPort(port)
+                        .setProtocol(protocol);
+
+                if (Authentication.username != null && !Authentication.username.isEmpty()) {
+                    builder.setHandler(getCallbackHandler());
+                }
+
+                final ModelControllerClient modelControllerClient;
+                final AuthenticationContext authenticationContext;
+                if (wildflyConfig != null) {
+                    try {
+                    authenticationContext = ElytronXmlParser.parseAuthenticationClientConfiguration(URI.create(wildflyConfig)).create();
+                    modelControllerClient = new ContextualModelControllerClient(ModelControllerClient.Factory.create(builder.build()), authenticationContext);
+                    } catch (ConfigXMLParseException | GeneralSecurityException e) {
+                        throw new RuntimeException("Failed to configure authentication.", e);
+                    }
+                } else {
+                    modelControllerClient = ModelControllerClient.Factory.create(builder.build());
+                }
                 current = new ManagementClient(modelControllerClient, address, port, protocol);
 
             } catch (IOException e) {

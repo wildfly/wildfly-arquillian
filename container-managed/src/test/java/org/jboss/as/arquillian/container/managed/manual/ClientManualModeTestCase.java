@@ -20,7 +20,9 @@ import java.io.IOException;
 
 import org.jboss.arquillian.container.spi.client.container.DeploymentException;
 import org.jboss.arquillian.container.test.api.RunAsClient;
+import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ArchiveDeployer;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.junit.Assert;
@@ -28,23 +30,32 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
+ * Tests that the injected management client and archive deployer are usable on the appropriate container.
+ *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 @RunWith(Arquillian.class)
 @RunAsClient
 public class ClientManualModeTestCase extends AbstractManualModeTestCase {
 
+    @ArquillianResource
+    @TargetsContainer(PRIMARY_CONTAINER)
+    private ArchiveDeployer primaryDeployer;
+
+    @ArquillianResource
+    @TargetsContainer(SECONDARY_CONTAINER)
+    private ArchiveDeployer secondaryDeployer;
+
     @Test
     public void testDeploy() throws Exception {
-        testDeploy(primaryClient, PRIMARY_CONTAINER);
-        testDeploy(secondaryClient, SECONDARY_CONTAINER);
+        testDeploy(primaryDeployer, primaryClient, PRIMARY_CONTAINER);
+        testDeploy(secondaryDeployer, secondaryClient, SECONDARY_CONTAINER);
     }
 
-    private static void testDeploy(final ManagementClient client, final String containerName) throws IOException, DeploymentException {
+    private static void testDeploy(final ArchiveDeployer deployer, final ManagementClient client, final String containerName) throws IOException, DeploymentException {
         if (!controller.isStarted(containerName)) {
             controller.start(containerName);
         }
-        final ArchiveDeployer deployer = new ArchiveDeployer(client);
         final int currentDeployments = getCurrentDeploymentCount(client);
         // Deploy both deployments
         try {

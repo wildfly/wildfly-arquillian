@@ -189,7 +189,7 @@ public class ArchiveDeployer {
         try {
             if (deploymentManager != null) {
                 final DeploymentResult result = deploymentManager.undeploy(UndeployDescription.of(runtimeName)
-                        .addServerGroups(runtimeName));
+                        .addServerGroups(serverGroups));
                 if (!result.successful()) {
                     log.warnf("Cannot undeploy %s: %s", runtimeName, result.getFailureMessage());
                 }

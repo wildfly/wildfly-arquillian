@@ -38,6 +38,7 @@ public class CommonContainerExtension implements LoadableExtension {
         builder
                 // Register services
                 .service(DeploymentExceptionTransformer.class, ExceptionTransformer.class)
+                .service(ResourceProvider.class, ArchiveDeployerProvider.class)
                 .service(ResourceProvider.class, ManagementClientProvider.class)
                 .service(ResourceProvider.class, DomainContainerControllerProvider.class)
                 .service(AuxiliaryArchiveAppender.class, DomainArquillianDeploymentAppender.class)

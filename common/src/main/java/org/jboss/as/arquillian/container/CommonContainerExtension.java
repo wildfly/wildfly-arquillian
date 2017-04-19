@@ -36,6 +36,7 @@ public class CommonContainerExtension implements LoadableExtension {
     public void register(final ExtensionBuilder builder) {
 
         builder.service(DeploymentExceptionTransformer.class, ExceptionTransformer.class);
+        builder.service(ResourceProvider.class, ArchiveDeployerProvider.class);
         builder.service(ResourceProvider.class, ManagementClientProvider.class);
         builder.service(TestEnricher.class, ContainerResourceTestEnricher.class);
 

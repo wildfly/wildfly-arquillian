@@ -140,12 +140,7 @@ public class ServerSetupObserver {
             }
         }
         afterClassRun = true;
-        if (deployed.isEmpty()) {
-            deployed = null;
-            setupTasksAll.clear();
-            setupTasksInForce.clear();
-            afterClassRun = false;
-        }
+        this.clear();
     }
 
     public synchronized void handleAfterUndeploy(@Observes AfterUnDeploy afterDeploy, final Container container) throws Exception {
@@ -160,7 +155,7 @@ public class ServerSetupObserver {
             return;
         }
         deployed.put(container.getName(), --count);
-        if (count == 0 && afterClassRun) {
+        if (count == 0 && !afterClassRun) {
             for (int i = setupTasksInForce.size() - 1; i >= 0; i--) {
                 try {
                     setupTasksInForce.get(i).tearDown(managementClient.get(), container.getName());
@@ -171,15 +166,17 @@ public class ServerSetupObserver {
             active.remove(container.getName());
             deployed.remove(container.getName());
         }
+        this.clear();
+    }
+
+    private void clear() {
         if (deployed.isEmpty()) {
             deployed = null;
             setupTasksAll.clear();
             setupTasksInForce.clear();
             afterClassRun = false;
         }
-
     }
-
 
     private static final class ContainerClassHolder {
         private final Class<?> testClass;

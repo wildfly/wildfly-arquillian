@@ -17,14 +17,17 @@
 package org.jboss.as.arquillian.container;
 
 import java.lang.reflect.Constructor;
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.jboss.arquillian.container.spi.Container;
+import org.jboss.arquillian.container.spi.client.deployment.DeploymentDescription;
 import org.jboss.arquillian.container.spi.event.container.AfterUnDeploy;
 import org.jboss.arquillian.container.spi.event.container.BeforeDeploy;
 import org.jboss.arquillian.core.api.Instance;
@@ -32,13 +35,19 @@ import org.jboss.arquillian.core.api.annotation.Inject;
 import org.jboss.arquillian.core.api.annotation.Observes;
 import org.jboss.arquillian.test.spi.context.ClassContext;
 import org.jboss.arquillian.test.spi.event.suite.AfterClass;
+import org.jboss.arquillian.test.spi.event.suite.BeforeClass;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.logging.Logger;
 
 /**
+ * Observes the {@link BeforeDeploy}, {@link AfterUnDeploy} and {@link AfterClass} lifecycle events to ensure
+ * {@linkplain ServerSetupTask setup tasks} are executed.
+ *
  * @author Stuart Douglas
+ * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
+@SuppressWarnings({"unused", "InstanceVariableMayNotBeInitialized"})
 public class ServerSetupObserver {
 
     private static final Logger log = Logger.getLogger(ServerSetupObserver.class);
@@ -49,27 +58,34 @@ public class ServerSetupObserver {
     @Inject
     private Instance<ClassContext> classContextInstance;
 
-    private final List<ServerSetupTask> setupTasksAll = new ArrayList<ServerSetupTask>();
-    private final List<ServerSetupTask> setupTasksInForce = new ArrayList<ServerSetupTask>();
-    private final Map<String, ManagementClient> active = new HashMap<String, ManagementClient>();
-    private Map<String, Integer> deployed;
-    boolean afterClassRun = false;
+    private final Map<String, ServerSetupTaskHolder> setupTasks = new HashMap<>();
+    private boolean afterClassRun = false;
 
+    /**
+     * Observed only for state changes.
+     *
+     * @param beforeClass the lifecycle event
+     */
+    public synchronized void handleBeforeClass(@Observes BeforeClass beforeClass) {
+        afterClassRun = false;
+    }
+
+    /**
+     * Executed before deployments to lazily execute the {@link ServerSetupTask#setup(ManagementClient, String) ServerSetupTask}.
+     * <p>
+     * This is lazily loaded for manual mode tests. The server may not have been started at the
+     * {@link org.jboss.arquillian.test.spi.event.suite.BeforeClass BeforeClass} event.
+     * </p>
+     *
+     * @param event     the lifecycle event
+     * @param container the container the event is being invoked on
+     *
+     * @throws Throwable if an error occurs processing the event
+     */
     public synchronized void handleBeforeDeployment(@Observes BeforeDeploy event, Container container) throws Throwable {
-
-        if (deployed == null) {
-            deployed = new HashMap<String, Integer>();
-            setupTasksAll.clear();
-            setupTasksInForce.clear();
-            afterClassRun = false;
-        }
-        if (deployed.containsKey(container.getName())) {
-            deployed.put(container.getName(), deployed.get(container.getName()) + 1);
-        } else {
-            deployed.put(container.getName(), 1);
-        }
-
-        if (active.containsKey(container.getName())) {
+        final String containerName = container.getName();
+        if (setupTasks.containsKey(containerName)) {
+            setupTasks.get(containerName).deployments.add(event.getDeployment());
             return;
         }
 
@@ -79,135 +95,124 @@ public class ServerSetupObserver {
         }
 
         final Class<?> currentClass = classContext.getActiveId();
-        final ContainerClassHolder holder = new ContainerClassHolder(container.getName(), currentClass);
 
         ServerSetup setup = currentClass.getAnnotation(ServerSetup.class);
         if (setup == null) {
             return;
         }
-        final Class<? extends ServerSetupTask>[] classes = setup.value();
-        if (setupTasksAll.isEmpty()) {
-            for (Class<? extends ServerSetupTask> clazz : classes) {
-                Constructor<? extends ServerSetupTask> ctor = clazz.getDeclaredConstructor();
-                ctor.setAccessible(true);
-                setupTasksAll.add(ctor.newInstance());
-            }
-        } else {
-            //this should never happen
-            for (int i = 0; i < setupTasksAll.size(); ++i) {
-                if (classes[i] != setupTasksAll.get(i).getClass()) {
-                    throw new RuntimeException("Mismatched ServerSetupTask current is " + setupTasksAll + " but " + currentClass + " is expecting " + Arrays.asList(classes));
-                }
-            }
-        }
 
         final ManagementClient client = managementClient.get();
-        int index = 0;
-        try {
-            for (;index<setupTasksAll.size();index++) {
-                final ServerSetupTask instance = setupTasksAll.get(index);
-                setupTasksInForce.add(instance);
-                instance.setup(client, container.getName());
-            }
-        } catch (Throwable e) {
-            log.error("Setup task failed during setup. Offending class '"+setupTasksAll.get(index)+"'",e);
-        }
-        active.put(container.getName(), client);
+        final ServerSetupTaskHolder holder = new ServerSetupTaskHolder(client);
+        holder.deployments.add(event.getDeployment());
+        setupTasks.put(containerName, holder);
+        holder.setup(setup, containerName);
     }
 
+    /**
+     * Executed after the test class has completed. This ensures that any
+     * {@linkplain ServerSetupTask#tearDown(ManagementClient, String) tear down tasks} have been executed if all
+     * all deployments have been undeployed.
+     *
+     * @param afterClass the lifecycle event
+     *
+     * @throws Exception if an error occurs processing the event
+     */
     public synchronized void afterTestClass(@Observes AfterClass afterClass) throws Exception {
-        if (deployed == null) {
+        if (setupTasks.isEmpty()) {
             return;
         }
-        //clean up if there are no more deployments on the server
-        //otherwise we clean up after the last deployment is removed
-        final Iterator<Map.Entry<String, Integer>> it = deployed.entrySet().iterator();
-        while (it.hasNext()) {
-            Map.Entry<String, Integer> container = it.next();
-            if (container.getValue() == 0) {
-                if (active.containsKey(container.getKey())) {
-                    ManagementClient client = active.get(container.getKey());
-                    for (int i = setupTasksInForce.size() - 1; i >= 0; i--) {
-                        try {
-                            setupTasksInForce.get(i).tearDown(client, container.getKey());
-                        } catch (Exception e) {
-                            log.error("Setup task failed during tear down. Offending class '" + setupTasksAll.get(i) + "'", e);
-                        }
-                    }
-                }
-                active.remove(container.getKey());
-                it.remove();
+
+        // Clean up any remaining tasks from unmanaged deployments
+        final Iterator<Map.Entry<String, ServerSetupTaskHolder>> iter = setupTasks.entrySet().iterator();
+        while (iter.hasNext()) {
+            final Map.Entry<String, ServerSetupTaskHolder> entry = iter.next();
+            final ServerSetupTaskHolder holder = entry.getValue();
+            // Only tearDown if all deployments have been removed from the container
+            if (holder.deployments.isEmpty()) {
+                entry.getValue().tearDown(entry.getKey());
+                iter.remove();
             }
         }
         afterClassRun = true;
-        if (deployed.isEmpty()) {
-            deployed = null;
-            setupTasksAll.clear();
-            setupTasksInForce.clear();
-            afterClassRun = false;
+    }
+
+    /**
+     * Executed after each undeploy for the container.
+     *
+     * @param afterDeploy the lifecycle event
+     * @param container   the container the event is being invoked on
+     *
+     * @throws Exception if an error occurs processing the event
+     */
+    public synchronized void handleAfterUndeploy(@Observes AfterUnDeploy afterDeploy, final Container container) throws Exception {
+        final String containerName = container.getName();
+        final ServerSetupTaskHolder holder = setupTasks.get(containerName);
+        if (holder == null) {
+            return;
+        }
+
+        // Remove the deployment
+        if (holder.deployments.remove(afterDeploy.getDeployment())) {
+            // If the deployments are now empty and the AfterClass has been invoked we need to ensure the tearDown() has
+            // happened. This should clean up any tasks left from managed deployments or unmanaged deployments that were
+            // not undeployed manually.
+            if (afterClassRun && holder.deployments.isEmpty()) {
+                holder.tearDown(containerName);
+                setupTasks.remove(containerName);
+            }
         }
     }
 
-    public synchronized void handleAfterUndeploy(@Observes AfterUnDeploy afterDeploy, final Container container) throws Exception {
-        if(deployed == null) {
-            return;
+    private static class ServerSetupTaskHolder {
+        private final ManagementClient client;
+        private final Deque<ServerSetupTask> setupTasks;
+        private final Set<DeploymentDescription> deployments;
+
+        private ServerSetupTaskHolder(final ManagementClient client) {
+            this.client = client;
+            setupTasks = new ArrayDeque<>();
+            deployments = new HashSet<>();
         }
-        Integer count = deployed.get(container.getName());
-        if (count == null) {
-            // The deployment was already undeployed or never deployed
-            // AfterUnDeploy and BeforeUnDeploy events are fired by arquillian-core regardless of deployment status
-            log.debugf("No deployments found for container %s.", container.getName());
-            return;
-        }
-        deployed.put(container.getName(), --count);
-        if (count == 0 && afterClassRun) {
-            for (int i = setupTasksInForce.size() - 1; i >= 0; i--) {
+
+        void setup(final ServerSetup setup, final String containerName) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+            final Class<? extends ServerSetupTask>[] classes = setup.value();
+            for (Class<? extends ServerSetupTask> clazz : classes) {
+                final Constructor<? extends ServerSetupTask> ctor = clazz.getDeclaredConstructor();
+                ctor.setAccessible(true);
+                final ServerSetupTask task = ctor.newInstance();
+                setupTasks.add(task);
                 try {
-                    setupTasksInForce.get(i).tearDown(managementClient.get(), container.getName());
-                } catch (Exception e) {
-                    log.error("Setup task failed during tear down. Offending class '" + setupTasksAll.get(i) + "'", e);
+                    task.setup(client, containerName);
+                } catch (Throwable e) {
+                    log.errorf(e, "Setup failed during setup. Offending class '%s'", task);
                 }
             }
-            active.remove(container.getName());
-            deployed.remove(container.getName());
-        }
-        if (deployed.isEmpty()) {
-            deployed = null;
-            setupTasksAll.clear();
-            setupTasksInForce.clear();
-            afterClassRun = false;
         }
 
-    }
-
-
-    private static final class ContainerClassHolder {
-        private final Class<?> testClass;
-        private final String name;
-
-        private ContainerClassHolder(final String name, final Class<?> testClass) {
-            this.name = name;
-            this.testClass = testClass;
+        public void tearDown(final String containerName) {
+            if (client.isClosed()) {
+                log.errorf("The container '%s' may have been stopped. The management client has been closed and " +
+                        "tearing down setup tasks is not possible.", containerName);
+            } else {
+                ServerSetupTask task;
+                while ((task = setupTasks.pollLast()) != null) {
+                    try {
+                        task.tearDown(client, containerName);
+                    } catch (Exception e) {
+                        log.errorf(e, "Setup task failed during tear down. Offending class '%s'", task);
+                    }
+                }
+            }
         }
 
         @Override
-        public boolean equals(final Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-
-            final ContainerClassHolder that = (ContainerClassHolder) o;
-
-            if (name != null ? !name.equals(that.name) : that.name != null) return false;
-            if (testClass != null ? !testClass.equals(that.testClass) : that.testClass != null) return false;
-
-            return true;
-        }
-
-        @Override
-        public int hashCode() {
-            int result = testClass != null ? testClass.hashCode() : 0;
-            result = 31 * result + (name != null ? name.hashCode() : 0);
-            return result;
+        public String toString() {
+            return ServerSetupTaskHolder.class.getName() +
+                    "[setupTasks=" +
+                    setupTasks +
+                    ", deployments" +
+                    deployments +
+                    "]";
         }
     }
 }

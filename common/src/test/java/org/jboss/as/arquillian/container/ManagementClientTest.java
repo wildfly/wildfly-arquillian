@@ -24,14 +24,32 @@ public class ManagementClientTest {
     @Test
     public void shouldParseBindAllAsLocalhost() {
         String sourceIp = "0.0.0.0";
-        String parsedIp = ManagementClient.formatIP(sourceIp);
+        String parsedIp = ManagementClient.formatIP(sourceIp, null);
+
         Assert.assertEquals("127.0.0.1", parsedIp);
     }
 
     @Test
-    public void shouldParseLocalIPAsNormalIP() {
+    public void shouldParseLocalIPAsNormalIPWhenNoMgmtAddress() {
         String sourceIp = "10.1.2.3";
-        String formattedIp = ManagementClient.formatIP(sourceIp);
+        String formattedIp = ManagementClient.formatIP(sourceIp, null);
+
         Assert.assertEquals(sourceIp, formattedIp);
+    }
+
+    @Test
+    public void shouldParseMgmtAddressAsNormalIP() {
+        String mgmtIp = "10.1.2.3";
+        String formattedIp = ManagementClient.formatIP("0.0.0.0", mgmtIp);
+
+        Assert.assertEquals(mgmtIp, formattedIp);
+    }
+
+    @Test
+    public void shouldParseMgmtAddressAsNormalIPIfSourceAndMgmtAddressAreSame() {
+        String ip = "0.0.0.0";
+        String formattedIp = ManagementClient.formatIP(ip, ip);
+
+        Assert.assertEquals(ip, formattedIp);
     }
 }

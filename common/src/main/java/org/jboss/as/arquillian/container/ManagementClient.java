@@ -334,7 +334,7 @@ public class ManagementClient implements Closeable {
             operation.get("include-runtime").set(true);
             ModelNode binding = executeForResult(operation);
             String ip = binding.get("bound-address").asString();
-            ip = formatIP(ip);
+            ip = formatIP(ip, mgmtAddress);
 
             final int port = defined(binding.get("bound-port"), socketBindingGroupName + " -> " + socketBinding + " -> bound-port is undefined").asInt();
 
@@ -344,14 +344,19 @@ public class ManagementClient implements Closeable {
         }
     }
 
-    static String formatIP(String ip) {
+    static String formatIP(String ip, String mgmtAddress) {
         //it appears some system can return a binding with the zone specifier on the end
         if (ip.contains(":") && ip.contains("%")) {
             ip = ip.split("%")[0];
         }
         if (ip.equals("0.0.0.0")) {
-            logger.debug("WildFly is bound to 0.0.0.0 which is correct, setting client to 127.0.0.1");
-            ip = "127.0.0.1";
+            if (mgmtAddress != null && !mgmtAddress.trim().isEmpty()) {
+                logger.debug("WildFly is bound to 0.0.0.0 which is correct, setting configuration from arquillian.xml,  setting client to " + mgmtAddress);
+                ip = mgmtAddress;
+            } else {
+                logger.debug("WildFly is bound to 0.0.0.0 which is correct, setting client to 127.0.0.1");
+                ip = "127.0.0.1";
+            }
         }
         return ip;
     }

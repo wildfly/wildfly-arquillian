@@ -35,10 +35,14 @@ public class CommonContainerConfiguration implements ContainerConfiguration {
     private String username;
     private String password;
     private String wildflyConfig;
+    private String host;
+    private int port;
 
     public CommonContainerConfiguration() {
         managementAddress = "127.0.0.1";
         managementPort = 9990 + Integer.decode(System.getProperty("jboss.socket.binding.port-offset", "0"));
+        host = null;
+        port = -1;
     }
 
     public String getManagementAddress() {
@@ -75,6 +79,22 @@ public class CommonContainerConfiguration implements ContainerConfiguration {
 
     public String getManagementProtocol() {
         return managementProtocol;
+    }
+
+    public String getHost() {
+        return host;
+    }
+
+    public void setHost(String host) {
+        this.host = host;
+    }
+
+    public int getPort() {
+        return port;
+    }
+
+    public void setPort(int port) {
+        this.port = port;
     }
 
     public void setManagementProtocol(final String managementProtocol) {

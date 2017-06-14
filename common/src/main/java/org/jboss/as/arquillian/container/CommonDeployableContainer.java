@@ -97,8 +97,7 @@ public abstract class CommonDeployableContainer<T extends CommonContainerConfigu
             }
         }
 
-        final ManagementClient client = new ManagementClient(new DelegatingModelControllerClient(mccProvider),
-                containerConfig.getManagementAddress(), containerConfig.getManagementPort(), containerConfig.getManagementProtocol(), authenticationContext);
+        final ManagementClient client = new ManagementClient(new DelegatingModelControllerClient(mccProvider), authenticationContext, containerConfig);
         managementClient.set(client);
 
         archiveDeployer.set(new ArchiveDeployer(client));

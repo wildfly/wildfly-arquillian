@@ -72,6 +72,7 @@ import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.logging.Logger;
+import org.wildfly.common.Assert;
 import org.wildfly.common.context.Contextual;
 import org.wildfly.security.auth.client.AuthenticationContext;
 
@@ -103,6 +104,7 @@ public class ManagementClient implements Closeable {
     private final String mgmtProtocol;
     private final ModelControllerClient client;
     private final AuthenticationContext context;
+    private final CommonContainerConfiguration config;
 
     private boolean initialized = false;
     private URI webUri;
@@ -124,16 +126,20 @@ public class ManagementClient implements Closeable {
         this.mgmtPort = managementPort;
         this.mgmtProtocol = protocol;
         this.context = null;
+        this.config = null;
     }
-    public ManagementClient(ModelControllerClient client, final String mgmtAddress, final int managementPort, final String protocol, final AuthenticationContext context) {
+
+    public ManagementClient(ModelControllerClient client, final AuthenticationContext context, final CommonContainerConfiguration config) {
         if (client == null) {
             throw new IllegalArgumentException("Client must be specified");
         }
+        Assert.checkNotNullParam("config", config);
         this.client = client;
-        this.mgmtAddress = mgmtAddress;
-        this.mgmtPort = managementPort;
-        this.mgmtProtocol = protocol;
+        this.mgmtAddress = config.getManagementAddress();
+        this.mgmtPort = config.getManagementPort();
+        this.mgmtProtocol = config.getManagementProtocol();
         this.context = context;
+        this.config = config;
     }
 
     //-------------------------------------------------------------------------------------||
@@ -322,23 +328,35 @@ public class ManagementClient implements Closeable {
     }
 
     private URI getBinding(final String protocol, final String socketBinding) {
+        String host = null;
+        int port = -1;
+        if (config != null) {
+            host = config.getHost();
+            port = config.getPort();
+        }
         try {
-            ModelNode address = new ModelNode();
-            address.add("socket-binding-group","*");
-            final ModelNode socketBindingGroups = readResource(address);
-            final String socketBindingGroupName = socketBindingGroups.asList().get(0).get("result").get("name").asString();
-            final ModelNode operation = new ModelNode();
-            operation.get(OP_ADDR).get("socket-binding-group").set(socketBindingGroupName);
-            operation.get(OP_ADDR).get("socket-binding").set(socketBinding);
-            operation.get(OP).set(READ_RESOURCE_OPERATION);
-            operation.get("include-runtime").set(true);
-            ModelNode binding = executeForResult(operation);
-            String ip = binding.get("bound-address").asString();
-            ip = formatIP(ip);
+            if (host == null || port < 0) {
+                ModelNode address = new ModelNode();
+                address.add("socket-binding-group", "*");
+                final ModelNode socketBindingGroups = readResource(address);
+                final String socketBindingGroupName = socketBindingGroups.asList().get(0).get("result").get("name").asString();
+                final ModelNode operation = new ModelNode();
+                operation.get(OP_ADDR).get("socket-binding-group").set(socketBindingGroupName);
+                operation.get(OP_ADDR).get("socket-binding").set(socketBinding);
+                operation.get(OP).set(READ_RESOURCE_OPERATION);
+                operation.get("include-runtime").set(true);
+                ModelNode binding = executeForResult(operation);
+                if (host == null) {
+                    host = formatIP(binding.get("bound-address").asString());
+                }
 
-            final int port = defined(binding.get("bound-port"), socketBindingGroupName + " -> " + socketBinding + " -> bound-port is undefined").asInt();
-
-            return URI.create(protocol + "://" + NetworkUtils.formatPossibleIpv6Address(ip) + ":" + port);
+                // Check if we need to look up the port
+                if (port < 0) {
+                    port = defined(binding.get("bound-port"),
+                            socketBindingGroupName + " -> " + socketBinding + " -> bound-port is undefined").asInt();
+                }
+            }
+            return URI.create(protocol + "://" + NetworkUtils.formatPossibleIpv6Address(host) + ":" + port);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

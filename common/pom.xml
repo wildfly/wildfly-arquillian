@@ -74,16 +74,8 @@
             <artifactId>shrinkwrap-descriptors-impl-base</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.wildfly.client</groupId>
-            <artifactId>wildfly-client-config</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.wildfly.common</groupId>
             <artifactId>wildfly-common</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.wildfly.security</groupId>
-            <artifactId>wildfly-elytron</artifactId>
         </dependency>
         <dependency>
             <groupId>junit</groupId>

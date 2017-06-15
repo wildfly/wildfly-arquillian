@@ -26,9 +26,8 @@ import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -40,9 +39,8 @@ import org.junit.runner.RunWith;
 public class ElytronIntegrationTestCase {
 
     @Deployment
-    public static WebArchive deployment() {
-        return ShrinkWrap.create(WebArchive.class)
-                .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml")
+    public static JavaArchive deployment() {
+        return ShrinkWrap.create(JavaArchive.class)
                 .addAsResource(new StringAsset("Dependencies: org.jboss.dmr, org.jboss.as.controller\n"), "META-INF/MANIFEST.MF");
     }
 

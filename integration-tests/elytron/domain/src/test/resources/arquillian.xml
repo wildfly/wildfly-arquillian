@@ -21,7 +21,7 @@
     <container qualifier="jboss" default="true">
         <configuration>
             <property name="jbossHome">${jboss.home}</property>
-            <property name="wildflyConfig">${wildfly.config}</property>
+            <property name="authenticationConfig">${wildfly.config}</property>
             <property name="allowConnectingToRunningServer">false</property>
         </configuration>
     </container>

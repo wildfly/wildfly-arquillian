@@ -35,7 +35,7 @@ public class CommonDomainContainerConfiguration implements ContainerConfiguratio
 
     private String username;
     private String password;
-    private String wildflyConfig;
+    private String authenticationConfig;
 
     private Map<String, String> containerNameMap;
 
@@ -161,21 +161,21 @@ public class CommonDomainContainerConfiguration implements ContainerConfiguratio
     }
 
     /**
-     * The {@linkplain URI URI} path for the WildFly configuration.
+     * The {@linkplain URI URI} path for the authentication configuration.
      *
      * @return the URI for the path or {@code null} if no path was set
      */
-    public String getWildflyConfig() {
-        return wildflyConfig;
+    public String getAuthenticationConfig() {
+        return authenticationConfig;
     }
 
     /**
-     * Set the {@linkplain URI URI} path for the WildFly configuration.
+     * Set the {@linkplain URI URI} path for the authentication configuration.
      *
-     * @param wildflyConfig the URI path
+     * @param authenticationConfig the URI path
      */
-    public void setWildflyConfig(final String wildflyConfig) {
-        this.wildflyConfig = wildflyConfig;
+    public void setAuthenticationConfig(final String authenticationConfig) {
+        this.authenticationConfig = authenticationConfig;
     }
 
     @Override

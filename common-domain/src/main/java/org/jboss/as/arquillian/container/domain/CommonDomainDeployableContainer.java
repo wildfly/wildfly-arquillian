@@ -16,7 +16,6 @@
 package org.jboss.as.arquillian.container.domain;
 
 import java.net.URI;
-import java.security.GeneralSecurityException;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
@@ -52,10 +51,6 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.descriptor.api.Descriptor;
 import org.wildfly.arquillian.domain.ServerGroupArchive;
 import org.wildfly.arquillian.domain.api.DomainManager;
-import org.wildfly.client.config.ConfigXMLParseException;
-import org.wildfly.plugin.core.ContextualModelControllerClient;
-import org.wildfly.security.auth.client.AuthenticationContext;
-import org.wildfly.security.auth.client.ElytronXmlParser;
 
 /**
  * @author <a href="mailto:aslak@redhat.com">Aslak Knutsen</a>
@@ -128,26 +123,16 @@ public abstract class CommonDomainDeployableContainer<T extends CommonDomainCont
             clientConfigBuilder.setHandler(Authentication.getCallbackHandler());
         }
 
-        // Configure the current client and set the delegate for the provider so the same management client can be used
-        // during starts and stops
-        final ModelControllerClient delegateClient;
-
-        final String wildflyConfig = containerConfig.getWildflyConfig();
-        final AuthenticationContext authenticationContext;
+        final String authenticationConfig = containerConfig.getAuthenticationConfig();
 
         // Check for an Elytron configuration
-        if (wildflyConfig != null) {
-            try {
-                authenticationContext = ElytronXmlParser.parseAuthenticationClientConfiguration(URI.create(wildflyConfig)).create();
-                delegateClient = new ContextualModelControllerClient(ModelControllerClient.Factory.create(clientConfigBuilder.build()), authenticationContext);
-            } catch (ConfigXMLParseException | GeneralSecurityException e) {
-                throw new LifecycleException("Failed to configure authentication.", e);
-            }
-        } else {
-            authenticationContext = null;
-            delegateClient = ModelControllerClient.Factory.create(clientConfigBuilder.build());
+        if (authenticationConfig != null) {
+            clientConfigBuilder.setAuthenticationConfigUri(URI.create(authenticationConfig));
         }
-        DomainDelegateProvider.INSTANCE.setDelegate(delegateClient);
+
+        // Configure the current client and set the delegate for the provider so the same management client can be used
+        // during starts and stops
+        DomainDelegateProvider.INSTANCE.setDelegate(ModelControllerClient.Factory.create(clientConfigBuilder.build()));
 
         try {
             startInternal();

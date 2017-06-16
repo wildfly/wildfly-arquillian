@@ -39,14 +39,12 @@
     <name>WildFly: Arquillian</name>
 
     <properties>
-        <version.org.wildfly.core>3.0.0.Beta11</version.org.wildfly.core>
-        <version.org.wildfly.full>11.0.0.Alpha1</version.org.wildfly.full>
+        <version.org.wildfly.core>3.0.0.Beta26</version.org.wildfly.core>
+        <version.org.wildfly.full>10.0.0.Final</version.org.wildfly.full>
         <version.junit>4.12</version.junit>
         <version.org.jboss.arquillian.core>1.1.12.Final</version.org.jboss.arquillian.core>
-        <version.org.wildfly.client.wildfly-client-config>1.0.0.Beta1</version.org.wildfly.client.wildfly-client-config>
-        <version.org.wildfly.common.wildfly-common>1.2.0.Beta5</version.org.wildfly.common.wildfly-common>
+        <version.org.wildfly.common.wildfly-common>1.2.0.Beta11</version.org.wildfly.common.wildfly-common>
         <version.org.wildfly.plugins.wildfly-maven-plugin>1.2.0.Alpha4</version.org.wildfly.plugins.wildfly-maven-plugin>
-        <version.org.wildfly.security.wildfly-elytron>1.1.0.Beta33</version.org.wildfly.security.wildfly-elytron>
 
         <!-- keep this in sync with version that is used in arquillian -->
         <version.org.jboss.shrinkwrap.descriptors>2.0.0-alpha-10</version.org.jboss.shrinkwrap.descriptors>
@@ -221,11 +219,6 @@
             </dependency>
 
             <!-- External dependencies -->
-            <dependency>
-                <groupId>org.wildfly.client</groupId>
-                <artifactId>wildfly-client-config</artifactId>
-                <version>${version.org.wildfly.client.wildfly-client-config}</version>
-            </dependency>
 
             <dependency>
                 <groupId>org.wildfly.common</groupId>
@@ -271,12 +264,6 @@
                 <groupId>org.wildfly.core</groupId>
                 <artifactId>wildfly-launcher</artifactId>
                 <version>${version.org.wildfly.core}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.wildfly.security</groupId>
-                <artifactId>wildfly-elytron</artifactId>
-                <version>${version.org.wildfly.security.wildfly-elytron}</version>
             </dependency>
 
             <dependency>

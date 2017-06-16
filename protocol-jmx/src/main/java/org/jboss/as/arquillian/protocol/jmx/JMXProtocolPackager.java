@@ -65,7 +65,6 @@ import org.jboss.shrinkwrap.api.container.ManifestContainer;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.descriptor.api.Descriptors;
 import org.jboss.shrinkwrap.descriptor.api.spec.se.manifest.ManifestDescriptor;
-import org.wildfly.plugin.core.ContextualModelControllerClient;
 
 /**
  * A {@link DeploymentPackager} for the JMXProtocol.
@@ -142,9 +141,7 @@ public class JMXProtocolPackager implements DeploymentPackager {
         archiveDependencies.add(ModuleIdentifier.create("org.jboss.msc"));
         archiveDependencies.add(ModuleIdentifier.create("org.wildfly.security.manager"));
         archiveDependencies.add(ModuleIdentifier.create("org.wildfly.common"));
-        archiveDependencies.add(ModuleIdentifier.create("org.wildfly.client.config"));
         archiveDependencies.add(ModuleIdentifier.create("org.wildfly.security.elytron"));
-        archive.addClass(ContextualModelControllerClient.class);
 
         // Merge the auxiliary archives and collect the loadable extensions
         final Set<String> loadableExtensions = new HashSet<String>();

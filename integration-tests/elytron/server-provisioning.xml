@@ -15,6 +15,6 @@
   -->
 <server-provisioning xmlns="urn:wildfly:server-provisioning:1.0" copy-module-artifacts="false">
     <feature-packs>
-        <feature-pack groupId="${org.wildfly.groupId}" artifactId="${org.wildfly.artifactId}" version="${org.wildfly.version}" />
+        <feature-pack groupId="org.wildfly.core" artifactId="wildfly-core-feature-pack" version="${version.org.wildfly.core}" />
     </feature-packs>
 </server-provisioning>

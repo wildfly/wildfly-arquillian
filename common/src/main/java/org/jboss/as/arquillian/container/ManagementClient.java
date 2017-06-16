@@ -73,8 +73,6 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.logging.Logger;
 import org.wildfly.common.Assert;
-import org.wildfly.common.context.Contextual;
-import org.wildfly.security.auth.client.AuthenticationContext;
 
 /**
  * A helper class to join management related operations, like extract sub system ip/port (web/jmx)
@@ -103,7 +101,6 @@ public class ManagementClient implements Closeable {
     private final int mgmtPort;
     private final String mgmtProtocol;
     private final ModelControllerClient client;
-    private final AuthenticationContext context;
     private final CommonContainerConfiguration config;
 
     private boolean initialized = false;
@@ -125,11 +122,10 @@ public class ManagementClient implements Closeable {
         this.mgmtAddress = mgmtAddress;
         this.mgmtPort = managementPort;
         this.mgmtProtocol = protocol;
-        this.context = null;
         this.config = null;
     }
 
-    public ManagementClient(ModelControllerClient client, final AuthenticationContext context, final CommonContainerConfiguration config) {
+    public ManagementClient(ModelControllerClient client, final CommonContainerConfiguration config) {
         if (client == null) {
             throw new IllegalArgumentException("Client must be specified");
         }
@@ -138,7 +134,6 @@ public class ManagementClient implements Closeable {
         this.mgmtAddress = config.getManagementAddress();
         this.mgmtPort = config.getManagementPort();
         this.mgmtProtocol = config.getManagementProtocol();
-        this.context = context;
         this.config = config;
     }
 
@@ -471,9 +466,11 @@ public class ManagementClient implements Closeable {
                     // Only set this is there is a username as it disabled local authentication.
                     env.put(CallbackHandler.class.getName(), Authentication.getCallbackHandler());
                 }
-                final Contextual<?> context = this.context;
+                if (config.getAuthenticationConfig() != null) {
+                    env.put("wildfly.config.url", config.getAuthenticationConfig());
+                }
                 final JMXServiceURL serviceURL = getRemoteJMXURL();
-                final JMXConnector connector = this.connector = ContextualJMXConnectorFactory.connect(context, serviceURL, env);
+                final JMXConnector connector = this.connector = JMXConnectorFactory.connect(serviceURL, env);
                 connection = this.connection = new MBeanConnectionProxy(connector.getMBeanServerConnection());
             } catch (IOException e) {
                 throw new RuntimeException(e);

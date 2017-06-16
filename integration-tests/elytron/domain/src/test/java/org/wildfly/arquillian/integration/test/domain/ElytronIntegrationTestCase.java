@@ -26,9 +26,8 @@ import org.jboss.as.arquillian.container.domain.ManagementClient;
 import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -39,13 +38,13 @@ import org.wildfly.arquillian.domain.api.TargetsServerGroup;
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 @RunWith(Arquillian.class)
+@Ignore("Can be re-enabled after WFCORE-2968 is resolved see WFARQ-32.")
 public class ElytronIntegrationTestCase {
 
     @Deployment
     @TargetsServerGroup("main-server-group")
-    public static WebArchive deployment() {
-        return ShrinkWrap.create(WebArchive.class)
-                .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml")
+    public static JavaArchive deployment() {
+        return ShrinkWrap.create(JavaArchive.class)
                 .addAsResource(new StringAsset("Dependencies: org.jboss.dmr, org.jboss.as.controller\n"), "META-INF/MANIFEST.MF");
     }
 

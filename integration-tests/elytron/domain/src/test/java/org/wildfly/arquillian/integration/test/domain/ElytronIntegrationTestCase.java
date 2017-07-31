@@ -38,7 +38,6 @@ import org.wildfly.arquillian.domain.api.TargetsServerGroup;
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 @RunWith(Arquillian.class)
-@Ignore("Can be re-enabled after WFCORE-2968 is resolved see WFARQ-32.")
 public class ElytronIntegrationTestCase {
 
     @Deployment

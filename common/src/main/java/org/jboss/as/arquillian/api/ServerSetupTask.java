@@ -26,7 +26,7 @@ import org.jboss.as.arquillian.container.ManagementClient;
  */
 public interface ServerSetupTask {
 
-    void setup(final ManagementClient managementClient, final String containerId) throws Exception;
+    void setup(ManagementClient managementClient, String containerId) throws Exception;
 
-    void tearDown(final ManagementClient managementClient, final String containerId) throws Exception;
+    void tearDown(ManagementClient managementClient, String containerId) throws Exception;
 }

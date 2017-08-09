@@ -121,21 +121,17 @@
                         <id>fix-servlet</id>
                         <phase>test-compile</phase>
                         <goals>
-                            <goal>start</goal>
                             <goal>execute-commands</goal>
-                            <goal>shutdown</goal>
                         </goals>
                         <configuration>
-                            <server-type>DOMAIN</server-type>
+                            <offline>true</offline>
                             <jboss-home>${jboss.home}</jboss-home>
-                            <server-args>
-                                <server-arg>--admin-only</server-arg>
-                            </server-args>
-                            <stdout>${project.build.testOutputDirectory}${file.separator}admin-only-config.log</stdout>
                             <execute-commands>
                                 <fail-on-error>false</fail-on-error>
                                 <commands>
+                                    <command>embed-host-controller</command>
                                     <command>/server-group=other-server-group:add(socket-binding-group=standard-sockets, profile=default)</command>
+                                    <command>stop-embedded-host-controller</command>
                                 </commands>
                             </execute-commands>
                         </configuration>

@@ -15,10 +15,11 @@
  */
 package org.jboss.as.arquillian.container.embedded;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 
 import org.jboss.arquillian.container.spi.client.container.LifecycleException;
 import org.jboss.as.arquillian.container.CommonDeployableContainer;
+import org.jboss.as.arquillian.container.ParameterUtils;
 import org.wildfly.core.embedded.EmbeddedProcessFactory;
 import org.wildfly.core.embedded.EmbeddedStandaloneServerFactory;
 import org.wildfly.core.embedded.StandaloneServer;
@@ -82,13 +83,10 @@ public final class EmbeddedDeployableContainer extends CommonDeployableContainer
             }
             return new String[]{"-c=" + configFile};
         }
-        if (configFile == null) {
-            return arguments.split("\\s+");
+        ArrayList<String> splitParams = ParameterUtils.splitParams(arguments);
+        if (configFile != null) {
+            splitParams.add("-c=" + configFile);
         }
-        String[] args =  arguments.split("\\s+");
-        final int i = args.length;
-        args = Arrays.copyOf(args, i + 1);
-        args[i] = "-c=" + configFile;
-        return args;
+        return splitParams.toArray(new String[0]);
     }
 }

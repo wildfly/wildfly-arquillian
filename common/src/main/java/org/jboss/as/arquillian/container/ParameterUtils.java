@@ -16,11 +16,15 @@
 package org.jboss.as.arquillian.container;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
  * Utility methods related to parsing parameters.
+ */
+/*
+ * As there is no common dependency between domain and standalone, this class was duplicated.
  */
 public class ParameterUtils {
 
@@ -32,7 +36,7 @@ public class ParameterUtils {
      * @param parameterString
      * @return
      */
-    public static ArrayList<String> splitParams(String parameterString) {
+    public static List<String> splitParams(String parameterString) {
 
         ArrayList<String> params = new ArrayList<>();
         Matcher m = WHITESPACE_IF_NOT_QUOTED.matcher(parameterString);

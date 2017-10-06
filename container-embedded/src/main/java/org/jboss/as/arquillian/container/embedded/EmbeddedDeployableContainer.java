@@ -15,7 +15,7 @@
  */
 package org.jboss.as.arquillian.container.embedded;
 
-import java.util.ArrayList;
+import java.util.List;
 
 import org.jboss.arquillian.container.spi.client.container.LifecycleException;
 import org.jboss.as.arquillian.container.CommonDeployableContainer;
@@ -83,7 +83,7 @@ public final class EmbeddedDeployableContainer extends CommonDeployableContainer
             }
             return new String[]{"-c=" + configFile};
         }
-        ArrayList<String> splitParams = ParameterUtils.splitParams(arguments);
+        List<String> splitParams = ParameterUtils.splitParams(arguments);
         if (configFile != null) {
             splitParams.add("-c=" + configFile);
         }

@@ -29,12 +29,14 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.List;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
 import org.jboss.arquillian.container.spi.client.container.LifecycleException;
 import org.jboss.as.arquillian.container.domain.CommonDomainDeployableContainer;
+import org.jboss.as.arquillian.container.domain.ParameterUtils;
 import org.jboss.as.controller.client.helpers.ClientConstants;
 import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.dmr.ModelNode;
@@ -79,7 +81,7 @@ public class ManagedDomainDeployableContainer extends CommonDomainDeployableCont
             final DomainCommandBuilder commandBuilder = DomainCommandBuilder.of(config.getJbossHome(), config.getJavaHome());
             final String javaVmArguments = config.getJavaVmArguments();
             if (javaVmArguments != null && !javaVmArguments.trim().isEmpty()) {
-                final String[] javaOpts = javaVmArguments.split("\\s+");
+                List<String> javaOpts = ParameterUtils.splitParams(javaVmArguments);
                 commandBuilder.setProcessControllerJavaOptions(javaOpts)
                         .setHostControllerJavaOptions(javaOpts);
             }
@@ -107,7 +109,7 @@ public class ManagedDomainDeployableContainer extends CommonDomainDeployableCont
             // Set server arguments if not null
             final String serverArgs = config.getJbossArguments();
             if (serverArgs != null && !serverArgs.trim().isEmpty()) {
-                commandBuilder.addServerArguments(serverArgs.split("\\s+"));
+                commandBuilder.addServerArguments(ParameterUtils.splitParams(serverArgs));
             }
 
             // Previous versions of arquillian set the jboss.home.dir property in the JVM properties.

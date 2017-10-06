@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<fileset-config file-format-version="1.2.0" simple-config="false" sync-formatter="false">
+  <local-check-config name="maven-checkstyle-plugin check-style" location="jar:file:/C:/Users/Markus/.m2/repository/org/wildfly/checkstyle/wildfly-checkstyle-config/1.0.6.Final/wildfly-checkstyle-config-1.0.6.Final.jar!/wildfly-checkstyle/checkstyle.xml" type="remote" description="maven-checkstyle-plugin configuration check-style">
+    <property name="checkstyle.cache.file" value="${project_loc}/target/checkstyle-cachefile"/>
+    <property name="checkstyle.header.file" value="C:\progs\ws\.metadata\.plugins\org.eclipse.core.resources\.projects\wildfly-arquillian-common-domain\com.basistech.m2e.code.quality.checkstyleConfigurator\checkstyle-header-check-style.txt"/>
+  </local-check-config>
+  <fileset name="java-sources-check-style" enabled="true" check-config-name="maven-checkstyle-plugin check-style" local="true">
+    <file-match-pattern match-pattern="^src/main/java/.*\.java" include-pattern="true"/>
+    <file-match-pattern match-pattern="^src/main/resources.*\.properties" include-pattern="true"/>
+    <file-match-pattern match-pattern="^src/test/resources.*\.properties" include-pattern="true"/>
+  </fileset>
+</fileset-config>

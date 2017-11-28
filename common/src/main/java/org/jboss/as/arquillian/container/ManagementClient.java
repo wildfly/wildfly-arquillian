@@ -15,16 +15,19 @@
  */
 package org.jboss.as.arquillian.container;
 
+import static org.jboss.as.controller.client.helpers.ClientConstants.CHILD_TYPE;
 import static org.jboss.as.controller.client.helpers.ClientConstants.CONTROLLER_PROCESS_STATE_STARTING;
 import static org.jboss.as.controller.client.helpers.ClientConstants.CONTROLLER_PROCESS_STATE_STOPPING;
 import static org.jboss.as.controller.client.helpers.ClientConstants.DEPLOYMENT;
 import static org.jboss.as.controller.client.helpers.ClientConstants.FAILURE_DESCRIPTION;
+import static org.jboss.as.controller.client.helpers.ClientConstants.INCLUDE_RUNTIME;
 import static org.jboss.as.controller.client.helpers.ClientConstants.OP;
 import static org.jboss.as.controller.client.helpers.ClientConstants.OP_ADDR;
 import static org.jboss.as.controller.client.helpers.ClientConstants.OUTCOME;
 import static org.jboss.as.controller.client.helpers.ClientConstants.READ_ATTRIBUTE_OPERATION;
+import static org.jboss.as.controller.client.helpers.ClientConstants.READ_CHILDREN_NAMES_OPERATION;
 import static org.jboss.as.controller.client.helpers.ClientConstants.READ_RESOURCE_OPERATION;
-import static org.jboss.as.controller.client.helpers.ClientConstants.RECURSIVE;
+import static org.jboss.as.controller.client.helpers.ClientConstants.RECURSIVE_DEPTH;
 import static org.jboss.as.controller.client.helpers.ClientConstants.RESULT;
 import static org.jboss.as.controller.client.helpers.ClientConstants.SUBSYSTEM;
 import static org.jboss.as.controller.client.helpers.ClientConstants.SUCCESS;
@@ -39,6 +42,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
 import javax.management.Attribute;
 import javax.management.AttributeList;
 import javax.management.AttributeNotFoundException;
@@ -242,9 +246,14 @@ public class ManagementClient implements Closeable {
             metaData.addContext(context);
 
             try {
+                final ModelNode operation = new ModelNode();
+                operation.get(OP).set(READ_RESOURCE_OPERATION);
+                operation.get(RECURSIVE_DEPTH).set(3); // /deployment=x/subdeployment=y/subsystem=undertow/servlet=*
+                operation.get(INCLUDE_RUNTIME).set(true);
                 ModelNode address = new ModelNode();
                 address.add(DEPLOYMENT, deploymentName);
-                ModelNode deploymentNode = readResource(address);
+                operation.get(OP_ADDR).set(address);
+                ModelNode deploymentNode = executeForResult(operation);
 
                 if (isWebArchive(deploymentName)) {
                     extractWebArchiveContexts(context, deploymentNode);
@@ -331,10 +340,11 @@ public class ManagementClient implements Closeable {
         }
         try {
             if (host == null || port < 0) {
-                ModelNode address = new ModelNode();
-                address.add("socket-binding-group", "*");
-                final ModelNode socketBindingGroups = readResource(address);
-                final String socketBindingGroupName = socketBindingGroups.asList().get(0).get("result").get("name").asString();
+                ModelNode sbgOp = new ModelNode();
+                sbgOp.get(OP).set(READ_CHILDREN_NAMES_OPERATION);
+                sbgOp.get(CHILD_TYPE).set("socket-binding-group");
+                final ModelNode socketBindingGroups = executeForResult(sbgOp);
+                final String socketBindingGroupName = socketBindingGroups.asList().get(0).asString();
                 final ModelNode operation = new ModelNode();
                 operation.get(OP_ADDR).get("socket-binding-group").set(socketBindingGroupName);
                 operation.get(OP_ADDR).get("socket-binding").set(socketBinding);
@@ -386,27 +396,23 @@ public class ManagementClient implements Closeable {
             for (ModelNode subdeployment : deploymentNode.get(SUBDEPLOYMENT).asList()) {
                 String deploymentName = subdeployment.keys().iterator().next();
                 if (isWebArchive(deploymentName)) {
-                    extractWebArchiveContexts(context, deploymentName, subdeployment.get(deploymentName));
+                    extractWebArchiveContexts(context, subdeployment.get(deploymentName));
                 }
             }
         }
     }
 
     private void extractWebArchiveContexts(HTTPContext context, ModelNode deploymentNode) {
-        extractWebArchiveContexts(context, deploymentNode.get(NAME).asString(), deploymentNode);
-    }
-
-    private void extractWebArchiveContexts(HTTPContext context, String deploymentName, ModelNode deploymentNode) {
         if (deploymentNode.hasDefined(SUBSYSTEM)) {
             ModelNode subsystem = deploymentNode.get(SUBSYSTEM);
             if (subsystem.hasDefined(UNDERTOW)) {
                 ModelNode webSubSystem = subsystem.get(UNDERTOW);
                 if (webSubSystem.isDefined() && webSubSystem.hasDefined("context-root")) {
-                    final String contextName = webSubSystem.get("context-root").asString();
+                    final String contextName = toContextName(webSubSystem.get("context-root").asString());
                     if (webSubSystem.hasDefined(SERVLET)) {
                         for (final ModelNode servletNode : webSubSystem.get(SERVLET).asList()) {
                             for (final String servletName : servletNode.keys()) {
-                                context.add(new Servlet(servletName, toContextName(contextName)));
+                                context.add(new Servlet(servletName, contextName));
                             }
                         }
                     }
@@ -414,7 +420,7 @@ public class ManagementClient implements Closeable {
                      * This is a WebApp, it has some form of webcontext whether it has a
                      * Servlet or not. AS7 does not expose jsp / default servlet in mgm api
                      */
-                    context.add(new Servlet("default", toContextName(contextName)));
+                    context.add(new Servlet("default", contextName));
                 }
             }
         }
@@ -431,15 +437,6 @@ public class ManagementClient implements Closeable {
     //-------------------------------------------------------------------------------------||
     // Common Management API Operations ---------------------------------------------------||
     //-------------------------------------------------------------------------------------||
-
-    private ModelNode readResource(ModelNode address) throws Exception {
-        final ModelNode operation = new ModelNode();
-        operation.get(OP).set(READ_RESOURCE_OPERATION);
-        operation.get(RECURSIVE).set("true");
-        operation.get(OP_ADDR).set(address);
-
-        return executeForResult(operation);
-    }
 
     private ModelNode executeForResult(final ModelNode operation) throws Exception {
         checkState();

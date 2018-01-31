@@ -90,11 +90,6 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
                 commandBuilder.addModuleDirs(modulesPath.split(Pattern.quote(File.pathSeparator)));
             }
 
-            String bundlesPath = config.getBundlePath();
-            if (bundlesPath == null || !bundlesPath.isEmpty()) {
-                log.warning("Bundles path is deprecated and no longer used.");
-            }
-
             final String javaOpts = config.getJavaVmArguments();
             final String jbossArguments = config.getJbossArguments();
 

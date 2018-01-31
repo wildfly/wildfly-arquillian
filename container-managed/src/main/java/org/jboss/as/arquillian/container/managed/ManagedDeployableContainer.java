@@ -91,7 +91,7 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
             }
 
             String bundlesPath = config.getBundlePath();
-            if (bundlesPath == null || !bundlesPath.isEmpty()) {
+            if (bundlesPath != null && !bundlesPath.isEmpty()) {
                 log.warning("Bundles path is deprecated and no longer used.");
             }
 

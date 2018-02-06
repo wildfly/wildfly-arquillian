@@ -64,6 +64,12 @@ public class ManagedAsClientWebArchiveServletTestCase {
         Assert.assertEquals(HelloWorldServlet.GREETING, result);
     }
 
+    @Test
+    public void testWebContext() {
+        Assert.assertTrue(String.format("Expected context to start with /%s but found %s", CONTEXT_NAME, deploymentUrl.getPath()),
+                deploymentUrl.getPath().startsWith("/" + CONTEXT_NAME));
+    }
+
     private String getContent(URL url) throws Exception {
         InputStream is = url.openStream();
         ByteArrayOutputStream out = new ByteArrayOutputStream();

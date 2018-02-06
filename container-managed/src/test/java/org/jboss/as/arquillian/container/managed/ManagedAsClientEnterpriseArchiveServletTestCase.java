@@ -42,9 +42,11 @@ import org.junit.runner.RunWith;
 @RunAsClient
 public class ManagedAsClientEnterpriseArchiveServletTestCase {
 
+    private static final String CONTEXT_NAME = "test-hello-world";
+
     @Deployment(testable = false)
     public static EnterpriseArchive createDeployment() throws Exception {
-        WebArchive war = ShrinkWrap.create(WebArchive.class).addClass(HelloWorldServlet.class);
+        WebArchive war = ShrinkWrap.create(WebArchive.class,  CONTEXT_NAME + ".war").addClass(HelloWorldServlet.class);
         return ShrinkWrap.create(EnterpriseArchive.class).addAsModule(war);
     }
 
@@ -57,6 +59,12 @@ public class ManagedAsClientEnterpriseArchiveServletTestCase {
         Assert.assertNotNull(deploymentUrl);
         String result = getContent(new URL(deploymentUrl.toString() + HelloWorldServlet.URL_PATTERN.substring(1)));
         Assert.assertEquals(HelloWorldServlet.GREETING, result);
+    }
+
+    @Test
+    public void testWebContext() {
+        Assert.assertTrue(String.format("Expected context to start with /%s, but found %s", CONTEXT_NAME, deploymentUrl.getPath()),
+                deploymentUrl.getPath().startsWith("/" + CONTEXT_NAME));
     }
 
     private String getContent(URL url) throws Exception {

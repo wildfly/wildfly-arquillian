@@ -42,7 +42,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import javax.management.Attribute;
 import javax.management.AttributeList;
 import javax.management.AttributeNotFoundException;
@@ -74,6 +73,7 @@ import org.jboss.arquillian.container.spi.client.protocol.metadata.Servlet;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
 import org.jboss.logging.Logger;
 import org.wildfly.common.Assert;
@@ -246,21 +246,12 @@ public class ManagementClient implements Closeable {
             metaData.addContext(context);
 
             try {
-                final ModelNode operation = new ModelNode();
-                operation.get(OP).set(READ_RESOURCE_OPERATION);
-                operation.get(RECURSIVE_DEPTH).set(3); // /deployment=x/subdeployment=y/subsystem=undertow/servlet=*
-                operation.get(INCLUDE_RUNTIME).set(true);
-                ModelNode address = new ModelNode();
-                address.add(DEPLOYMENT, deploymentName);
-                operation.get(OP_ADDR).set(address);
-                ModelNode deploymentNode = executeForResult(operation);
-
+                final ModelNode deploymentNode = readDeploymentNode(deploymentName);
                 if (isWebArchive(deploymentName)) {
                     extractWebArchiveContexts(context, deploymentNode);
                 } else if (isEnterpriseArchive(deploymentName)) {
                     extractEnterpriseArchiveContexts(context, deploymentNode);
                 }
-
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
@@ -391,38 +382,90 @@ public class ManagementClient implements Closeable {
         return deploymentName.endsWith(POSTFIX_WEB);
     }
 
+    /**
+     * Expects the {@code deploymentNode} to bit a list of addresses which contain a result of the subsystem model. The
+     * deployment node model should be the equivalent of
+     * <code>
+     * /deployment=someEar.ear/subdeployment=&#42;/subsystem=undertow:read-resource(recursive-depth=2, include-runtime=true)
+     * </code>
+     * <p>
+     * <strong>Example Output</strong>:
+     * <div>
+     * <code>
+     *     <pre>
+     * [{
+     *    &quot;address&quot; =&gt; [
+     *        (&quot;deployment&quot; =&gt; &quot;example-app.ear&quot;),
+     *        (&quot;subdeployment&quot; =&gt; &quot;example.war&quot;),
+     *        (&quot;subsystem&quot; =&gt; &quot;undertow&quot;)
+     *    ],
+     *    &quot;outcome&quot; =&gt; &quot;success&quot;,
+     *    &quot;result&quot; =&gt; {
+     *        &quot;active-sessions&quot; =&gt; 0,
+     *        &quot;context-root&quot; =&gt; &quot;/example&quot;,
+     *        &quot;expired-sessions&quot; =&gt; 0,
+     *        &quot;max-active-sessions&quot; =&gt; -1,
+     *        &quot;rejected-sessions&quot; =&gt; 0,
+     *        &quot;server&quot; =&gt; &quot;default-server&quot;,
+     *        &quot;session-avg-alive-time&quot; =&gt; 0,
+     *        &quot;session-max-alive-time&quot; =&gt; 0,
+     *        &quot;sessions-created&quot; =&gt; 0,
+     *        &quot;virtual-host&quot; =&gt; &quot;default-host&quot;,
+     *        &quot;servlet&quot; =&gt; {&quot;ExapleService&quot; =&gt; {
+     *            &quot;mappings&quot; =&gt; 0,
+     *            &quot;max-request-time&quot; =&gt; 0,
+     *            &quot;min-request-time&quot; =&gt; 0,
+     *            &quot;request-count&quot; =&gt; 0,
+     *            &quot;servlet-class&quot; =&gt; &quot;org.jboss.example.ExampleServlet&quot;,
+     *            &quot;servlet-name&quot; =&gt; &quot;ExampleService&quot;,
+     *            &quot;total-request-time&quot; =&gt; 0
+     *        }},
+     *        &quot;websocket&quot; =&gt; undefined
+     *    }
+     * }]
+     * </pre>
+     * </code>
+     * </div>
+     * </p>
+     *
+     * @param context        the HTTP context to add the information to
+     * @param deploymentNode all of the EAR's subdeployments
+     */
     private void extractEnterpriseArchiveContexts(HTTPContext context, ModelNode deploymentNode) {
-        if (deploymentNode.hasDefined(SUBDEPLOYMENT)) {
-            for (ModelNode subdeployment : deploymentNode.get(SUBDEPLOYMENT).asList()) {
-                String deploymentName = subdeployment.keys().iterator().next();
-                if (isWebArchive(deploymentName)) {
-                    extractWebArchiveContexts(context, subdeployment.get(deploymentName));
+        if (deploymentNode.isDefined() && deploymentNode.getType() == ModelType.LIST) {
+            // Process each subdeployment
+            for (ModelNode subdeployment : deploymentNode.asList()) {
+                // The subdeployment should always have an address, but check before
+                if (subdeployment.hasDefined(OP_ADDR)) {
+                    final List<Property> address = subdeployment.get(OP_ADDR).asPropertyList();
+                    if (address.size() > 1) {
+                        // This should be the subdeployment name
+                        final String deploymentName = address.get(1).getValue().asString();
+                        if (isWebArchive(deploymentName)) {
+                            extractWebArchiveContexts(context, Operations.readResult(subdeployment));
+                        }
+                    }
+
                 }
             }
         }
     }
 
     private void extractWebArchiveContexts(HTTPContext context, ModelNode deploymentNode) {
-        if (deploymentNode.hasDefined(SUBSYSTEM)) {
-            ModelNode subsystem = deploymentNode.get(SUBSYSTEM);
-            if (subsystem.hasDefined(UNDERTOW)) {
-                ModelNode webSubSystem = subsystem.get(UNDERTOW);
-                if (webSubSystem.isDefined() && webSubSystem.hasDefined("context-root")) {
-                    final String contextName = toContextName(webSubSystem.get("context-root").asString());
-                    if (webSubSystem.hasDefined(SERVLET)) {
-                        for (final ModelNode servletNode : webSubSystem.get(SERVLET).asList()) {
-                            for (final String servletName : servletNode.keys()) {
-                                context.add(new Servlet(servletName, contextName));
-                            }
-                        }
+        if (deploymentNode.isDefined() && deploymentNode.hasDefined("context-root")) {
+            final String contextName = toContextName(deploymentNode.get("context-root").asString());
+            if (deploymentNode.hasDefined(SERVLET)) {
+                for (final ModelNode servletNode : deploymentNode.get(SERVLET).asList()) {
+                    for (final String servletName : servletNode.keys()) {
+                        context.add(new Servlet(servletName, contextName));
                     }
-                    /*
-                     * This is a WebApp, it has some form of webcontext whether it has a
-                     * Servlet or not. AS7 does not expose jsp / default servlet in mgm api
-                     */
-                    context.add(new Servlet("default", contextName));
                 }
             }
+            /*
+             * This is a WebApp, it has some form of webcontext whether it has a
+             * Servlet or not. AS7 does not expose jsp / default servlet in mgm api
+             */
+            context.add(new Servlet("default", contextName));
         }
     }
 
@@ -443,6 +486,52 @@ public class ManagementClient implements Closeable {
         final ModelNode result = client.execute(operation);
         checkSuccessful(result, operation);
         return result.get(RESULT);
+    }
+
+    private ModelNode readDeploymentNode(final String deploymentName) throws IOException, UnSuccessfulOperationException {
+        final ModelNode address;
+        if (isWebArchive(deploymentName)) {
+            address = Operations.createAddress(DEPLOYMENT, deploymentName, SUBSYSTEM, UNDERTOW);
+        } else if (isEnterpriseArchive(deploymentName)) {
+            address = Operations.createAddress(DEPLOYMENT, deploymentName, SUBDEPLOYMENT, "*", SUBSYSTEM, UNDERTOW);
+        } else {
+            // We don't have a web context so just return the meta data
+            return new ModelNode();
+        }
+        final ModelNode operation = Operations.createReadResourceOperation(address);
+        operation.get(RECURSIVE_DEPTH).set(2);
+        operation.get(INCLUDE_RUNTIME).set(true);
+        // Normally this could just use the executeForResult(). However singleton deployments may not be on a
+        // node that has been started and therefore the deployment may not have an undertow subsystem resource.
+        final ModelNode result = client.execute(operation);
+        if (Operations.isSuccessfulOutcome(result)) {
+            return Operations.readResult(result);
+        } else {
+            // This check is a bit heavy, however we need to determine whether or not the error was due to not
+            // having the undertow resource on the deployment or the failure was a different type of failure.
+            // It's possible we could get the failure description and just check the message id. However that
+            // could be fragile for future usage. We can just check if the subsystem resource is defined and
+            // has an undertow subsystem. If it does, there was a different type of failure and we should just
+            // throw an exception.
+            final ModelNode checkOp = Operations.createOperation(READ_CHILDREN_NAMES_OPERATION,
+                    Operations.createAddress(DEPLOYMENT, deploymentName));
+            checkOp.get(CHILD_TYPE).set(SUBSYSTEM);
+            final ModelNode r = client.execute(checkOp);
+            if (Operations.isSuccessfulOutcome(r)) {
+                final ModelNode children = Operations.readResult(r);
+                if (children.isDefined()) {
+                    for (ModelNode child : children.asList()) {
+                        if (UNDERTOW.equals(child.asString())) {
+                            throw new UnSuccessfulOperationException(Operations.getFailureDescription(result).asString());
+                        }
+                    }
+                }
+            } else {
+                // The read-children-names failed, but we'll just throw the original failure
+                throw new UnSuccessfulOperationException(Operations.getFailureDescription(result).asString());
+            }
+        }
+        return new ModelNode();
     }
 
     private void checkSuccessful(final ModelNode result,

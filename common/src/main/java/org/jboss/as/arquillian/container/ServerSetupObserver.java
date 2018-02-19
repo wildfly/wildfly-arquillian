@@ -198,7 +198,7 @@ public class ServerSetupObserver {
                 while ((task = setupTasks.pollLast()) != null) {
                     try {
                         task.tearDown(client, containerName);
-                    } catch (Exception e) {
+                    } catch (Throwable e) {
                         log.errorf(e, "Setup task failed during tear down. Offending class '%s'", task);
                     }
                 }

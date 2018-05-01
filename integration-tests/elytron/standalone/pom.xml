@@ -78,6 +78,9 @@
                         <jboss.home>${jboss.home}</jboss.home>
                         <wildfly.config>${project.baseUri}/src/test/resources/elytron-wildfly-config.xml</wildfly.config>
                     </systemPropertyVariables>
+                    <environmentVariables>
+                        <JBOSS_HOME>${jboss.home}</JBOSS_HOME>
+                    </environmentVariables>
                 </configuration>
             </plugin>
             <plugin>

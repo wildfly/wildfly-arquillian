@@ -141,6 +141,9 @@
                             <systemPropertyVariables>
                                 <jboss.home>${jboss.home}</jboss.home>
                             </systemPropertyVariables>
+                            <environmentVariables>
+                                <JBOSS_HOME>${jboss.home}</JBOSS_HOME>
+                            </environmentVariables>
                         </configuration>
                     </execution>
                     <execution>
@@ -156,6 +159,9 @@
                                 <arquillian.xml>manual-arquillian.xml</arquillian.xml>
                                 <jboss.home>${jboss.home}</jboss.home>
                             </systemPropertyVariables>
+                            <environmentVariables>
+                                <JBOSS_HOME>${jboss.home}</JBOSS_HOME>
+                            </environmentVariables>
                         </configuration>
                     </execution>
                 </executions>

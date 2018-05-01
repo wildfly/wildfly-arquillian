@@ -26,25 +26,13 @@
         <configuration>
             <property name="jbossHome">${jboss.home}</property>
             <property name="jbossArguments">-P=src/test/resources/testfile.properties</property>
-            <property name="javaVmArguments">-Dorg.wildfly.execute.full.tests=${org.wildfly.execute.full.tests:false}</property>
-            <!-- property name="javaVmArguments">${jvmArgs} ${jvmDebugArgs}</property -->
+            <property name="javaVmArguments">${jvm.args} -Dorg.wildfly.execute.full.tests=${org.wildfly.execute.full.tests:false}</property>
             
             <!--
                  Please leave this as false. It is a good, early catch for the reviewers to make
                  sure that they have not left a stale server running when merging pull requests
             -->
             <property name="allowConnectingToRunningServer">false</property>
-
-            <!--
-            Time to wait for shutdown to complete
-            <property name="stopTimeoutInSeconds">60</property>
-
-            Space-delimited list of ports on which to wait
-            <property name="waitForPorts">2222</property>
-
-            Time, in seconds, to wait on the above ports
-            <property name="waitForPortsTimeoutInSeconds">20</property>
-             -->
         </configuration>
     </container>
 </arquillian>

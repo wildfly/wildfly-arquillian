@@ -124,7 +124,7 @@
                 </configuration>
                 <executions>
                     <execution>
-                        <id>fix-servlet</id>
+                        <id>fix-socket-binding</id>
                         <phase>test-compile</phase>
                         <goals>
                             <goal>execute-commands</goal>
@@ -147,4 +147,26 @@
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>fix-domain</id>
+            <activation>
+                <property>
+                    <name>skip.fix.socket.binding</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.wildfly.plugins</groupId>
+                        <artifactId>wildfly-maven-plugin</artifactId>
+                        <configuration>
+                            <skip>true</skip>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>

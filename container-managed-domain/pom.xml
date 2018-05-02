@@ -65,6 +65,12 @@
     </dependencies>
 
     <build>
+        <testResources>
+            <testResource>
+                <directory>src/test/resources</directory>
+                <filtering>true</filtering>
+            </testResource>
+        </testResources>
         <plugins>
              <plugin>
                 <groupId>org.wildfly.build</groupId>
@@ -126,6 +132,7 @@
                         <configuration>
                             <offline>true</offline>
                             <jboss-home>${jboss.home}</jboss-home>
+                            <java-opts>${jvm.args}</java-opts>
                             <execute-commands>
                                 <fail-on-error>false</fail-on-error>
                                 <commands>

@@ -24,6 +24,7 @@
             <configuration>
                 <property name="jbossHome">${jboss.home}</property>
                 <property name="allowConnectingToRunningServer">false</property>
+                <property name="javaVmArguments">${jvm.args}</property>
             </configuration>
         </container>
         <container qualifier="wildfly" default="false" mode="manual">
@@ -33,6 +34,7 @@
                 <!-- Change the management port to ensure only the correct client will work with the server -->
                 <property name="managementPort">9999</property>
                 <property name="jbossArguments">-Djboss.management.http.port=9999</property>
+                <property name="javaVmArguments">${jvm.args}</property>
             </configuration>
         </container>
     </group>

@@ -86,6 +86,7 @@
                 <configuration>
                     <offline>true</offline>
                     <jboss-home>${jboss.home}</jboss-home>
+                    <java-opts>${jvm.args}</java-opts>
                 </configuration>
                 <executions>
                     <execution>

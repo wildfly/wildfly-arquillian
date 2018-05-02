@@ -67,6 +67,7 @@
         <!-- Other properties -->
         <maven.test.redirectTestOutputToFile>true</maven.test.redirectTestOutputToFile>
         <org.wildfly.execute.full.tests>true</org.wildfly.execute.full.tests>
+        <jvm.args>-Dmaven.repo.local=${settings.localRepository}</jvm.args>
     </properties>
 
     <licenses>

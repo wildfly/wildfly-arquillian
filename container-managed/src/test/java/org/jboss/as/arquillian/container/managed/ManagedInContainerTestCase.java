@@ -26,7 +26,6 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.container.managed.archive.ConfigService;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assume;
 import org.junit.runner.RunWith;
 
 /**
@@ -57,7 +56,6 @@ public class ManagedInContainerTestCase extends AbstractContainerTestCase {
 
     @Override
     public void testDeployedService() throws Exception {
-        Assume.assumeTrue(Boolean.getBoolean("org.wildfly.execute.full.tests"));
         super.testDeployedService();
     }
 }

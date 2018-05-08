@@ -27,8 +27,6 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
-import org.junit.Assume;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -55,7 +53,6 @@ public class ManagedAsClientWebArchiveServletTestCase {
 
     @Test
     public void shouldBeAbleToInvokeServlet() throws Exception {
-        Assume.assumeTrue(Boolean.getBoolean("org.wildfly.execute.full.tests"));
         Assert.assertNotNull(deploymentUrl);
         Assert.assertTrue("deploymentUrl should end with " + CONTEXT_NAME + "/, but is " + deploymentUrl + 
                 ", the context URL seems to be wrong",

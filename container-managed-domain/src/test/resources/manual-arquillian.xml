@@ -24,15 +24,13 @@
             <configuration>
                 <property name="jbossHome">${jboss.home}</property>
                 <property name="allowConnectingToRunningServer">true</property>
-                <property name="javaVmArguments">${jvm.args} -Dorg.wildfly.execute.full.tests=${org.wildfly.execute.full.tests:false}
-                </property>
+                <property name="javaVmArguments">${jvm.args}</property>
             </configuration>
         </container>
         <container qualifier="wildfly" default="false" mode="manual">
             <configuration>
                 <property name="jbossHome">${jboss.home}</property>
-                <property name="javaVmArguments">${jvm.args} -Dorg.wildfly.execute.full.tests=${org.wildfly.execute.full.tests:false}
-                </property>
+                <property name="javaVmArguments">${jvm.args}</property>
             </configuration>
         </container>
     </group>

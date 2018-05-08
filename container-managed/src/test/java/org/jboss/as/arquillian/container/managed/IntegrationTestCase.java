@@ -24,8 +24,6 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
-import org.junit.Assume;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -47,18 +45,14 @@ public class IntegrationTestCase {
     @Inject
     private GreetingService service;
 
-    private final boolean executeFull = Boolean.getBoolean("org.wildfly.execute.full.tests");
-
     @Test
     public void shouldBeAbleToInject() throws Exception {
-        Assume.assumeTrue(executeFull);
         Assert.assertNotNull(service);
         Assert.assertEquals("Hello Earthling!", service.greet("Earthling"));
     }
 
     @Test
     public void shouldBeAbleToFetchSystemProperties() throws Exception {
-        Assume.assumeTrue(executeFull);
         final String prop1 = System.getProperties().getProperty("org.jboss.as.arquillian.container.managed.prop1");
         final String prop2 = System.getProperties().getProperty("org.jboss.as.arquillian.container.managed.prop2");
         Assert.assertEquals("prop1", prop1);

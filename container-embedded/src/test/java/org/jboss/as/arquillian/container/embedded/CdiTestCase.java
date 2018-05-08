@@ -24,7 +24,6 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
-import org.junit.Assume;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -48,7 +47,6 @@ public class CdiTestCase {
 
     @Test
     public void shouldBeAbleToInject() throws Exception {
-        Assume.assumeTrue(Boolean.getBoolean("org.wildfly.execute.full.tests"));
         Assert.assertNotNull(service);
         final String name = "ALR";
         Assert.assertEquals(GreetingService.GREETING_PREPENDED + name, service.greet(name));

@@ -34,6 +34,7 @@
     <properties>
         <maven.test.skip>false</maven.test.skip>
         <skipTests>${maven.test.skip}</skipTests>
+        <org.wildfly.artifactId>wildfly-servlet-feature-pack</org.wildfly.artifactId>
     </properties>
 
     <dependencies>
@@ -65,12 +66,6 @@
     </dependencies>
 
     <build>
-        <testResources>
-            <testResource>
-                <directory>src/test/resources</directory>
-                <filtering>true</filtering>
-            </testResource>
-        </testResources>
         <plugins>
              <plugin>
                 <groupId>org.wildfly.build</groupId>

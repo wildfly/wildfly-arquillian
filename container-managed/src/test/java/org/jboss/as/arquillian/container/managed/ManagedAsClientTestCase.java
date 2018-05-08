@@ -17,7 +17,6 @@ package org.jboss.as.arquillian.container.managed;
 
 import java.io.File;
 import java.net.URL;
-
 import javax.management.MBeanServerConnection;
 
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -28,8 +27,6 @@ import org.jboss.as.arquillian.container.managed.archive.ConfigService;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.After;
-import org.junit.Assume;
-import org.junit.Ignore;
 import org.junit.runner.RunWith;
 import org.xnio.IoUtils;
 
@@ -68,7 +65,6 @@ public class ManagedAsClientTestCase extends AbstractContainerTestCase {
 
     @Override
     public void testDeployedService() throws Exception {
-        Assume.assumeTrue(Boolean.getBoolean("org.wildfly.execute.full.tests"));
         super.testDeployedService();
     }
 }

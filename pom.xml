@@ -57,7 +57,7 @@
         <version.org.wildfly.build-tools>1.2.6.Final</version.org.wildfly.build-tools>
 
         <!-- Provisioning properties -->
-        <provisioning.config.dir>${project.parent.basedir}</provisioning.config.dir>
+        <provisioning.config.dir>${project.basedir}${file.separator}..</provisioning.config.dir>
         <org.wildfly.groupId>org.wildfly</org.wildfly.groupId>
         <org.wildfly.artifactId>wildfly-servlet-feature-pack</org.wildfly.artifactId>
         <org.wildfly.version>${version.org.wildfly.full}</org.wildfly.version>
@@ -68,6 +68,7 @@
         <maven.test.redirectTestOutputToFile>true</maven.test.redirectTestOutputToFile>
         <org.wildfly.execute.full.tests>true</org.wildfly.execute.full.tests>
         <jvm.args>-Dmaven.repo.local=${settings.localRepository}</jvm.args>
+        <wildfly.standalone.config>standalone.xml</wildfly.standalone.config>
     </properties>
 
     <licenses>
@@ -79,6 +80,13 @@
     </licenses>
 
     <build>
+        <!-- Filter test resources -->
+        <testResources>
+            <testResource>
+                <directory>src/test/resources</directory>
+                <filtering>true</filtering>
+            </testResource>
+        </testResources>
         <pluginManagement>
             <plugins>
                 <!-- Checkstyle -->

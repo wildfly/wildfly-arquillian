@@ -88,6 +88,7 @@ public class JMXProtocolPackager implements DeploymentPackager {
         defaultDependencies.add("org.jboss.modules");
         defaultDependencies.add("org.jboss.msc");
         defaultDependencies.add("org.wildfly.security.manager");
+        optionalDeps.add("java.logging");
     }
 
     private static final Logger log = Logger.getLogger(JMXProtocolPackager.class);
@@ -142,6 +143,7 @@ public class JMXProtocolPackager implements DeploymentPackager {
         archiveDependencies.add(ModuleIdentifier.create("org.wildfly.security.manager"));
         archiveDependencies.add(ModuleIdentifier.create("org.wildfly.common"));
         archiveDependencies.add(ModuleIdentifier.create("org.wildfly.security.elytron"));
+        archiveDependencies.add(ModuleIdentifier.create("java.logging"));
 
         // Merge the auxiliary archives and collect the loadable extensions
         final Set<String> loadableExtensions = new HashSet<String>();

@@ -39,7 +39,7 @@
     <name>WildFly: Arquillian</name>
 
     <properties>
-        <version.org.wildfly.core>4.0.0.Final</version.org.wildfly.core>
+        <version.org.wildfly.core>5.0.0.Alpha7</version.org.wildfly.core>
         <version.org.wildfly.full>10.0.0.Final</version.org.wildfly.full>
         <version.junit>4.12</version.junit>
         <version.org.jboss.arquillian.core>1.2.1.Final</version.org.jboss.arquillian.core>

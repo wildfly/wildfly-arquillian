@@ -16,40 +16,36 @@
 
 package org.jboss.as.arquillian.container.managed;
 
-import org.jboss.msc.service.Service;
+import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceActivator;
 import org.jboss.msc.service.ServiceActivatorContext;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistryException;
 import org.jboss.msc.service.StartContext;
-import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 
 /**
  * @author Stuart Douglas
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
-public class SystemPropertyServiceActivator implements ServiceActivator {
+public final class SystemPropertyServiceActivator implements ServiceActivator {
 
-    public static final String TEST_PROPERTY = "test-property";
-    public static final String VALUE = "set";
+    static final String TEST_PROPERTY = "test-property";
+    static final String VALUE = "set";
 
     @Override
-    public void activate(ServiceActivatorContext serviceActivatorContext) throws ServiceRegistryException {
-        serviceActivatorContext.getServiceTarget().addService(ServiceName.of("test-service"), new Service<Object>() {
+    public void activate(final ServiceActivatorContext serviceActivatorContext) throws ServiceRegistryException {
+        serviceActivatorContext.getServiceTarget().addService(ServiceName.of("test-service")).setInstance(new Service() {
             @Override
-            public void start(StartContext context) throws StartException {
+            public void start(final StartContext context) {
                 System.setProperty(TEST_PROPERTY, VALUE);
             }
 
             @Override
-            public void stop(StopContext context) {
+            public void stop(final StopContext context) {
                 System.clearProperty(TEST_PROPERTY);
-            }
-
-            @Override
-            public Object getValue() throws IllegalStateException, IllegalArgumentException {
-                return this;
             }
         }).install();
     }
+
 }

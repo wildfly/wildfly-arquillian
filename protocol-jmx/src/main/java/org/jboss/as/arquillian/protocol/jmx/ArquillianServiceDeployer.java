@@ -46,7 +46,7 @@ public class ArquillianServiceDeployer {
 
     private Set<String> serviceArchiveDeployed = new HashSet<String>();
 
-    public synchronized void doServiceDeploy(@Observes BeforeDeploy event, Container container, ServiceArchiveHolder archiveHolder) {
+    public synchronized void doServiceDeploy(@Observes(precedence = 1) BeforeDeploy event, Container container, ServiceArchiveHolder archiveHolder) {
         // already deployed?
         if (serviceArchiveDeployed.contains(container.getName())) {
             archiveHolder.deploymentExistsAndRemove(event.getDeployment().getName()); // cleanup

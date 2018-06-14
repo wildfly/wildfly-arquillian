@@ -58,23 +58,16 @@ class ArquillianConfigBuilder {
     ArquillianConfigBuilder() {
     }
 
-    static ArquillianConfig processDeployment(DeploymentUnit depUnit) {
-
+    static Set<String> getClasses(final DeploymentUnit depUnit) {
         // Get Test Class Names
         final Set<String> testClasses = depUnit.getAttachment(CLASSES);
-
-        // No tests found
-        if (testClasses == null || testClasses.isEmpty()) {
-            return null;
-        }
-
-        return new ArquillianConfig(testClasses, createDeploymentUnitName(depUnit));
+        return testClasses == null || testClasses.isEmpty() ? null : testClasses;
     }
 
-    private static String createDeploymentUnitName(DeploymentUnit depUnit) {
+    static String getName(final DeploymentUnit depUnit) {
         String depUnitName = depUnit.getName();
         DeploymentUnit parent;
-        if((parent = depUnit.getParent()) != null) {
+        if ((parent = depUnit.getParent()) != null) {
             depUnitName = parent.getName() + "." + depUnitName;
         }
         return depUnitName;

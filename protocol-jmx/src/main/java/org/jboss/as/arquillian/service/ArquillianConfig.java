@@ -19,59 +19,55 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import org.jboss.arquillian.container.test.spi.util.ServiceLoader;
 import org.jboss.arquillian.testenricher.msc.ServiceTargetAssociation;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.modules.Module;
-import org.jboss.msc.service.Service;
+import org.jboss.msc.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
-import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.InjectedValue;
 
 /**
  * The ArquillianConfig represents an Arquillian deployment.
  *
  * @author Thomas.Diesler@jboss.com
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
-public class ArquillianConfig implements Service<ArquillianConfig> {
+public final class ArquillianConfig implements Service {
 
     private final List<ArquillianConfigServiceCustomizer> serviceCustomizers = new ArrayList<>();
-
-    private final InjectedValue<ArquillianService> arquillianService = new InjectedValue<>();
-    private final InjectedValue<DeploymentUnit> deploymentUnit = new InjectedValue<>();
+    private final Supplier<ArquillianService> arquillianServiceSupplier;
+    private final Supplier<DeploymentUnit> deploymentUnitSupplier;
     private final ServiceName serviceName;
     private final List<String> testClasses = new ArrayList<>();
 
-    private static ServiceName getServiceName(String deploymentUnitName) {
-        return ServiceName.JBOSS.append("arquillian", "config", deploymentUnitName);
-    }
-
-    ArquillianConfig(Set<String> testClasses, String deploymentUnitName) {
-        this.serviceName = getServiceName(deploymentUnitName);
+    ArquillianConfig(final ServiceName serviceName, final Set<String> testClasses,
+            final Supplier<ArquillianService> arquillianServiceSupplier,
+            final Supplier<DeploymentUnit> deploymentUnitSupplier) {
+        this.serviceName = serviceName;
         this.testClasses.addAll(testClasses);
-
-        for(ArquillianConfigServiceCustomizer customizer : ServiceLoader.load(ArquillianConfigServiceCustomizer.class)) {
+        this.arquillianServiceSupplier = arquillianServiceSupplier;
+        this.deploymentUnitSupplier = deploymentUnitSupplier;
+        for (ArquillianConfigServiceCustomizer customizer : ServiceLoader.load(ArquillianConfigServiceCustomizer.class)) {
             serviceCustomizers.add(customizer);
         }
     }
 
-    ServiceBuilder<ArquillianConfig> addDeps(ServiceBuilder<ArquillianConfig> builder, ServiceController<?> depController) {
-
-        for(ArquillianConfigServiceCustomizer customizer : serviceCustomizers) {
+    void addDeps(ServiceBuilder<ArquillianConfig> builder, ServiceController<?> depController) {
+        for (ArquillianConfigServiceCustomizer customizer : serviceCustomizers) {
             customizer.customizeService(this, builder, depController);
         }
-        return builder;
     }
 
-    InjectedValue<DeploymentUnit> getDeploymentUnit() {
-        return deploymentUnit;
+    DeploymentUnit getDeploymentUnit() {
+        return deploymentUnitSupplier.get();
     }
 
     ServiceName getServiceName() {
@@ -83,50 +79,40 @@ public class ArquillianConfig implements Service<ArquillianConfig> {
     }
 
     Class<?> loadClass(String className) throws ClassNotFoundException {
-
-        if (testClasses.contains(className) == false)
+        if (!testClasses.contains(className))
             throw new ClassNotFoundException("Class '" + className + "' not found in: " + testClasses);
 
-        Module module = deploymentUnit.getValue().getAttachment(Attachments.MODULE);
+        final Module module = deploymentUnitSupplier.get().getAttachment(Attachments.MODULE);
         Class<?> testClass = module.getClassLoader().loadClass(className);
 
-        for(ArquillianConfigServiceCustomizer customizer : serviceCustomizers) {
-            customizer.customizeLoadClass(deploymentUnit.getValue(), testClass);
+        for (ArquillianConfigServiceCustomizer customizer : serviceCustomizers) {
+            customizer.customizeLoadClass(deploymentUnitSupplier.get(), testClass);
         }
 
         return testClass;
     }
 
-    public InjectedValue<ArquillianService> getArquillianService() {
-        return arquillianService;
-    }
-
     @Override
-    public synchronized void start(StartContext context) throws StartException {
-        arquillianService.getValue().registerArquillianConfig(this);
-        for(String testClass : testClasses) {
+    public void start(final StartContext context) {
+        arquillianServiceSupplier.get().registerArquillianConfig(this);
+        for (final String testClass : testClasses) {
             ServiceTargetAssociation.setServiceTarget(testClass, context.getChildTarget());
         }
     }
 
     @Override
-    public synchronized void stop(StopContext context) {
+    public void stop(final StopContext context) {
         context.getController().setMode(Mode.REMOVE);
-        arquillianService.getValue().unregisterArquillianConfig(this);
-        for(String testClass : testClasses) {
+        arquillianServiceSupplier.get().unregisterArquillianConfig(this);
+        for (final String testClass : testClasses) {
             ServiceTargetAssociation.clearServiceTarget(testClass);
         }
     }
 
     @Override
-    public synchronized ArquillianConfig getValue() {
-        return this;
-    }
-
-    @Override
     public String toString() {
-        String uname = serviceName.getSimpleName();
-        String sname = serviceName.getCanonicalName();
+        final String uname = serviceName.getSimpleName();
+        final String sname = serviceName.getCanonicalName();
         return "ArquillianConfig[service=" + sname + ",unit=" + uname + ",tests=" + testClasses + "]";
     }
 }

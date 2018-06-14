@@ -456,6 +456,70 @@
         </dependency>
     </dependencies>
 
+    <profiles>
+        <profile>
+            <id>logging</id>
+            <activation>
+                <property>
+                    <name>logging</name>
+                </property>
+            </activation>
+            <properties>
+                <logging.level>TRACE</logging.level>
+                <logging.config>${project.basedir}${file.separator}..${file.separator}logging.properties</logging.config>
+            </properties>
+            <dependencies>
+                <dependency>
+                    <groupId>org.jboss.logmanager</groupId>
+                    <artifactId>jboss-logmanager</artifactId>
+                    <version>2.1.2.Final</version>
+                </dependency>
+                <dependency>
+                    <groupId>org.jboss.slf4j</groupId>
+                    <artifactId>slf4j-jboss-logmanager</artifactId>
+                    <version>1.0.4.GA</version>
+                </dependency>
+            </dependencies>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <systemPropertyVariables>
+                                <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
+                                <logging.configuration>file://${logging.config}</logging.configuration>
+                                <logging.level>${logging.level}</logging.level>
+                            </systemPropertyVariables>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>debug</id>
+            <activation>
+                <property>
+                    <name>debug</name>
+                </property>
+            </activation>
+            <properties>
+                <as.debug.port>5005</as.debug.port>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <systemPropertyVariables>
+                                <debug.args>-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=${as.debug.port}</debug.args>
+                            </systemPropertyVariables>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
     <repositories>
         <repository>
             <id>jboss-public-repository</id>

@@ -24,7 +24,7 @@
     <container qualifier="jboss" default="true">
         <configuration>
             <property name="jbossHome">${jboss.home}</property>
-            <property name="jbossArguments">${jvm.args} -Ddeployment.arq.test.property=true -Ddeployment.arq.other.test.property=Test</property>
+            <property name="jbossArguments">${jvm.args} ${debug.args} -Ddeployment.arq.test.property=true -Ddeployment.arq.other.test.property=Test</property>
             <property name="serverConfig">${wildfly.standalone.config}</property>
         </configuration>
     </container>

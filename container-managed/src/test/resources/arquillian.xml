@@ -26,7 +26,7 @@
         <configuration>
             <property name="jbossHome">${jboss.home}</property>
             <property name="jbossArguments">-P=src/test/resources/testfile.properties</property>
-            <property name="javaVmArguments">${jvm.args}</property>
+            <property name="javaVmArguments">${jvm.args} ${debug.args}</property>
             <property name="serverConfig">${wildfly.standalone.config}</property>
             
             <!--

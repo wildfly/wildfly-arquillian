@@ -86,7 +86,7 @@ public class ManagedDomainDeployableContainer extends CommonDomainDeployableCont
 
             final String modulesPath = config.getModulePath();
             if (modulesPath != null && !modulesPath.isEmpty()) {
-                commandBuilder.addModuleDirs(modulesPath.split(Pattern.quote(File.pathSeparator)));
+                commandBuilder.setModuleDirs(modulesPath.split(Pattern.quote(File.pathSeparator)));
             }
 
             if (config.isEnableAssertions()) {

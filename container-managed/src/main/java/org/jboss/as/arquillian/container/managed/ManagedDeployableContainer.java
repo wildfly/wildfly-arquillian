@@ -107,11 +107,6 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
                 commandBuilder.addJavaOption("-ea");
             }
 
-            // Create a clean server base to run the container; ARQ-638
-            if (config.isSetupCleanServerBaseDir() || config.getCleanServerBaseDir() != null) {
-                setupCleanServerDirectories(commandBuilder, config.getCleanServerBaseDir());
-            }
-
             if (config.isAdminOnly())
                 commandBuilder.setAdminOnly();
 
@@ -121,6 +116,11 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
 
             if (config.getServerConfig() != null) {
                 commandBuilder.setServerConfiguration(config.getServerConfig());
+            }
+
+            // Create a clean server base to run the container; ARQ-638
+            if (config.isSetupCleanServerBaseDir() || config.getCleanServerBaseDir() != null) {
+                setupCleanServerDirectories(commandBuilder, config.getCleanServerBaseDir());
             }
 
             // Previous versions of arquillian set the jboss.home.dir property in the JVM properties.

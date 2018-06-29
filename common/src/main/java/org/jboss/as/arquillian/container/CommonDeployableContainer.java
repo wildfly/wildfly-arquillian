@@ -263,7 +263,10 @@ public abstract class CommonDeployableContainer<T extends CommonContainerConfigu
     private void safeCloseClient() {
         try {
             // Reset the client, this should close the internal resources and setup reinitialization
-            getManagementClient().reset();
+            ManagementClient client = getManagementClient();
+            if (client != null) {
+                client.reset();
+            }
         } catch (final Exception e) {
             Logger.getLogger(getClass()).warn("Caught exception closing ManagementClient", e);
         } finally {

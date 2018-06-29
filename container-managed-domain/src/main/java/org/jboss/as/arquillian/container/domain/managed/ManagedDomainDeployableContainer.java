@@ -84,10 +84,6 @@ public class ManagedDomainDeployableContainer extends CommonDomainDeployableCont
                         .setHostControllerJavaOptions(javaOpts);
             }
 
-            if (config.isSetupCleanServerBaseDir() || config.getCleanServerBaseDir() != null) {
-                setupCleanServerDirectories(commandBuilder, config.getCleanServerBaseDir());
-            }
-
             final String modulesPath = config.getModulePath();
             if (modulesPath != null && !modulesPath.isEmpty()) {
                 commandBuilder.addModuleDirs(modulesPath.split(Pattern.quote(File.pathSeparator)));
@@ -108,6 +104,10 @@ public class ManagedDomainDeployableContainer extends CommonDomainDeployableCont
             final String serverArgs = config.getJbossArguments();
             if (serverArgs != null && !serverArgs.trim().isEmpty()) {
                 commandBuilder.addServerArguments(serverArgs.split("\\s+"));
+            }
+
+            if (config.isSetupCleanServerBaseDir() || config.getCleanServerBaseDir() != null) {
+                setupCleanServerDirectories(commandBuilder, config.getCleanServerBaseDir());
             }
 
             // Previous versions of arquillian set the jboss.home.dir property in the JVM properties.

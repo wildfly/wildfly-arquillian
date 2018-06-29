@@ -87,7 +87,7 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
 
             String modulesPath = config.getModulePath();
             if (modulesPath != null && !modulesPath.isEmpty()) {
-                commandBuilder.addModuleDirs(modulesPath.split(Pattern.quote(File.pathSeparator)));
+                commandBuilder.setModuleDirs(modulesPath.split(Pattern.quote(File.pathSeparator)));
             }
 
             String bundlesPath = config.getBundlePath();

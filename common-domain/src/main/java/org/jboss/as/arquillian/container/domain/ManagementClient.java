@@ -174,7 +174,7 @@ public class ManagementClient {
         HTTPContext context = new HTTPContext(webURI.getHost(), webURI.getPort());
         try {
             ModelNode deploymentNode = readResource(createHostServerDeploymentAddress(
-                    server.getHost(), server.getName(), uniqueDeploymentName), false); // don't include runtime information, workaround for bug in web statistics
+                    server.getHost(), server.getName(), uniqueDeploymentName));
 
             if (isWebArchive(uniqueDeploymentName)) {
                 extractWebArchiveContexts(context, deploymentNode);
@@ -297,7 +297,7 @@ public class ManagementClient {
     }
 
     private void readRootNode() throws Exception {
-        rootNode = readResource(new ModelNode(), true, ROOT_RECURSIVE_DEPTH);
+        rootNode = readResource(new ModelNode(), ROOT_RECURSIVE_DEPTH);
     }
 
     private String getSocketBindingGroup(String serverGroup) {
@@ -390,14 +390,10 @@ public class ManagementClient {
     }
 
     private ModelNode readResource(ModelNode address) throws Exception {
-        return readResource(address, true);
+        return readResource(address, null);
     }
 
-    private ModelNode readResource(ModelNode address, boolean includeRuntime) throws Exception {
-        return readResource(address, includeRuntime, null);
-    }
-
-    private ModelNode readResource(ModelNode address, boolean includeRuntime, Integer recursiveDepth) throws Exception {
+    private ModelNode readResource(ModelNode address, Integer recursiveDepth) throws Exception {
         final ModelNode operation = new ModelNode();
         operation.get(OP).set(READ_RESOURCE_OPERATION);
         if(recursiveDepth == null) {
@@ -408,7 +404,7 @@ public class ManagementClient {
             // "recursive" is not set
             operation.get(RECURSIVE_DEPTH).set(recursiveDepth);
         }
-        operation.get(INCLUDE_RUNTIME).set(includeRuntime);
+        operation.get(INCLUDE_RUNTIME).set(true);
         operation.get(PROXIES).set(true);
         operation.get(OP_ADDR).set(address);
 

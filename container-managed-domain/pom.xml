@@ -109,59 +109,6 @@
                     </execution>
                 </executions>
             </plugin>
-            <!-- Workaround for WFLY-6201 to allow tests to run with the servlet container only -->
-            <plugin>
-                <groupId>org.wildfly.plugins</groupId>
-                <artifactId>wildfly-maven-plugin</artifactId>
-                <configuration>
-                    <!-- Don't execute if we're skipping tests -->
-                    <skip>${skipTests}</skip>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>fix-socket-binding</id>
-                        <phase>test-compile</phase>
-                        <goals>
-                            <goal>execute-commands</goal>
-                        </goals>
-                        <configuration>
-                            <offline>true</offline>
-                            <jboss-home>${jboss.home}</jboss-home>
-                            <java-opts>${jvm.args}</java-opts>
-                            <execute-commands>
-                                <fail-on-error>false</fail-on-error>
-                                <commands>
-                                    <command>embed-host-controller</command>
-                                    <command>/server-group=other-server-group:add(socket-binding-group=standard-sockets, profile=default)</command>
-                                    <command>stop-embedded-host-controller</command>
-                                </commands>
-                            </execute-commands>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
         </plugins>
     </build>
-
-    <profiles>
-        <profile>
-            <id>fix-domain</id>
-            <activation>
-                <property>
-                    <name>skip.fix.socket.binding</name>
-                </property>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.wildfly.plugins</groupId>
-                        <artifactId>wildfly-maven-plugin</artifactId>
-                        <configuration>
-                            <skip>true</skip>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
 </project>

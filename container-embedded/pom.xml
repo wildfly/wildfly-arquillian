@@ -35,6 +35,9 @@
     <artifactId>wildfly-arquillian-container-embedded</artifactId>
 
     <name>WildFly: Arquillian Embedded Container</name>
+    <properties>
+        <modular.jdk.args/>
+    </properties>
 
     <packaging>jar</packaging>
 
@@ -82,10 +85,11 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
+                    <!-- Works around WFCORE-4211 -->
+                    <argLine>${modular.jdk.args}</argLine>
                     <!-- Fork every test because it will launch a separate AS instance -->
                     <forkMode>always</forkMode>
                     <systemPropertyVariables>
-                        <jvm.args>${jvm.args}</jvm.args>
                         <maven.repo.local>${settings.localRepository}</maven.repo.local>
                         <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
                         <jboss.home>${jboss.home}</jboss.home>
@@ -94,4 +98,16 @@
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>java11</id>
+            <activation>
+                <jdk>[9,)</jdk>
+            </activation>
+            <properties>
+                <modular.jdk.args>--add-modules=java.se</modular.jdk.args>
+            </properties>
+        </profile>
+    </profiles>
 </project>

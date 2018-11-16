@@ -61,7 +61,30 @@ public class ManagedContainerConfiguration extends DistributionContainerConfigur
 
     private String cleanServerBaseDir;
 
+    private boolean debugMode = false;
+
+    private int debugPort = 8787;
+
+    private boolean debugSuspend = false;
+
     public ManagedContainerConfiguration() {
+        if (System.getProperty("jboss.debug", "false").equalsIgnoreCase("true")) {
+            debugMode = true;
+        }
+        if (System.getProperty("jboss.debug.port") != null) {
+            try {
+                int port = Integer.parseInt(System.getProperty("jboss.debug.port"));
+                // linux does not allow allocation of ports lower than 1024 if non root
+                if (port > 1024) {
+                    debugPort = port;
+                }
+            } catch (NumberFormatException e) {
+                // do nothing
+            }
+        }
+        if (System.getProperty("jboss.debug.suspend", "false").equalsIgnoreCase("true")) {
+            debugSuspend = true;
+        }
     }
 
     @Override
@@ -186,5 +209,29 @@ public class ManagedContainerConfiguration extends DistributionContainerConfigur
 
     public void setCleanServerBaseDir(String cleanServerBaseDir) {
         this.cleanServerBaseDir = cleanServerBaseDir;
+    }
+
+    public boolean isDebugMode() {
+        return debugMode;
+    }
+
+    public void setDebugMode(boolean debugMode) {
+        this.debugMode = debugMode;
+    }
+
+    public int getDebugPort() {
+        return debugPort;
+    }
+
+    public void setDebugPort(int debugPort) {
+        this.debugPort = debugPort;
+    }
+
+    public boolean isDebugSuspend() {
+        return debugSuspend;
+    }
+
+    public void setDebugSuspend(boolean debugSuspend) {
+        this.debugSuspend = debugSuspend;
     }
 }

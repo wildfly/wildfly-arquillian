@@ -118,6 +118,10 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
                 commandBuilder.setServerConfiguration(config.getServerConfig());
             }
 
+            if (config.isDebugMode()) {
+                commandBuilder.setDebug(config.isDebugSuspend(), config.getDebugPort());
+            }
+
             // Create a clean server base to run the container; ARQ-638
             if (config.isSetupCleanServerBaseDir() || config.getCleanServerBaseDir() != null) {
                 setupCleanServerDirectories(commandBuilder, config.getCleanServerBaseDir());

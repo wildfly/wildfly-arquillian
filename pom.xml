@@ -73,7 +73,7 @@
     <licenses>
         <license>
             <name>Apache License Version 2.0</name>
-            <url>http://repository.jboss.org/licenses/apache-2.0.txt</url>
+            <url>https://repository.jboss.org/licenses/apache-2.0.txt</url>
             <distribution>repo</distribution>
         </license>
     </licenses>
@@ -459,7 +459,7 @@
     <repositories>
         <repository>
             <id>jboss-public-repository</id>
-            <url>http://repository.jboss.org/nexus/content/groups/public/</url>
+            <url>https://repository.jboss.org/nexus/content/groups/public/</url>
         </repository>
     </repositories>
 </project>

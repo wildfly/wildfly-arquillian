@@ -17,6 +17,7 @@ package org.jboss.as.arquillian.container.managed;
 
 import org.jboss.arquillian.container.spi.client.container.LifecycleException;
 import org.jboss.as.arquillian.container.CommonDeployableContainer;
+import org.jboss.as.arquillian.container.ParameterUtils;
 import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.as.server.logging.ServerLogger;
 import org.jboss.dmr.ModelNode;
@@ -100,7 +101,7 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
 
             commandBuilder.setJavaHome(config.getJavaHome());
             if (javaOpts != null && !javaOpts.trim().isEmpty()) {
-                commandBuilder.setJavaOptions(javaOpts.split("\\s+"));
+                commandBuilder.setJavaOptions(ParameterUtils.splitParams(javaOpts));
             }
 
             if (config.isEnableAssertions()) {
@@ -111,7 +112,7 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
                 commandBuilder.setAdminOnly();
 
             if (jbossArguments != null && !jbossArguments.trim().isEmpty()) {
-                commandBuilder.addServerArguments(jbossArguments.split("\\s+"));
+                commandBuilder.addServerArguments(ParameterUtils.splitParams(jbossArguments));
             }
 
             if (config.getServerConfig() != null) {

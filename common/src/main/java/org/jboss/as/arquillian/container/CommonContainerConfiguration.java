@@ -38,6 +38,11 @@ public class CommonContainerConfiguration implements ContainerConfiguration {
     private String host;
     private int port;
 
+    /**
+     * Optional connection timeout in millis.
+     */
+    private int connectionTimeout;
+
     public CommonContainerConfiguration() {
         managementAddress = "127.0.0.1";
         managementPort = 9990 + Integer.decode(System.getProperty("jboss.socket.binding.port-offset", "0"));
@@ -99,6 +104,20 @@ public class CommonContainerConfiguration implements ContainerConfiguration {
 
     public void setManagementProtocol(final String managementProtocol) {
         this.managementProtocol = managementProtocol;
+    }
+
+    public int getConnectionTimeout() {
+        return this.connectionTimeout;
+    }
+
+    /**
+     * Accepts a timeout which must be greater than 0.
+     */
+    public void setConnectionTimeout(final int connectionTimeout) {
+        if (connectionTimeout <= 0) {
+            throw new IllegalArgumentException("Connection timeout " + connectionTimeout + " must be > 0");
+        }
+        this.connectionTimeout = connectionTimeout;
     }
 
     /**

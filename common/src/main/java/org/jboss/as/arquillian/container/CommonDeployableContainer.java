@@ -103,6 +103,12 @@ public abstract class CommonDeployableContainer<T extends CommonContainerConfigu
                 .setPort(containerConfig.getManagementPort())
                 .setAuthenticationConfigUri(authenticationConfig);
 
+        // only "copy" the timeout if one was set.
+        final int connectionTimeout = containerConfig.getConnectionTimeout();
+        if(connectionTimeout > 0) {
+            clientConfigBuilder.setConnectionTimeout(connectionTimeout);
+        }
+
         // Check for username and password authentication
         if(containerConfig.getUsername() != null) {
             Authentication.username = containerConfig.getUsername();

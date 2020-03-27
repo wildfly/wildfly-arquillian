@@ -39,11 +39,11 @@
     <name>WildFly: Arquillian</name>
 
     <properties>
-        <version.org.wildfly.core>8.0.0.Final</version.org.wildfly.core>
+        <version.org.wildfly.core>11.0.0.Final</version.org.wildfly.core>
         <version.org.wildfly.full>15.0.1.Final</version.org.wildfly.full>
         <version.junit>4.12</version.junit>
         <version.org.jboss.arquillian.core>1.4.0.Final</version.org.jboss.arquillian.core>
-        <version.org.wildfly.common.wildfly-common>1.4.0.Final</version.org.wildfly.common.wildfly-common>
+        <version.org.wildfly.common.wildfly-common>1.5.4.Final</version.org.wildfly.common.wildfly-common>
         <version.org.wildfly.plugins.wildfly-maven-plugin>2.0.0.Final</version.org.wildfly.plugins.wildfly-maven-plugin>
 
         <!-- keep this in sync with version that is used in arquillian -->

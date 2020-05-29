@@ -158,6 +158,7 @@ public class ManagedDomainDeployableContainer extends CommonDomainDeployableCont
         try {
             if (process != null) {
                 Thread shutdown = new Thread(new Runnable() {
+                    Process processToDestroy = process;
                     @Override
                     public void run() {
                         try {
@@ -167,8 +168,8 @@ public class ManagedDomainDeployableContainer extends CommonDomainDeployableCont
                         }
 
                         // The process hasn't shutdown within 60 seconds. Terminate forcibly.
-                        if (process != null) {
-                            process.destroy();
+                        if (processToDestroy != null) {
+                            processToDestroy.destroy();
                         }
                     }
                 });

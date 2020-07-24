@@ -29,7 +29,7 @@
     <parent>
         <groupId>org.jboss</groupId>
         <artifactId>jboss-parent</artifactId>
-        <version>29</version>
+        <version>37</version>
     </parent>
 
     <artifactId>wildfly-arquillian-parent</artifactId>
@@ -54,7 +54,7 @@
         <version.org.jboss.spec.javax.ejb.jboss-ejb-api_3.2_spec>2.0.0.Final</version.org.jboss.spec.javax.ejb.jboss-ejb-api_3.2_spec>
         <version.jakarta.inject>1.0</version.jakarta.inject>
         <version.jakarta.enterprise>2.0.2</version.jakarta.enterprise>
-        <version.org.wildfly.checkstyle-config>1.0.6.Final</version.org.wildfly.checkstyle-config>
+        <version.org.wildfly.checkstyle-config>1.0.8.Final</version.org.wildfly.checkstyle-config>
         <version.org.wildfly.build-tools>1.2.6.Final</version.org.wildfly.build-tools>
 
         <!-- Provisioning properties -->

@@ -67,7 +67,8 @@
 
         <!-- Other properties -->
         <maven.test.redirectTestOutputToFile>true</maven.test.redirectTestOutputToFile>
-        <jvm.args>-Dmaven.repo.local=${settings.localRepository}</jvm.args>
+        <default.jvm.args>-Dmaven.repo.local=${settings.localRepository}</default.jvm.args>
+        <jvm.args>${default.jvm.args}</jvm.args>
         <wildfly.standalone.config>standalone.xml</wildfly.standalone.config>
     </properties>
 
@@ -455,6 +456,21 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
+
+    <profiles>
+        <profile>
+            <id>skip-log-manager-check</id>
+            <activation>
+                <property>
+                    <name>org.wildfly.logging.skipLogManagerCheck</name>
+                </property>
+            </activation>
+            <properties>
+                <!-- Skip the log manager validation in the logging subsystem -->
+                <jvm.args>${default.jvm.args} -Dorg.wildfly.logging.skipLogManagerCheck=true</jvm.args>
+            </properties>
+        </profile>
+    </profiles>
 
     <dependencies>
 

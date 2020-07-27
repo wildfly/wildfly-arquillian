@@ -44,7 +44,7 @@
         <version.junit>4.12</version.junit>
         <version.org.jboss.arquillian.core>1.6.0.Final</version.org.jboss.arquillian.core>
         <version.org.wildfly.common.wildfly-common>1.5.4.Final</version.org.wildfly.common.wildfly-common>
-        <version.org.wildfly.plugins.wildfly-maven-plugin>2.0.0.Final</version.org.wildfly.plugins.wildfly-maven-plugin>
+        <version.org.wildfly.plugins.wildfly-maven-plugin>2.0.2.Final</version.org.wildfly.plugins.wildfly-maven-plugin>
 
         <!-- keep this in sync with version that is used in arquillian -->
         <version.org.jboss.shrinkwrap.descriptors>2.0.0</version.org.jboss.shrinkwrap.descriptors>

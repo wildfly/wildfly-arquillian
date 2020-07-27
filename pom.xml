@@ -39,7 +39,7 @@
     <name>WildFly: Arquillian</name>
 
     <properties>
-        <version.org.wildfly.core>11.0.0.Final</version.org.wildfly.core>
+        <version.org.wildfly.core>13.0.0.Beta2</version.org.wildfly.core>
         <version.org.wildfly.full>15.0.1.Final</version.org.wildfly.full>
         <version.junit>4.12</version.junit>
         <version.org.jboss.arquillian.core>1.6.0.Final</version.org.jboss.arquillian.core>
@@ -67,7 +67,8 @@
 
         <!-- Other properties -->
         <maven.test.redirectTestOutputToFile>true</maven.test.redirectTestOutputToFile>
-        <jvm.args>-Dmaven.repo.local=${settings.localRepository}</jvm.args>
+        <default.jvm.args>-Dmaven.repo.local=${settings.localRepository}</default.jvm.args>
+        <jvm.args>${default.jvm.args}</jvm.args>
         <wildfly.standalone.config>standalone.xml</wildfly.standalone.config>
     </properties>
 
@@ -158,6 +159,7 @@
     </build>
     <modules>
         <module>common</module>
+        <module>container-bootable</module>
         <module>container-embedded</module>
         <module>container-managed</module>
         <module>container-remote</module>
@@ -179,6 +181,11 @@
                 <version>${project.version}</version>
             </dependency>
 
+            <dependency>
+                <groupId>org.wildfly.arquillian</groupId>
+                <artifactId>wildfly-arquillian-container-bootable</artifactId>
+                <version>${project.version}</version>
+            </dependency>
             <dependency>
                 <groupId>org.wildfly.arquillian</groupId>
                 <artifactId>wildfly-arquillian-container-embedded</artifactId>
@@ -449,6 +456,21 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
+
+    <profiles>
+        <profile>
+            <id>skip-log-manager-check</id>
+            <activation>
+                <property>
+                    <name>org.wildfly.logging.skipLogManagerCheck</name>
+                </property>
+            </activation>
+            <properties>
+                <!-- Skip the log manager validation in the logging subsystem -->
+                <jvm.args>${default.jvm.args} -Dorg.wildfly.logging.skipLogManagerCheck=true</jvm.args>
+            </properties>
+        </profile>
+    </profiles>
 
     <dependencies>
 

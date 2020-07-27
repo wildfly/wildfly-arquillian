@@ -16,6 +16,7 @@ jobs:
 
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest ]
         java: ['1.8', '11']
@@ -34,3 +35,13 @@ jobs:
           java-version: ${{ matrix.java }}
       - name: Build with Maven Java ${{ matrix.java }}
         run: mvn clean verify '-Dorg.wildfly.logging.skipLogManagerCheck=true'
+      - uses: actions/upload-artifact@v2
+        if: failure()
+        with:
+          name: surefire-reports-${{ matrix.os }}-${{ matrix.java }}
+          path: '**/surefire-reports/*.txt'
+      - uses: actions/upload-artifact@v2
+        if: failure()
+        with:
+          name: server-logs-${{ matrix.os }}-${{ matrix.java }}
+          path: '**/server.log'

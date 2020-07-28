@@ -40,9 +40,10 @@
 
     <properties>
         <version.org.wildfly.core>13.0.0.Beta2</version.org.wildfly.core>
-        <version.org.wildfly.full>15.0.1.Final</version.org.wildfly.full>
+        <version.org.wildfly.full>16.0.0.Final</version.org.wildfly.full>
         <version.junit>4.12</version.junit>
         <version.org.jboss.arquillian.core>1.6.0.Final</version.org.jboss.arquillian.core>
+        <version.org.jboss.galleon>4.2.5.Final</version.org.jboss.galleon>
         <version.org.wildfly.common.wildfly-common>1.5.4.Final</version.org.wildfly.common.wildfly-common>
         <version.org.wildfly.plugins.wildfly-maven-plugin>2.0.2.Final</version.org.wildfly.plugins.wildfly-maven-plugin>
 
@@ -55,15 +56,12 @@
         <version.jakarta.inject>1.0</version.jakarta.inject>
         <version.jakarta.enterprise>2.0.2</version.jakarta.enterprise>
         <version.org.wildfly.checkstyle-config>1.0.8.Final</version.org.wildfly.checkstyle-config>
-        <version.org.wildfly.build-tools>1.2.6.Final</version.org.wildfly.build-tools>
 
-        <!-- Provisioning properties -->
-        <provisioning.config.dir>${project.basedir}${file.separator}..</provisioning.config.dir>
-        <org.wildfly.groupId>org.wildfly</org.wildfly.groupId>
-        <org.wildfly.artifactId>wildfly-feature-pack</org.wildfly.artifactId>
-        <org.wildfly.version>${version.org.wildfly.full}</org.wildfly.version>
-        <org.wildfly.dist-name>wildfly</org.wildfly.dist-name>
-        <jboss.home>${basedir}/target/${org.wildfly.dist-name}</jboss.home>
+        <!-- Galleon -->
+        <galleon.fork.embedded>true</galleon.fork.embedded>
+        <galleon.log.time>true</galleon.log.time>
+        <galleon.offline>false</galleon.offline>
+        <jboss.home>${project.build.directory}${file.separator}${org.wildfly.dist-name}</jboss.home>
 
         <!-- Other properties -->
         <maven.test.redirectTestOutputToFile>true</maven.test.redirectTestOutputToFile>
@@ -124,21 +122,38 @@
                         <redirectTestOutputToFile>${maven.test.redirectTestOutputToFile}</redirectTestOutputToFile>
                     </configuration>
                 </plugin>
+
                 <plugin>
-                    <groupId>org.wildfly.build</groupId>
-                    <artifactId>wildfly-server-provisioning-maven-plugin</artifactId>
-                    <version>${version.org.wildfly.build-tools}</version>
+                    <groupId>org.jboss.galleon</groupId>
+                    <artifactId>galleon-maven-plugin</artifactId>
+                    <version>${version.org.jboss.galleon}</version>
                     <executions>
                         <execution>
                             <id>server-provisioning</id>
                             <goals>
-                                <goal>build</goal>
+                                <goal>provision</goal>
                             </goals>
-                            <phase>process-test-resources</phase>
                             <configuration>
-                                <config-dir>${provisioning.config.dir}</config-dir>
-                                <config-file>server-provisioning.xml</config-file>
-                                <server-name>${org.wildfly.dist-name}</server-name>
+                                <install-dir>${jboss.home}</install-dir>
+                                <record-state>false</record-state>
+                                <log-time>${galleon.log.time}</log-time>
+                                <offline>${galleon.offline}</offline>
+                                <plugin-options>
+                                    <jboss-maven-dist/>
+                                    <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
+                                    <optional-packages>passive+</optional-packages>`
+                                </plugin-options>
+                                <feature-packs>
+                                    <feature-pack>
+                                        <groupId>org.wildfly</groupId>
+                                        <artifactId>wildfly-galleon-pack</artifactId>
+                                        <version>${version.org.wildfly.full}</version>
+                                        <excluded-packages>
+                                            <name>product.conf</name>
+                                            <name>docs.schema</name>
+                                        </excluded-packages>
+                                    </feature-pack>
+                                </feature-packs>
                             </configuration>
                         </execution>
                     </executions>

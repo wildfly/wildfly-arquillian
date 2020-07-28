@@ -61,7 +61,7 @@
         <galleon.fork.embedded>true</galleon.fork.embedded>
         <galleon.log.time>true</galleon.log.time>
         <galleon.offline>false</galleon.offline>
-        <jboss.home>${project.build.directory}${file.separator}${org.wildfly.dist-name}</jboss.home>
+        <jboss.home>${project.build.directory}${file.separator}wildfly</jboss.home>
 
         <!-- Other properties -->
         <maven.test.redirectTestOutputToFile>true</maven.test.redirectTestOutputToFile>

@@ -11,7 +11,9 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        # Currently windows-latest doesn't seem to work with sharing the maven repository. No need to run this for now:
+        # os: [ubuntu-latest, windows-latest]
+        os: [ubuntu-latest]
     outputs:
       wildfly-version: ${{steps.version.outputs.wildfly-version}}
     steps:

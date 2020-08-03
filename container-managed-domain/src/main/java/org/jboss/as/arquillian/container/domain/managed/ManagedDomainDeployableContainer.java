@@ -22,6 +22,7 @@ import static org.wildfly.core.launcher.ProcessHelper.processHasDied;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.Socket;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
@@ -30,6 +31,7 @@ import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -119,8 +121,8 @@ public class ManagedDomainDeployableContainer extends CommonDomainDeployableCont
             commandBuilder.addProcessControllerJavaOption("-Djboss.home.dir=" + commandBuilder.getWildFlyHome());
 
             log.info("Starting container with: " + commandBuilder.build());
-            process = Launcher.of(commandBuilder).setRedirectErrorStream(true).launch();
-            new Thread(new ConsoleConsumer()).start();
+            final Process process = Launcher.of(commandBuilder).setRedirectErrorStream(true).launch();
+            new Thread(new ConsoleConsumer(process, config.isOutputToConsole())).start();
             shutdownThread = addShutdownHook(process);
 
             long startupTimeout = getContainerConfiguration().getStartupTimeoutInSeconds();
@@ -144,6 +146,7 @@ public class ManagedDomainDeployableContainer extends CommonDomainDeployableCont
                 throw new TimeoutException(String.format("Managed Domain server was not started within [%d] s",
                         config.getStartupTimeoutInSeconds()));
             }
+            this.process = process;
         } catch (Exception e) {
             throw new LifecycleException("Could not start container", e);
         }
@@ -155,24 +158,10 @@ public class ManagedDomainDeployableContainer extends CommonDomainDeployableCont
             Runtime.getRuntime().removeShutdownHook(shutdownThread);
             shutdownThread = null;
         }
+        final Process process = this.process;
+        this.process = null;
         try {
             if (process != null) {
-                Thread shutdown = new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            Thread.sleep(getContainerConfiguration().getStopTimeoutInSeconds() * 1000);
-                        } catch (InterruptedException e) {
-                            return;
-                        }
-
-                        // The process hasn't shutdown within 60 seconds. Terminate forcibly.
-                        if (process != null) {
-                            process.destroy();
-                        }
-                    }
-                });
-                shutdown.start();
 
                 // Fetch the local-host-name attribute (e.g. "master")
                 ModelNode op = Operations.createReadAttributeOperation(new ModelNode().setEmptyList(), "local-host-name");
@@ -183,14 +172,14 @@ public class ManagedDomainDeployableContainer extends CommonDomainDeployableCont
                     getManagementClient().getControllerClient().executeAsync(op, null);
                 }
 
-                process.waitFor();
-                process = null;
-
-                shutdown.interrupt();
+                if (!process.waitFor(getContainerConfiguration().getStopTimeoutInSeconds(), TimeUnit.SECONDS)) {
+                    process.destroyForcibly();
+                }
             }
         } catch (Exception e) {
-            if (process != null) {
-                process.destroyForcibly();
+            try {
+                destroyProcess(process);
+            } catch (Exception ignore) {
             }
             throw new LifecycleException("Could not stop container", e);
         }
@@ -229,11 +218,20 @@ public class ManagedDomainDeployableContainer extends CommonDomainDeployableCont
      * @author Stuart Douglas
      */
     private class ConsoleConsumer implements Runnable {
+        private final OutputStream out;
+        private final Process process;
+        private final boolean writeOutput;
+
+        @SuppressWarnings("UseOfSystemOutOrSystemErr")
+        private ConsoleConsumer(final Process process, final boolean writeOutput) {
+            this.process = process;
+            out = System.out;
+            this.writeOutput = writeOutput;
+        }
 
         @Override
         public void run() {
             final InputStream stream = process.getInputStream();
-            final boolean writeOutput = getContainerConfiguration().isOutputToConsole();
 
             try {
                 byte[] buf = new byte[32];
@@ -241,9 +239,9 @@ public class ManagedDomainDeployableContainer extends CommonDomainDeployableCont
                 // Do not try reading a line cos it considers '\r' end of line
                 while ((num = stream.read(buf)) != -1) {
                     if (writeOutput)
-                        System.out.write(buf, 0, num);
+                        out.write(buf, 0, num);
                 }
-            } catch (IOException e) {
+            } catch (IOException ignore) {
             }
         }
     }

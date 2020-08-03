@@ -15,12 +15,7 @@
  */
 package org.jboss.as.arquillian.container.managed;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Scanner;
-
-import org.jboss.arquillian.container.spi.ConfigurationException;
-import org.jboss.as.arquillian.container.DistributionContainerConfiguration;
+import org.jboss.as.arquillian.container.CommonManagedContainerConfiguration;
 
 /**
  * The managed container configuration
@@ -28,45 +23,23 @@ import org.jboss.as.arquillian.container.DistributionContainerConfiguration;
  * @author <a href="mailto:aslak@redhat.com">Aslak Knutsen</a>
  * @author Thomas.Diesler@jboss.com
  */
-public class ManagedContainerConfiguration extends DistributionContainerConfiguration {
-
-    /**
-     * Default timeout value waiting on ports is 10 seconds
-     */
-    private static final Integer DEFAULT_VALUE_WAIT_FOR_PORTS_TIMEOUT_SECONDS = 10;
+public class ManagedContainerConfiguration extends CommonManagedContainerConfiguration {
 
     private String javaVmArguments = System.getProperty("jboss.options");
 
     private String jbossArguments;
 
-    private int startupTimeoutInSeconds = 60;
-
-    private int stopTimeoutInSeconds = 60;
-
-    private boolean outputToConsole = true;
-
     private String serverConfig = System.getProperty("jboss.server.config.file.name");
-
-    private boolean allowConnectingToRunningServer = Boolean.parseBoolean(System.getProperty("allowConnectingToRunningServer", "false"));
 
     private boolean enableAssertions = true;
 
     private boolean adminOnly = false;
-
-    private Integer[] waitForPorts;
-
-    private Integer waitForPortsTimeoutInSeconds;
 
     private boolean setupCleanServerBaseDir = false;
 
     private String cleanServerBaseDir;
 
     public ManagedContainerConfiguration() {
-    }
-
-    @Override
-    public void validate() throws ConfigurationException {
-        super.validate();
     }
 
     public String getJavaVmArguments() {
@@ -85,33 +58,6 @@ public class ManagedContainerConfiguration extends DistributionContainerConfigur
         this.jbossArguments = jbossArguments;
     }
 
-    public void setStartupTimeoutInSeconds(int startupTimeoutInSeconds) {
-        this.startupTimeoutInSeconds = startupTimeoutInSeconds;
-    }
-
-    public int getStartupTimeoutInSeconds() {
-        return startupTimeoutInSeconds;
-    }
-
-    public void setStopTimeoutInSeconds(int stopTimeoutInSeconds) {
-        this.stopTimeoutInSeconds = stopTimeoutInSeconds;
-    }
-
-    /**
-     * Number of seconds to wait for the container process to shutdown; defaults to 60
-     */
-    public int getStopTimeoutInSeconds() {
-        return stopTimeoutInSeconds;
-    }
-
-    public void setOutputToConsole(boolean outputToConsole) {
-        this.outputToConsole = outputToConsole;
-    }
-
-    public boolean isOutputToConsole() {
-        return outputToConsole;
-    }
-
     /**
      * Get the server configuration file name. Equivalent to [-server-config=...] on the command line.
      */
@@ -126,42 +72,12 @@ public class ManagedContainerConfiguration extends DistributionContainerConfigur
         this.serverConfig = serverConfig;
     }
 
-    public boolean isAllowConnectingToRunningServer() {
-        return allowConnectingToRunningServer;
-    }
-
-    public void setAllowConnectingToRunningServer(final boolean allowConnectingToRunningServer) {
-        this.allowConnectingToRunningServer = allowConnectingToRunningServer;
-    }
-
     public boolean isEnableAssertions() {
         return enableAssertions;
     }
 
     public void setEnableAssertions(final boolean enableAssertions) {
         this.enableAssertions = enableAssertions;
-    }
-
-    public Integer[] getWaitForPorts() {
-        return waitForPorts;
-    }
-
-    public void setWaitForPorts(String waitForPorts) {
-        final Scanner scanner = new Scanner(waitForPorts);
-        final List<Integer> list = new ArrayList<Integer>();
-        while (scanner.hasNextInt()) {
-            list.add(scanner.nextInt());
-        }
-        this.waitForPorts = list.toArray(new Integer[] {});
-    }
-
-    public Integer getWaitForPortsTimeoutInSeconds() {
-        return waitForPortsTimeoutInSeconds != null ? waitForPortsTimeoutInSeconds
-            : DEFAULT_VALUE_WAIT_FOR_PORTS_TIMEOUT_SECONDS;
-    }
-
-    public void setWaitForPortsTimeoutInSeconds(final Integer waitForPortsTimeoutInSeconds) {
-        this.waitForPortsTimeoutInSeconds = waitForPortsTimeoutInSeconds;
     }
 
     public boolean isAdminOnly() {

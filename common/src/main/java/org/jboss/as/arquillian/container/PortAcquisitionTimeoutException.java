@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jboss.as.arquillian.container.managed;
+package org.jboss.as.arquillian.container;
 
 import org.jboss.arquillian.container.spi.client.container.LifecycleException;
 

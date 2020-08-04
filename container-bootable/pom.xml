@@ -133,6 +133,11 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
                     <skip>true</skip>
+                    <systemProperties>
+                        <!-- This is not used by the bootable container. This is only set for testing we fixed
+                             WFARQ-74. -->
+                        <jboss.home>${jboss.home}</jboss.home>
+                    </systemProperties>
                 </configuration>
                 <executions>
                     <execution>

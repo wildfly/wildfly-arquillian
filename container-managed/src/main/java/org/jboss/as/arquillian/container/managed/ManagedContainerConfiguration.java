@@ -15,7 +15,7 @@
  */
 package org.jboss.as.arquillian.container.managed;
 
-import org.jboss.as.arquillian.container.CommonManagedContainerConfiguration;
+import org.jboss.as.arquillian.container.DistributionContainerConfiguration;
 
 /**
  * The managed container configuration
@@ -23,7 +23,7 @@ import org.jboss.as.arquillian.container.CommonManagedContainerConfiguration;
  * @author <a href="mailto:aslak@redhat.com">Aslak Knutsen</a>
  * @author Thomas.Diesler@jboss.com
  */
-public class ManagedContainerConfiguration extends CommonManagedContainerConfiguration {
+public class ManagedContainerConfiguration extends DistributionContainerConfiguration {
 
     private String javaVmArguments = System.getProperty("jboss.options");
 

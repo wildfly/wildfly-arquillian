@@ -35,7 +35,7 @@
     <artifactId>wildfly-arquillian-parent</artifactId>
 
     <groupId>org.wildfly.arquillian</groupId>
-    <version>3.0.0.Beta1</version>
+    <version>3.0.0.Beta2-SNAPSHOT</version>
     <name>WildFly: Arquillian</name>
 
     <properties>

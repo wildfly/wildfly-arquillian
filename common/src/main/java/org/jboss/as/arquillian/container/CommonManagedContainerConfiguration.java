@@ -19,6 +19,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
+import org.jboss.arquillian.container.spi.ConfigurationException;
+import org.jboss.arquillian.container.spi.client.deployment.Validate;
+
 /**
  * The container configuration for a managed WildFly based container.
  *
@@ -27,12 +30,14 @@ import java.util.Scanner;
  * @since 3.0.0
  */
 @SuppressWarnings({"unused", "MagicNumber", "InstanceVariableMayNotBeInitialized"})
-public class CommonManagedContainerConfiguration extends DistributionContainerConfiguration {
+public class CommonManagedContainerConfiguration extends CommonContainerConfiguration {
 
     /**
      * Default timeout value waiting on ports is 10 seconds
      */
     private static final Integer DEFAULT_VALUE_WAIT_FOR_PORTS_TIMEOUT_SECONDS = 10;
+
+    private String javaHome = System.getenv("JAVA_HOME");
 
     private int startupTimeoutInSeconds = 60;
 
@@ -45,6 +50,21 @@ public class CommonManagedContainerConfiguration extends DistributionContainerCo
     private Integer[] waitForPorts;
 
     private Integer waitForPortsTimeoutInSeconds;
+
+    @Override
+    public void validate() throws ConfigurationException {
+        super.validate();
+        if (javaHome != null)
+            Validate.configurationDirectoryExists(javaHome, "javaHome '" + javaHome + "' must exist");
+    }
+
+    public String getJavaHome() {
+        return javaHome;
+    }
+
+    public void setJavaHome(String javaHome) {
+        this.javaHome = javaHome;
+    }
 
     public void setStartupTimeoutInSeconds(int startupTimeoutInSeconds) {
         this.startupTimeoutInSeconds = startupTimeoutInSeconds;

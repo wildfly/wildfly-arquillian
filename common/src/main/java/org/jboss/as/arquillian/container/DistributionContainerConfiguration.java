@@ -23,21 +23,15 @@ import org.jboss.arquillian.container.spi.client.deployment.Validate;
  *
  * @author <a href="mailto:alr@jboss.org">Andrew Lee Rubinger</a>
  */
-public class DistributionContainerConfiguration extends CommonContainerConfiguration {
+public class DistributionContainerConfiguration extends CommonManagedContainerConfiguration {
 
     private String jbossHome = System.getenv("JBOSS_HOME");
-
-    private String javaHome = System.getenv("JAVA_HOME");
 
     private String modulePath = System.getProperty("module.path");
 
     private String bundlePath = System.getProperty("bundle.path");
 
     public DistributionContainerConfiguration() {
-        // if no javaHome is set use java.home of already running jvm
-        if (javaHome == null || javaHome.isEmpty()) {
-            javaHome = System.getProperty("java.home");
-        }
         // if no jbossHome is set use jboss.home of already running jvm
         if (jbossHome == null || jbossHome.isEmpty()) {
             jbossHome = System.getProperty("jboss.home");
@@ -57,21 +51,6 @@ public class DistributionContainerConfiguration extends CommonContainerConfigura
      */
     public void setJbossHome(String jbossHome) {
         this.jbossHome = jbossHome;
-    }
-
-    /**
-     * @return the javaHome
-     */
-    public String getJavaHome() {
-        return javaHome;
-    }
-
-    /**
-     * @param javaHome
-     *            the javaHome to set
-     */
-    public void setJavaHome(String javaHome) {
-        this.javaHome = javaHome;
     }
 
     public String getModulePath() {
@@ -97,7 +76,5 @@ public class DistributionContainerConfiguration extends CommonContainerConfigura
         super.validate();
         if (jbossHome != null)
             Validate.configurationDirectoryExists(jbossHome, "jbossHome '" + jbossHome + "' must exist");
-        if (javaHome != null)
-            Validate.configurationDirectoryExists(javaHome, "javaHome '" + javaHome + "' must exist");
     }
 }

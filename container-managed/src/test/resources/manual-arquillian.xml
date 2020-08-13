@@ -39,5 +39,13 @@
                 <property name="serverConfig">${wildfly.standalone.config}</property>
             </configuration>
         </container>
+        <container qualifier="read-only-config" default="false" mode="manual">
+            <configuration>
+                <property name="jbossHome">${jboss.home}</property>
+                <property name="allowConnectingToRunningServer">false</property>
+                <property name="javaVmArguments">${jvm.args}</property>
+                <property name="readOnlyServerConfig">${wildfly.standalone.config}</property>
+            </configuration>
+        </container>
     </group>
 </arquillian>

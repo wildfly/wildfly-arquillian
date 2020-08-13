@@ -89,8 +89,11 @@ public final class ManagedDeployableContainer extends CommonManagedDeployableCon
             commandBuilder.addServerArguments(ParameterUtils.splitParams(jbossArguments));
         }
 
+        // Only one of the two should be set. The configuration will validate this, but we should only set one
         if (config.getServerConfig() != null) {
             commandBuilder.setServerConfiguration(config.getServerConfig());
+        } else if (config.getReadOnlyServerConfig() != null) {
+            commandBuilder.setServerReadOnlyConfiguration(config.getReadOnlyServerConfig());
         }
 
         // Create a clean server base to run the container; ARQ-638

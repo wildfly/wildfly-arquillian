@@ -15,6 +15,7 @@
  */
 package org.jboss.as.arquillian.container.managed;
 
+import org.jboss.arquillian.container.spi.ConfigurationException;
 import org.jboss.as.arquillian.container.DistributionContainerConfiguration;
 
 /**
@@ -31,6 +32,8 @@ public class ManagedContainerConfiguration extends DistributionContainerConfigur
 
     private String serverConfig = System.getProperty("jboss.server.config.file.name");
 
+    private String readOnlyServerConfig;
+
     private boolean enableAssertions = true;
 
     private boolean adminOnly = false;
@@ -40,6 +43,16 @@ public class ManagedContainerConfiguration extends DistributionContainerConfigur
     private String cleanServerBaseDir;
 
     public ManagedContainerConfiguration() {
+    }
+
+    @Override
+    public void validate() throws ConfigurationException {
+        super.validate();
+        // Cannot define both a serverConfig and a readOnlyServerConfig
+        if (serverConfig != null && readOnlyServerConfig != null) {
+            throw new ConfigurationException(String.format("Cannot define both a serverConfig and a readOnlyServerConfig: " +
+                    "serverConfig=%s - readOnlyServerConfig=%s", serverConfig, readOnlyServerConfig));
+        }
     }
 
     public String getJavaVmArguments() {
@@ -70,6 +83,20 @@ public class ManagedContainerConfiguration extends DistributionContainerConfigur
      */
     public void setServerConfig(String serverConfig) {
         this.serverConfig = serverConfig;
+    }
+
+    /**
+     * Get the server configuration file name. Equivalent to [--read-only-server-config=...] on the command line.
+     */
+    public String getReadOnlyServerConfig() {
+        return readOnlyServerConfig;
+    }
+
+    /**
+     * Set the server configuration file name. Equivalent to [--read-only-server-config=...] on the command line.
+     */
+    public void setReadOnlyServerConfig(String serverConfig) {
+        this.readOnlyServerConfig = serverConfig;
     }
 
     public boolean isEnableAssertions() {

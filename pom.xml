@@ -68,6 +68,9 @@
         <default.jvm.args>-Dmaven.repo.local=${settings.localRepository}</default.jvm.args>
         <jvm.args>${default.jvm.args}</jvm.args>
         <wildfly.standalone.config>standalone.xml</wildfly.standalone.config>
+
+        <maven.test.skip>false</maven.test.skip>
+        <skipTests>${maven.test.skip}</skipTests>
     </properties>
 
     <licenses>
@@ -135,6 +138,7 @@
                             </goals>
                             <configuration>
                                 <install-dir>${jboss.home}</install-dir>
+                                <skip>${skipTests}</skip>
                                 <record-state>false</record-state>
                                 <log-time>${galleon.log.time}</log-time>
                                 <offline>${galleon.offline}</offline>
@@ -162,6 +166,9 @@
                     <groupId>org.wildfly.plugins</groupId>
                     <artifactId>wildfly-maven-plugin</artifactId>
                     <version>${version.org.wildfly.plugins.wildfly-maven-plugin}</version>
+                    <configuration>
+                        <skip>${skipTests}</skip>
+                    </configuration>
                 </plugin>
             </plugins>
         </pluginManagement>

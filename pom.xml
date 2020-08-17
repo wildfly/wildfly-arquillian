@@ -71,6 +71,9 @@
 
         <maven.test.skip>false</maven.test.skip>
         <skipTests>${maven.test.skip}</skipTests>
+
+        <!-- Build minimums -->
+        <maven.min.version>3.6.0</maven.min.version>
     </properties>
 
     <licenses>

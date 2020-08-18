@@ -166,7 +166,7 @@ public abstract class CommonDeployableContainer<T extends CommonContainerConfigu
                 final ManagementClient client = getManagementClient();
                 // The management client should be set when the container is started
                 if (client == null) return null;
-                containerDescription = StandardContainerDescription.lookup(client);
+                containerDescription = ContainerDescription.lookup(client);
             } catch (IOException e) {
                 Logger.getLogger(getClass()).warn("Failed to lookup the container description.", e);
                 containerDescription = StandardContainerDescription.NULL_DESCRIPTION;

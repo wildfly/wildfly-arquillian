@@ -16,12 +16,6 @@
 
 package org.jboss.as.arquillian.container;
 
-import java.io.IOException;
-
-import org.jboss.as.controller.client.helpers.Operations;
-import org.jboss.dmr.ModelNode;
-import org.jboss.logging.Logger;
-
 /**
  * A standard implementation for the {@link ContainerDescription}.
  *
@@ -29,18 +23,23 @@ import org.jboss.logging.Logger;
  */
 class StandardContainerDescription implements ContainerDescription {
 
-    static final StandardContainerDescription NULL_DESCRIPTION = new StandardContainerDescription("WildFly", null, null, null);
+    static final StandardContainerDescription NULL_DESCRIPTION = new StandardContainerDescription("WildFly",
+            null, null, null, ModelVersion.DEFAULT);
 
     private final String productName;
     private final String productVersion;
     private final String releaseCodename;
     private final String releaseVersion;
+    private final ModelVersion modelVersion;
 
-    private StandardContainerDescription(final String productName, final String productVersion, final String releaseCodename, final String releaseVersion) {
+    StandardContainerDescription(final String productName, final String productVersion,
+                                 final String releaseCodename, final String releaseVersion,
+                                 final ModelVersion modelVersion) {
         this.productName = productName;
         this.productVersion = productVersion;
         this.releaseCodename = releaseCodename;
         this.releaseVersion = releaseVersion;
+        this.modelVersion = modelVersion;
     }
 
     @Override
@@ -64,6 +63,11 @@ class StandardContainerDescription implements ContainerDescription {
     }
 
     @Override
+    public ModelVersion getModelVersion() {
+        return modelVersion;
+    }
+
+    @Override
     public String toString() {
         final StringBuilder result = new StringBuilder(64);
         result.append(productName);
@@ -84,48 +88,5 @@ class StandardContainerDescription implements ContainerDescription {
             }
         }
         return result.toString();
-    }
-
-    /**
-     * Queries the running container and attempts to lookup the information from the running container.
-     *
-     * @param client the client used to execute the management operation
-     *
-     * @return the container description
-     *
-     * @throws IOException if an error occurs while executing the management operation
-     */
-    public static StandardContainerDescription lookup(final ManagementClient client) throws IOException {
-        final ModelNode op = Operations.createReadResourceOperation(new ModelNode().setEmptyList());
-        final ModelNode result = client.getControllerClient().execute(op);
-        if (Operations.isSuccessfulOutcome(result)) {
-            final ModelNode model = Operations.readResult(result);
-            final String productName;
-            if (model.hasDefined("product-name")) {
-                productName = model.get("product-name").asString();
-            } else {
-                productName = "WildFly";
-            }
-
-            String productVersion = null;
-            if (model.hasDefined("product-version")) {
-                productVersion = model.get("product-version").asString();
-            }
-
-            String releaseCodename = null;
-            if (model.hasDefined("release-codename")) {
-                releaseCodename = model.get("release-codename").asString();
-            }
-
-            String releaseVersion = null;
-            if (model.hasDefined("release-version")) {
-                releaseVersion = model.get("release-version").asString();
-            }
-            return new StandardContainerDescription(productName, productVersion, releaseCodename, releaseVersion);
-        } else {
-            Logger.getLogger(StandardContainerDescription.class).errorf("Failed to read the root resource: ", Operations.getFailureDescription(result));
-        }
-
-        return NULL_DESCRIPTION;
     }
 }

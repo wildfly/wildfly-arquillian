@@ -60,7 +60,7 @@ public class ContextManager {
      */
     public void setup(final Map<String, Object> properties) {
         final List<SetupAction> successfulActions = new ArrayList<SetupAction>();
-        final DeploymentUnit depUnit = config.getDeploymentUnit().getValue();
+        final DeploymentUnit depUnit = config.getDeploymentUnit();
         final Module module = depUnit.getAttachment(Attachments.MODULE);
         ClassLoader tccl = WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(module.getClassLoader());
         try {
@@ -96,7 +96,7 @@ public class ContextManager {
     public void teardown(final Map<String, Object> properties) {
         Throwable exceptionToThrow = null;
         final ListIterator<SetupAction> itr = setupActions.listIterator(setupActions.size());
-        final DeploymentUnit depUnit = config.getDeploymentUnit().getValue();
+        final DeploymentUnit depUnit = config.getDeploymentUnit();
         final Module module = depUnit.getAttachment(Attachments.MODULE);
         ClassLoader tccl = WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(module.getClassLoader());
         try {

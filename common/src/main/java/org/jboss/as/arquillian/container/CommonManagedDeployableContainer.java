@@ -21,7 +21,6 @@ import static org.wildfly.core.launcher.ProcessHelper.processHasDied;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.DatagramSocket;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -257,18 +256,16 @@ public abstract class CommonManagedDeployableContainer<T extends CommonManagedCo
      * @author Stuart Douglas
      */
     private static class ConsoleConsumer implements Runnable {
-        private final OutputStream out;
         private final Process process;
         private final boolean writeOutput;
 
-        @SuppressWarnings("UseOfSystemOutOrSystemErr")
         private ConsoleConsumer(final Process process, final boolean writeOutput) {
             this.process = process;
-            out = System.out;
             this.writeOutput = writeOutput;
         }
 
         @Override
+        @SuppressWarnings("UseOfSystemOutOrSystemErr")
         public void run() {
             final InputStream stream = process.getInputStream();
 
@@ -278,7 +275,7 @@ public abstract class CommonManagedDeployableContainer<T extends CommonManagedCo
                 // Do not try reading a line cos it considers '\r' end of line
                 while ((num = stream.read(buf)) != -1) {
                     if (writeOutput)
-                        out.write(buf, 0, num);
+                        System.out.write(buf, 0, num);
                 }
             } catch (IOException ignore) {
             }

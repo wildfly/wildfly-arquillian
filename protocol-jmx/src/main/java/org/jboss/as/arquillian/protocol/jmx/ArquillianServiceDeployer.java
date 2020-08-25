@@ -16,6 +16,7 @@
 package org.jboss.as.arquillian.protocol.jmx;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.util.HashSet;
 import java.util.Map;
@@ -23,9 +24,14 @@ import java.util.Set;
 
 import org.jboss.arquillian.container.spi.Container;
 import org.jboss.arquillian.container.spi.client.container.DeployableContainer;
+import org.jboss.arquillian.container.spi.context.annotation.ContainerScoped;
 import org.jboss.arquillian.container.spi.event.container.BeforeDeploy;
 import org.jboss.arquillian.container.spi.event.container.BeforeStop;
+import org.jboss.arquillian.core.api.Instance;
+import org.jboss.arquillian.core.api.annotation.Inject;
 import org.jboss.arquillian.core.api.annotation.Observes;
+import org.jboss.as.arquillian.container.ContainerDescription;
+import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.arquillian.protocol.jmx.ExtendedJMXProtocol.ServiceArchiveHolder;
 import org.jboss.as.network.NetworkUtils;
 import org.jboss.logging.Logger;
@@ -42,6 +48,10 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
  */
 public class ArquillianServiceDeployer {
 
+    @Inject
+    @ContainerScoped
+    private Instance<ManagementClient> managementClientInstance;
+
     private static final Logger log = Logger.getLogger(ArquillianServiceDeployer.class);
 
     private Set<String> serviceArchiveDeployed = new HashSet<String>();
@@ -55,6 +65,36 @@ public class ArquillianServiceDeployer {
 
         // only deploy the service if the deployment has been enriched by the jmx-as7 protocol
         if (archiveHolder.deploymentExistsAndRemove(event.getDeployment().getName())) {
+            try {
+                final ManagementClient client = managementClientInstance.get();
+                // As of WildFly Arquillian 3.0.0 a minimum of WildFly 13 or JBoss EAP 7.2 is required. This is due to the
+                // WFARQ-50 changes which use the new MSC service API's. The model version of this is 7.0.0 so it's best to
+                // test that as WildFly 13 is at 7.0.0 and EAP 7.2 is at 8.0.0. Also the product-version may be null.
+                final ContainerDescription containerDescription = ContainerDescription.lookup(client);
+                if (containerDescription.getModelVersion().getMajor() < 7) {
+                    String productName = containerDescription.getProductName();
+                    if (productName == null) {
+                        productName = "WildFly";
+                    }
+                    final String productVersion = containerDescription.getProductVersion();
+                    final StringBuilder msg = new StringBuilder(64)
+                            .append(productName);
+                    if (productVersion != null) {
+                        msg.append(' ').append(productVersion);
+                    }
+                    msg.append(" does not meet the minimum required version");
+                    if (productName.contains("WildFly")) {
+                        msg.append(" of 13.0.0.Final.");
+                    } else if (productName.contains("EAP")) {
+                        msg.append(" of 7.2.0.GA.");
+                    } else {
+                        msg.append('.');
+                    }
+                    throw new RuntimeException(msg.toString());
+                }
+            } catch (IOException e) {
+                log.error("Failed to determine the version of the running container.", e);
+            }
             JavaArchive serviceArchive = (JavaArchive) archiveHolder.getArchive();
             try {
                 log.infof("Deploy arquillian service: %s", serviceArchive);

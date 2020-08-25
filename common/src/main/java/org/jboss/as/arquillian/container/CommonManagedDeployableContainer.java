@@ -186,9 +186,9 @@ public abstract class CommonManagedDeployableContainer<T extends CommonManagedCo
             Runtime.getRuntime().removeShutdownHook(shutdownThread);
             shutdownThread = null;
         }
+        final Process process = this.process;
+        this.process = null;
         try {
-            final Process process = this.process;
-            this.process = null;
             if (process != null) {
 
                 // AS7-6620: Create the shutdown operation and run it asynchronously and wait for process to terminate

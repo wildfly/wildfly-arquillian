@@ -190,6 +190,7 @@ public abstract class CommonManagedDeployableContainer<T extends CommonManagedCo
         this.process = null;
         try {
             if (process != null) {
+                final Logger logger = getLogger();
 
                 // AS7-6620: Create the shutdown operation and run it asynchronously and wait for process to terminate
                 final ModelNode op = Operations.createOperation("shutdown");
@@ -200,9 +201,28 @@ public abstract class CommonManagedDeployableContainer<T extends CommonManagedCo
                 } else {
                     getLogger().error(String.format("Timeout is not supported for %s on the shutdown operation.", getContainerDescription()));
                 }
-                getManagementClient().getControllerClient().executeAsync(op, null);
 
-                if (!process.waitFor(getContainerConfiguration().getStopTimeoutInSeconds(), TimeUnit.SECONDS)) {
+                // If the process is not alive there is no sense it invoking a shutdown operation.
+                if (process.isAlive()) {
+                    final ManagementClient client = getManagementClient();
+                    if (client == null) {
+                        logger.error("The management client does not seem to be active. Forcibly destroying the process.");
+                        process.destroyForcibly();
+                    } else {
+                        final ModelNode result = client.getControllerClient().execute(op);
+                        if (!Operations.isSuccessfulOutcome(result)) {
+                            // Don't fail stopping, but we should log an error
+                            logger.errorf("Failed to shutdown the server: %s",
+                                    Operations.getFailureDescription(result).asString());
+                            process.destroyForcibly();
+                        }
+                    }
+                }
+
+                final int timeoutSeconds = getContainerConfiguration().getStartupTimeoutInSeconds();
+                if (!process.waitFor(timeoutSeconds, TimeUnit.SECONDS)) {
+                    // Log a warning indicating the timeout happened
+                    logger.warnf("The container process did not exit within %d seconds. Forcibly destroying the process.", timeoutSeconds);
                     process.destroyForcibly();
                 }
             }

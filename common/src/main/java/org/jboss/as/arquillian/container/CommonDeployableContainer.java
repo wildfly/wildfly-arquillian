@@ -59,7 +59,7 @@ public abstract class CommonDeployableContainer<T extends CommonContainerConfigu
 
     @Inject
     @ContainerScoped
-    private InstanceProducer<ManagementClient> managementClient;
+    private InstanceProducer<ManagementClient> managementClientProducer;
 
     @Inject
     @ContainerScoped
@@ -70,6 +70,7 @@ public abstract class CommonDeployableContainer<T extends CommonContainerConfigu
     private InstanceProducer<Context> jndiContext;
 
     private final StandaloneDelegateProvider mccProvider = new StandaloneDelegateProvider();
+    private ManagementClient managementClient = null;
     private ContainerDescription containerDescription = null;
     private URI authenticationConfig = null;
 
@@ -89,7 +90,8 @@ public abstract class CommonDeployableContainer<T extends CommonContainerConfigu
         }
 
         final ManagementClient client = new ManagementClient(new DelegatingModelControllerClient(mccProvider), containerConfig);
-        managementClient.set(client);
+        managementClient = client;
+        managementClientProducer.set(client);
 
         archiveDeployer.set(new ArchiveDeployer(client));
     }
@@ -180,11 +182,14 @@ public abstract class CommonDeployableContainer<T extends CommonContainerConfigu
     }
 
     protected ManagementClient getManagementClient() {
-        return managementClient.get();
+        return managementClient;
     }
 
     protected ModelControllerClient getModelControllerClient() {
-        return getManagementClient().getControllerClient();
+        if (managementClient == null) {
+            throw new IllegalStateException("The container has not been setup. The client is not usable.");
+        }
+        return managementClient.getControllerClient();
     }
 
     /**
@@ -269,7 +274,7 @@ public abstract class CommonDeployableContainer<T extends CommonContainerConfigu
     private void safeCloseClient() {
         try {
             // Reset the client, this should close the internal resources and setup reinitialization
-            ManagementClient client = getManagementClient();
+            ManagementClient client = managementClient;
             if (client != null) {
                 client.reset();
             }

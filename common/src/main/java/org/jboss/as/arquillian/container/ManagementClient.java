@@ -116,6 +116,7 @@ public class ManagementClient implements Closeable {
     private MBeanServerConnection connection;
     private JMXConnector connector;
     private boolean undertowSubsystemPresent = false;
+    private boolean jmxSubsystemPresent = false;
     private boolean closed = false;
 
     public ManagementClient(ModelControllerClient client, final String mgmtAddress, final int managementPort, final String protocol) {
@@ -182,8 +183,8 @@ public class ManagementClient implements Closeable {
                 if (!initialized) {
                     initialized = true;
                     try {
-                        final ModelNode op = Operations.createReadResourceOperation(UNDERTOW_SUBSYSTEM_ADDRESS, true);
-                        final ModelNode result = client.execute(op);
+                        ModelNode op = Operations.createReadResourceOperation(UNDERTOW_SUBSYSTEM_ADDRESS, true);
+                        ModelNode result = client.execute(op);
                         undertowSubsystemPresent = Operations.isSuccessfulOutcome(result);
                         if (undertowSubsystemPresent) {
                             undertowSubsystem = Operations.readResult(result);
@@ -210,6 +211,20 @@ public class ManagementClient implements Closeable {
                         } catch (URISyntaxException e) {
                             throw new RuntimeException(e);
                         }
+
+                        // Determine if JMX is available
+                        op = Operations.createOperation(READ_CHILDREN_NAMES_OPERATION);
+                        op.get(CHILD_TYPE).set(SUBSYSTEM);
+                        result = client.execute(op);
+                        if (!Operations.isSuccessfulOutcome(result)) {
+                            throw new RuntimeException("Failed to determine if the JMX subsystem is present: "
+                                    + Operations.getFailureDescription(result).asString());
+                        }
+                        jmxSubsystemPresent = Operations.readResult(result)
+                                .asList()
+                                .stream()
+                                .map(ModelNode::asString)
+                                .anyMatch("jmx"::equals);
                     } catch (Exception e) {
                         throw new RuntimeException("Could not init arquillian protocol", e);
                     }
@@ -239,7 +254,9 @@ public class ManagementClient implements Closeable {
     public ProtocolMetaData getProtocolMetaData(String deploymentName) {
         init();
         ProtocolMetaData metaData = new ProtocolMetaData();
-        metaData.addContext(new JMXContext(getConnection()));
+        if (jmxSubsystemPresent) {
+            metaData.addContext(new JMXContext(getConnection()));
+        }
         if (undertowSubsystemPresent) {
             URI webURI = getWebUri();
             HTTPContext context = new HTTPContext(webURI.getHost(), webURI.getPort());

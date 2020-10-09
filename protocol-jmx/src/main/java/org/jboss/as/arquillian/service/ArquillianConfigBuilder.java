@@ -80,6 +80,11 @@ class ArquillianConfigBuilder {
             log.warnf("Cannot find composite annotation index in: %s", deploymentUnit);
             return;
         }
+        if (deploymentUnit.hasAttachment(CLASSES)) {
+            // this hack is needed because ArquillianListener.handleEvent() method
+            // DOWN event can happen multiple times during service lifecycle.
+            return;
+        }
 
         // Got JUnit?
         final DotName runWithName = DotName.createSimple(CLASS_NAME_JUNIT_RUNNER);

@@ -243,17 +243,16 @@ public class ArquillianService implements Service {
 
         @Override
         public void handleEvent(final ServiceController<?> controller, final LifecycleEvent event) {
-            if (event != LifecycleEvent.UP) return;
-            ServiceName serviceName = controller.getName();
+            final ServiceName serviceName = controller.getName();
             if (!JBOSS_DEPLOYMENT.isParentOf(serviceName)) return;
+            final String simpleName = serviceName.getSimpleName();
 
-            String simpleName = serviceName.getSimpleName();
-            if (simpleName.equals(Phase.DEPENDENCIES.toString())) {
+            if (event == LifecycleEvent.DOWN && simpleName.equals(Phase.DEPENDENCIES.toString())) {
                 ServiceName parentName = serviceName.getParent();
                 ServiceController<?> parentController = controller.getServiceContainer().getService(parentName);
                 DeploymentUnit depUnit = (DeploymentUnit) parentController.getValue(); // TODO: eliminate deprecated API usage
                 ArquillianConfigBuilder.handleParseAnnotations(depUnit);
-            } else if (simpleName.equals(Phase.INSTALL.toString())) {
+            } else if (event == LifecycleEvent.UP && simpleName.equals(Phase.INSTALL.toString())) {
                 ServiceName parentName = serviceName.getParent();
                 ServiceController<?> parentController = controller.getServiceContainer().getService(parentName);
                 DeploymentUnit depUnit = (DeploymentUnit) parentController.getValue(); // TODO: eliminate deprecated API usage

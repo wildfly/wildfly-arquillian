@@ -29,10 +29,7 @@
     <artifactId>wildfly-arquillian-container-bootable</artifactId>
     <name>WildFly: Arquillian Bootable jar Container</name>
     <packaging>jar</packaging>
-    
-    <properties>
-        <version.org.wildfly>20.0.0.Final</version.org.wildfly>
-    </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.wildfly.arquillian</groupId>
@@ -116,7 +113,7 @@
                 <version>2.0.0.Beta1</version>
                 <configuration>
                     <skip>${skipTests}</skip>
-                    <feature-pack-location>wildfly@maven(org.jboss.universe:community-universe)#${version.org.wildfly}</feature-pack-location>
+                    <feature-pack-location>wildfly@maven(org.jboss.universe:community-universe)#${version.org.wildfly.full}</feature-pack-location>
                     <hollowJar>true</hollowJar>
                     <outputFileName>test-wildfly.jar</outputFileName>
                 </configuration>

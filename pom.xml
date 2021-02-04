@@ -39,8 +39,8 @@
     <name>WildFly: Arquillian</name>
 
     <properties>
-        <version.org.wildfly.core>13.0.0.Final</version.org.wildfly.core>
-        <version.org.wildfly.full>16.0.0.Final</version.org.wildfly.full>
+        <version.org.wildfly.core>14.0.0.Final</version.org.wildfly.core>
+        <version.org.wildfly.full>22.0.0.Final</version.org.wildfly.full>
         <version.junit>4.12</version.junit>
         <version.org.jboss.arquillian.core>1.7.0.Alpha6</version.org.jboss.arquillian.core>
         <version.org.jboss.galleon>4.2.5.Final</version.org.jboss.galleon>
@@ -523,8 +523,32 @@
 
     <repositories>
         <repository>
+            <releases>
+                <enabled>true</enabled>
+                <updatePolicy>never</updatePolicy>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+                <updatePolicy>never</updatePolicy>
+            </snapshots>
             <id>jboss-public-repository</id>
+            <name>JBoss Public Repository Group</name>
             <url>https://repository.jboss.org/nexus/content/groups/public/</url>
+            <layout>default</layout>
+        </repository>
+        <repository>
+            <releases>
+                <enabled>true</enabled>
+                <updatePolicy>never</updatePolicy>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+                <updatePolicy>never</updatePolicy>
+            </snapshots>
+            <id>jboss-enterprise-maven-repository</id>
+            <name>JBoss Enterprise Maven Repository</name>
+            <url>https://maven.repository.redhat.com/ga/</url>
+            <layout>default</layout>
         </repository>
     </repositories>
 </project>

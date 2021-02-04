@@ -42,7 +42,7 @@
         <version.org.wildfly.core>13.0.0.Final</version.org.wildfly.core>
         <version.org.wildfly.full>16.0.0.Final</version.org.wildfly.full>
         <version.junit>4.12</version.junit>
-        <version.org.jboss.arquillian.core>1.6.0.Final</version.org.jboss.arquillian.core>
+        <version.org.jboss.arquillian.core>1.7.0.Alpha6</version.org.jboss.arquillian.core>
         <version.org.jboss.galleon>4.2.5.Final</version.org.jboss.galleon>
         <version.org.wildfly.common.wildfly-common>1.5.4.Final</version.org.wildfly.common.wildfly-common>
         <version.org.wildfly.plugins.wildfly-maven-plugin>2.0.2.Final</version.org.wildfly.plugins.wildfly-maven-plugin>

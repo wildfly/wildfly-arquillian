@@ -65,6 +65,13 @@
             <groupId>org.wildfly.plugins</groupId>
             <artifactId>wildfly-plugin-core</artifactId>
         </dependency>
+
+        <!-- Test dependencies -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>org.jboss.spec.javax.servlet</groupId>
             <artifactId>jboss-servlet-api_4.0_spec</artifactId>

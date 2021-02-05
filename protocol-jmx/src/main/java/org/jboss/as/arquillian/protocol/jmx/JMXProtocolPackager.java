@@ -83,12 +83,16 @@ public class JMXProtocolPackager implements DeploymentPackager {
 
     private static final Set<String> optionalDeps = new HashSet<>();
 
+    private static final Collection<String> services = new HashSet<>();
+
     static {
         defaultDependencies.add("deployment.arquillian-service");
         defaultDependencies.add("org.jboss.modules");
         defaultDependencies.add("org.jboss.msc");
         defaultDependencies.add("org.wildfly.security.manager");
         optionalDeps.add("java.logging");
+        // JUnit 5 uses a Java service to obtain the engine implementation
+        services.add("deployment.arquillian-service");
     }
 
     private static final Logger log = Logger.getLogger(JMXProtocolPackager.class);
@@ -240,6 +244,10 @@ public class JMXProtocolPackager implements DeploymentPackager {
             }
             if(optionalDeps.contains(dep)) {
                 moduleDeps.append(" optional");
+            }
+            // Any dependencies that require the services, META-INF/services, to be exported
+            if (services.contains(dep)) {
+                moduleDeps.append(" services");
             }
         }
 

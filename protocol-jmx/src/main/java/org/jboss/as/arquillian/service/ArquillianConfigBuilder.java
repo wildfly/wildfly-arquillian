@@ -16,6 +16,7 @@
 
 package org.jboss.as.arquillian.service;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -50,6 +51,8 @@ class ArquillianConfigBuilder {
      */
 
     private static final String CLASS_NAME_JUNIT_RUNNER = "org.junit.runner.RunWith";
+
+    private static final String CLASS_NAME_JUNIT5_RUNNER = "org.junit.jupiter.api.extension.ExtendWith";
 
     private static final String CLASS_NAME_TESTNG_RUNNER = "org.jboss.arquillian.testng.Arquillian";
 
@@ -88,7 +91,11 @@ class ArquillianConfigBuilder {
 
         // Got JUnit?
         final DotName runWithName = DotName.createSimple(CLASS_NAME_JUNIT_RUNNER);
-        final List<AnnotationInstance> runWithList = compositeIndex.getAnnotations(runWithName);
+        final List<AnnotationInstance> runWithList = new ArrayList<>(compositeIndex.getAnnotations(runWithName));
+
+        // JUnit 5
+        final DotName extendWith = DotName.createSimple(CLASS_NAME_JUNIT5_RUNNER);
+        runWithList.addAll(compositeIndex.getAnnotations(extendWith));
 
         // Got TestNG?
         final DotName testNGClassName = DotName.createSimple(CLASS_NAME_TESTNG_RUNNER);

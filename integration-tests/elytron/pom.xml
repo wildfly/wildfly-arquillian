@@ -34,4 +34,12 @@
         <module>standalone</module>
         <module>domain</module>
     </modules>
+    <dependencies>
+        <!-- Test dependencies -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
 </project>

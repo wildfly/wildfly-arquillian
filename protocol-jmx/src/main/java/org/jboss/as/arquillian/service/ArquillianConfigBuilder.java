@@ -58,23 +58,16 @@ class ArquillianConfigBuilder {
     ArquillianConfigBuilder() {
     }
 
-    static ArquillianConfig processDeployment(DeploymentUnit depUnit) {
-
+    static Set<String> getClasses(final DeploymentUnit depUnit) {
         // Get Test Class Names
         final Set<String> testClasses = depUnit.getAttachment(CLASSES);
-
-        // No tests found
-        if (testClasses == null || testClasses.isEmpty()) {
-            return null;
-        }
-
-        return new ArquillianConfig(testClasses, createDeploymentUnitName(depUnit));
+        return testClasses == null || testClasses.isEmpty() ? null : testClasses;
     }
 
-    private static String createDeploymentUnitName(DeploymentUnit depUnit) {
+    static String getName(final DeploymentUnit depUnit) {
         String depUnitName = depUnit.getName();
         DeploymentUnit parent;
-        if((parent = depUnit.getParent()) != null) {
+        if ((parent = depUnit.getParent()) != null) {
             depUnitName = parent.getName() + "." + depUnitName;
         }
         return depUnitName;
@@ -85,6 +78,11 @@ class ArquillianConfigBuilder {
         final CompositeIndex compositeIndex = deploymentUnit.getAttachment(Attachments.COMPOSITE_ANNOTATION_INDEX);
         if(compositeIndex == null) {
             log.warnf("Cannot find composite annotation index in: %s", deploymentUnit);
+            return;
+        }
+        if (deploymentUnit.hasAttachment(CLASSES)) {
+            // this hack is needed because ArquillianListener.handleEvent() method
+            // DOWN event can happen multiple times during service lifecycle.
             return;
         }
 

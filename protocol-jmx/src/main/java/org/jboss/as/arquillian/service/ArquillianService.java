@@ -22,6 +22,8 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Supplier;
+import java.util.function.Consumer;
 import javax.management.MBeanServer;
 
 import org.jboss.arquillian.container.test.spi.TestRunner;
@@ -34,8 +36,9 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.logging.Logger;
 import org.jboss.modules.Module;
-import org.jboss.msc.service.AbstractServiceListener;
-import org.jboss.msc.service.Service;
+import org.jboss.msc.Service;
+import org.jboss.msc.service.LifecycleEvent;
+import org.jboss.msc.service.LifecycleListener;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -43,41 +46,46 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.InjectedValue;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * Service responsible for creating and managing the life-cycle of the Arquillian service.
  *
- *
  * @author Thomas.Diesler@jboss.com
  * @author Kabir Khan
- * @since 17-Nov-2010
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
-public class ArquillianService implements Service<ArquillianService> {
+public class ArquillianService implements Service {
 
     public static final String TEST_CLASS_PROPERTY = "org.jboss.as.arquillian.testClass";
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("arquillian", "testrunner");
-
     private static final Logger log = Logger.getLogger("org.jboss.as.arquillian");
 
-    private final InjectedValue<MBeanServer> injectedMBeanServer = new InjectedValue<MBeanServer>();
+    private final Supplier<MBeanServer> mBeanServerSupplier;
+    private final Consumer<ArquillianService> arquillianServiceConsumer;
     private final Set<ArquillianConfig> deployedTests = new HashSet<>();
     private volatile JMXTestRunner jmxTestRunner;
-    private volatile AbstractServiceListener<Object> listener;
+    private volatile LifecycleListener listener;
+
+    private ArquillianService(final Supplier<MBeanServer> mBeanServerSupplier, final Consumer<ArquillianService> arquillianServiceConsumer) {
+        this.mBeanServerSupplier = mBeanServerSupplier;
+        this.arquillianServiceConsumer = arquillianServiceConsumer;
+    }
 
     public static void addService(final ServiceTarget serviceTarget) {
-        ArquillianService service = new ArquillianService();
-        ServiceBuilder<?> builder = serviceTarget.addService(ArquillianService.SERVICE_NAME, service);
-        builder.addDependency(MBeanServerService.SERVICE_NAME, MBeanServer.class, service.injectedMBeanServer);
-        builder.setInitialMode(ServiceController.Mode.ACTIVE);
+        ServiceBuilder<?> builder = serviceTarget.addService(ArquillianService.SERVICE_NAME);
+        builder.setInstance(new ArquillianService(
+                builder.requires(MBeanServerService.SERVICE_NAME),
+                builder.provides(ArquillianService.SERVICE_NAME)
+        ));
         builder.install();
     }
 
-    public synchronized void start(StartContext context) throws StartException {
+    public synchronized void start(final StartContext context) throws StartException {
         log.debugf("Starting Arquillian Test Runner");
 
-        final MBeanServer mbeanServer = injectedMBeanServer.getValue();
+        arquillianServiceConsumer.accept(this);
+        final MBeanServer mbeanServer = mBeanServerSupplier.get();
         try {
             jmxTestRunner = new ExtendedJMXTestRunner();
             jmxTestRunner.registerMBean(mbeanServer);
@@ -85,30 +93,25 @@ public class ArquillianService implements Service<ArquillianService> {
             throw new StartException("Failed to start Arquillian Test Runner", t);
         }
 
-        listener = new ArquillianServiceListener(context.getChildTarget());
+        listener = new ArquillianListener(context.getChildTarget());
         context.getController().getServiceContainer().addListener(listener);
     }
 
-    public synchronized void stop(StopContext context) {
+    public synchronized void stop(final StopContext context) {
         log.debugf("Stopping Arquillian Test Runner");
+
         try {
             if (jmxTestRunner != null) {
-                jmxTestRunner.unregisterMBean(injectedMBeanServer.getValue());
+                jmxTestRunner.unregisterMBean(mBeanServerSupplier.get());
             }
         } catch (Exception ex) {
             log.errorf(ex, "Cannot stop Arquillian Test Runner");
-        } finally {
-            context.getController().getServiceContainer().removeListener(listener);
-
         }
+
+        context.getController().getServiceContainer().removeListener(listener);
     }
 
-    @Override
-    public synchronized ArquillianService getValue() throws IllegalStateException {
-        return this;
-    }
-
-    void registerArquillianConfig(ArquillianConfig arqConfig) {
+    void registerArquillianConfig(final ArquillianConfig arqConfig) {
         synchronized (deployedTests) {
             log.debugf("Register Arquillian config: %s", arqConfig.getServiceName());
             deployedTests.add(arqConfig);
@@ -116,16 +119,15 @@ public class ArquillianService implements Service<ArquillianService> {
         }
     }
 
-    void unregisterArquillianConfig(ArquillianConfig arqConfig) {
+    void unregisterArquillianConfig(final ArquillianConfig arqConfig) {
         synchronized (deployedTests) {
             log.debugf("Unregister Arquillian config: %s", arqConfig.getServiceName());
             deployedTests.remove(arqConfig);
         }
     }
 
-    private ArquillianConfig getArquillianConfig(final String className, long timeout) {
+    private ArquillianConfig getArquillianConfig(final String className, final long timeout) {
         synchronized (deployedTests) {
-
             log.debugf("Getting Arquillian config for: %s", className);
             for (ArquillianConfig arqConfig : deployedTests) {
                 for (String aux : arqConfig.getTestClasses()) {
@@ -150,7 +152,7 @@ public class ArquillianService implements Service<ArquillianService> {
         return getArquillianConfig(className, -1);
     }
 
-    class ExtendedJMXTestRunner extends JMXTestRunner {
+    private class ExtendedJMXTestRunner extends JMXTestRunner {
 
         ExtendedJMXTestRunner() {
             super(new ExtendedTestClassLoader());
@@ -165,7 +167,7 @@ public class ArquillianService implements Service<ArquillianService> {
             try {
                 ClassLoader runWithClassLoader = ClassLoader.getSystemClassLoader();
                 if (Boolean.parseBoolean(protocolProps.get(ExtendedJMXProtocolConfiguration.PROPERTY_ENABLE_TCCL))) {
-                    DeploymentUnit depUnit = config.getDeploymentUnit().getValue();
+                    DeploymentUnit depUnit = config.getDeploymentUnit();
                     Module module = depUnit.getAttachment(Attachments.MODULE);
                     if (module != null) {
                         runWithClassLoader = module.getClassLoader();
@@ -189,7 +191,7 @@ public class ArquillianService implements Service<ArquillianService> {
             ClassLoader runWithClassLoader = ClassLoader.getSystemClassLoader();
             if (Boolean.parseBoolean(protocolProps.get(ExtendedJMXProtocolConfiguration.PROPERTY_ENABLE_TCCL))) {
                 ArquillianConfig config = getArquillianConfig(testClass.getName(), 30000L);
-                DeploymentUnit depUnit = config.getDeploymentUnit().getValue();
+                DeploymentUnit depUnit = config.getDeploymentUnit();
                 Module module = depUnit.getAttachment(Attachments.MODULE);
                 if (module != null) {
                     runWithClassLoader = module.getClassLoader();
@@ -205,7 +207,7 @@ public class ArquillianService implements Service<ArquillianService> {
 
         private ContextManager setupContextManager(final ArquillianConfig config, final Map<String, Object> properties) {
             try {
-                final DeploymentUnit depUnit = config.getDeploymentUnit().getValue();
+                final DeploymentUnit depUnit = config.getDeploymentUnit();
                 final ContextManagerBuilder builder = new ContextManagerBuilder(config).addAll(depUnit);
                 ContextManager contextManager = builder.build();
                 contextManager.setup(properties);
@@ -229,47 +231,46 @@ public class ArquillianService implements Service<ArquillianService> {
         }
     }
 
-    private static class ArquillianServiceListener extends AbstractServiceListener<Object> {
-        private ServiceTarget serviceTarget;
+    // TODO: This listener based solution is still too hacky. Proper integration should be:
+    // TODO: 1) either parentController service will expose DU retrieval via public method
+    // TODO: 2) or this listener based solution will be replaced with WildFly Extension based solution
+    private static class ArquillianListener implements LifecycleListener {
+        private final ServiceTarget serviceTarget;
 
-        private ArquillianServiceListener(ServiceTarget serviceTarget) {
+        private ArquillianListener(final ServiceTarget serviceTarget) {
             this.serviceTarget = serviceTarget;
         }
 
         @Override
-        public void transition(ServiceController<? extends Object> serviceController, ServiceController.Transition transition) {
-            switch (transition.getAfter()) {
-                case UP: {
-                    ServiceName serviceName = serviceController.getName();
-                    String simpleName = serviceName.getSimpleName();
-                    if (JBOSS_DEPLOYMENT.isParentOf(serviceName) && simpleName.equals(Phase.INSTALL.toString())) {
-                        ServiceName parentName = serviceName.getParent();
-                        ServiceController<?> parentController = serviceController.getServiceContainer().getService(parentName);
-                        DeploymentUnit depUnit = (DeploymentUnit) parentController.getValue();
-                        ArquillianConfig arqConfig = ArquillianConfigBuilder.processDeployment(depUnit);
-                        if (arqConfig != null) {
-                            log.infof("Arquillian deployment detected: %s", arqConfig);
-                            ServiceBuilder<ArquillianConfig> builder = serviceTarget.addService(arqConfig.getServiceName(), arqConfig)
-                                    .addDependency(ArquillianService.SERVICE_NAME, ArquillianService.class, arqConfig.getArquillianService())
-                                    .addDependency(parentController.getName(), DeploymentUnit.class, arqConfig.getDeploymentUnit());
-                            arqConfig.addDeps(builder, serviceController);
-                            builder.setInitialMode(ServiceController.Mode.ACTIVE);
-                            builder.install();
-                        }
-                    }
+        public void handleEvent(final ServiceController<?> controller, final LifecycleEvent event) {
+            final ServiceName serviceName = controller.getName();
+            if (!JBOSS_DEPLOYMENT.isParentOf(serviceName)) return;
+            final String simpleName = serviceName.getSimpleName();
+
+            if (event == LifecycleEvent.DOWN && simpleName.equals(Phase.DEPENDENCIES.toString())) {
+                // DOWN event can happen multiple times during service lifecycle so this is handled
+                // in ArquillianConfigBuilder.handleParseAnnotations(depUnit) method below.
+                ServiceName parentName = serviceName.getParent();
+                ServiceController<?> parentController = controller.getServiceContainer().getService(parentName);
+                DeploymentUnit depUnit = (DeploymentUnit) parentController.getValue(); // TODO: eliminate deprecated API usage
+                ArquillianConfigBuilder.handleParseAnnotations(depUnit);
+            } else if (event == LifecycleEvent.UP && simpleName.equals(Phase.INSTALL.toString())) {
+                ServiceName parentName = serviceName.getParent();
+                ServiceController<?> parentController = controller.getServiceContainer().getService(parentName);
+                DeploymentUnit depUnit = (DeploymentUnit) parentController.getValue(); // TODO: eliminate deprecated API usage
+                Set<String> testClasses = ArquillianConfigBuilder.getClasses(depUnit);
+                if (testClasses != null) {
+                    String duName = ArquillianConfigBuilder.getName(depUnit);
+                    ServiceName arqConfigSN = ServiceName.JBOSS.append("arquillian", "config", duName);
+                    ServiceBuilder<ArquillianConfig> builder = (ServiceBuilder<ArquillianConfig>) serviceTarget.addService(arqConfigSN);
+                    ArquillianConfig arqConfig = new ArquillianConfig(arqConfigSN, testClasses,
+                            builder.requires(ArquillianService.SERVICE_NAME),
+                            builder.requires(parentController.getName()));
+                    arqConfig.addDeps(builder, controller);
+                    builder.setInstance(arqConfig);
+                    builder.install();
+                    log.infof("Arquillian deployment detected: %s", arqConfig);
                 }
-                break;
-                case STARTING: {
-                    ServiceName serviceName = serviceController.getName();
-                    String simpleName = serviceName.getSimpleName();
-                    if(JBOSS_DEPLOYMENT.isParentOf(serviceName) && simpleName.equals(Phase.DEPENDENCIES.toString())) {
-                        ServiceName parentName = serviceName.getParent();
-                        ServiceController<?> parentController = serviceController.getServiceContainer().getService(parentName);
-                        DeploymentUnit depUnit = (DeploymentUnit) parentController.getValue();
-                        ArquillianConfigBuilder.handleParseAnnotations(depUnit);
-                    }
-                }
-                break;
             }
         }
     }

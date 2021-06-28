@@ -43,7 +43,7 @@
         <version.org.wildfly.full>24.0.0.Final</version.org.wildfly.full>
         <version.junit>4.13.1</version.junit>
         <version.com.squareup.okhttp3.okhttp>4.9.1</version.com.squareup.okhttp3.okhttp>
-        <version.org.junit>5.7.0</version.org.junit>
+        <version.org.junit>5.7.2</version.org.junit>
         <version.junit>4.12</version.junit>
         <version.org.jboss.arquillian.core>1.7.0.Alpha10</version.org.jboss.arquillian.core>
         <version.org.jboss.galleon>4.2.8.Final</version.org.jboss.galleon>

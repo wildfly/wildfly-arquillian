@@ -45,7 +45,7 @@
         <version.com.squareup.okhttp3.okhttp>4.9.1</version.com.squareup.okhttp3.okhttp>
         <version.org.junit>5.7.0</version.org.junit>
         <version.junit>4.12</version.junit>
-        <version.org.jboss.arquillian.core>1.7.0.Alpha9</version.org.jboss.arquillian.core>
+        <version.org.jboss.arquillian.core>1.7.0.Alpha10</version.org.jboss.arquillian.core>
         <version.org.jboss.galleon>4.2.8.Final</version.org.jboss.galleon>
         <version.org.wildfly.common.wildfly-common>1.5.4.Final</version.org.wildfly.common.wildfly-common>
         <version.org.wildfly.plugins.wildfly-maven-plugin>2.0.2.Final</version.org.wildfly.plugins.wildfly-maven-plugin>

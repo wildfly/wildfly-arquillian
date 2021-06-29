@@ -43,7 +43,7 @@ public class ManagedAsClientWebArchiveServletTestCase {
     private static final String CONTEXT_NAME = "foo-v1.2";
 
     @Deployment(testable = false)
-    @OverProtocol("Servlet 3.0")
+    @OverProtocol("Servlet 5.0")
     public static WebArchive createDeployment() throws Exception {
         return ShrinkWrap.create(WebArchive.class, CONTEXT_NAME + ".war").addClass(HelloWorldServlet.class);
     }

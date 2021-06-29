@@ -54,10 +54,10 @@
         <version.org.jboss.shrinkwrap.descriptors>2.0.0</version.org.jboss.shrinkwrap.descriptors>
         <version.org.jboss.ejb-client>4.0.9.Final</version.org.jboss.ejb-client>
         <version.org.testng>6.13.1</version.org.testng>
-        <version.jakarta.ejb>3.2.6</version.jakarta.ejb>
-        <version.jakarta.enterprise>2.0.2</version.jakarta.enterprise>
-        <version.jakarta.inject>1.0</version.jakarta.inject>
-        <version.jakarta.servlet>4.0.4</version.jakarta.servlet>
+        <version.jakarta.ejb>4.0.0</version.jakarta.ejb>
+        <version.jakarta.enterprise>3.0.0</version.jakarta.enterprise>
+        <version.jakarta.inject>2.0.0</version.jakarta.inject>
+        <version.jakarta.servlet>5.0.0</version.jakarta.servlet>
         <version.org.wildfly.checkstyle-config>1.0.8.Final</version.org.wildfly.checkstyle-config>
 
         <!-- Galleon -->
@@ -160,14 +160,15 @@
                                 <log-time>${galleon.log.time}</log-time>
                                 <offline>${galleon.offline}</offline>
                                 <plugin-options>
-                                    <jboss-maven-dist/>
+                                    <!-- TODO (jrp) re-enable when WildFly is Jakarta EE 9 -->
+                                    <!-- <jboss-maven-dist/> -->
                                     <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                                     <optional-packages>passive+</optional-packages>`
                                 </plugin-options>
                                 <feature-packs>
                                     <feature-pack>
                                         <groupId>org.wildfly</groupId>
-                                        <artifactId>wildfly-galleon-pack</artifactId>
+                                        <artifactId>wildfly-preview-feature-pack</artifactId>
                                         <version>${version.org.wildfly.full}</version>
                                         <excluded-packages>
                                             <name>product.conf</name>
@@ -408,7 +409,7 @@
 
             <dependency>
                 <groupId>org.jboss.arquillian.protocol</groupId>
-                <artifactId>arquillian-protocol-servlet</artifactId>
+                <artifactId>arquillian-protocol-servlet-jakarta</artifactId>
                 <version>${version.org.jboss.arquillian.core}</version>
             </dependency>
 
@@ -426,13 +427,13 @@
 
             <dependency>
                 <groupId>org.jboss.arquillian.testenricher</groupId>
-                <artifactId>arquillian-testenricher-cdi</artifactId>
+                <artifactId>arquillian-testenricher-cdi-jakarta</artifactId>
                 <version>${version.org.jboss.arquillian.core}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.jboss.arquillian.testenricher</groupId>
-                <artifactId>arquillian-testenricher-ejb</artifactId>
+                <artifactId>arquillian-testenricher-ejb-jakarta</artifactId>
                 <version>${version.org.jboss.arquillian.core}</version>
             </dependency>
 
@@ -444,7 +445,7 @@
 
             <dependency>
                 <groupId>org.jboss.arquillian.testenricher</groupId>
-                <artifactId>arquillian-testenricher-resource</artifactId>
+                <artifactId>arquillian-testenricher-resource-jakarta</artifactId>
                 <version>${version.org.jboss.arquillian.core}</version>
             </dependency>
 

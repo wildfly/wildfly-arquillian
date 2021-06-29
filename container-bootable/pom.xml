@@ -88,7 +88,7 @@
         </dependency>
         <dependency>
             <groupId>org.jboss.arquillian.protocol</groupId>
-            <artifactId>arquillian-protocol-servlet</artifactId>
+            <artifactId>arquillian-protocol-servlet-jakarta</artifactId>
             <scope>test</scope>
         </dependency>
 
@@ -115,12 +115,15 @@
             <plugin>
                 <groupId>org.wildfly.plugins</groupId>
                 <artifactId>wildfly-jar-maven-plugin</artifactId>   
-                <version>2.0.0.Beta1</version>
+                <version>5.0.1.Final</version>
                 <configuration>
                     <skip>${skipTests}</skip>
-                    <feature-pack-location>wildfly@maven(org.jboss.universe:community-universe)#${version.org.wildfly.full}</feature-pack-location>
+                    <feature-pack-location>wildfly-preview@maven(org.jboss.universe:community-universe)#${version.org.wildfly.full}</feature-pack-location>
                     <hollowJar>true</hollowJar>
                     <outputFileName>test-wildfly.jar</outputFileName>
+                    <plugin-options>
+                        <jboss-jakarta-transform-artifacts>true</jboss-jakarta-transform-artifacts>
+                    </plugin-options>
                 </configuration>
                 <executions>
                     <execution>

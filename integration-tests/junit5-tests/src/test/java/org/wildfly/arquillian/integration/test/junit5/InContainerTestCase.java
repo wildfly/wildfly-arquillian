@@ -20,7 +20,7 @@ import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.HashMap;
 import java.util.Map;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OverProtocol;
@@ -71,7 +71,7 @@ public class InContainerTestCase {
     }
 
     @Test
-    @OverProtocol("Servlet 3.0")
+    @OverProtocol("Servlet 5.0")
     public void testServletProtocol() {
         Assertions.assertNotNull(greeter);
         Assertions.assertEquals("Hello Servlet!", greeter.greet("Servlet"));

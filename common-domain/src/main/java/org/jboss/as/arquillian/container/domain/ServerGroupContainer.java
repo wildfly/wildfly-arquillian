@@ -93,7 +93,7 @@ public class ServerGroupContainer implements DeployableContainer<EmptyConfigurat
 
     @Override
     public ProtocolDescription getDefaultProtocol() {
-        return new ProtocolDescription("Servlet 3.0");
+        return new ProtocolDescription("Servlet 5.0");
     }
 
     @Override

@@ -15,7 +15,7 @@
  */
 package org.jboss.as.arquillian.container.managed;
 
-import javax.ejb.Remote;
+import jakarta.ejb.Remote;
 
 /**
  * EJB Business Interface

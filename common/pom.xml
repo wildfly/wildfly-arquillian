@@ -35,11 +35,11 @@
     <dependencies>
         <dependency>
             <groupId>org.jboss.arquillian.testenricher</groupId>
-            <artifactId>arquillian-testenricher-cdi</artifactId>
+            <artifactId>arquillian-testenricher-cdi-jakarta</artifactId>
         </dependency>
         <dependency>
             <groupId>org.jboss.arquillian.testenricher</groupId>
-            <artifactId>arquillian-testenricher-ejb</artifactId>
+            <artifactId>arquillian-testenricher-ejb-jakarta</artifactId>
         </dependency>
         <dependency>
             <groupId>org.jboss.arquillian.testenricher</groupId>
@@ -47,7 +47,7 @@
         </dependency>
         <dependency>
             <groupId>org.jboss.arquillian.testenricher</groupId>
-            <artifactId>arquillian-testenricher-resource</artifactId>
+            <artifactId>arquillian-testenricher-resource-jakarta</artifactId>
         </dependency>
         <dependency>
           <groupId>org.jboss.arquillian.container</groupId>
@@ -55,7 +55,7 @@
         </dependency>
         <dependency>
           <groupId>org.jboss.arquillian.protocol</groupId>
-          <artifactId>arquillian-protocol-servlet</artifactId>
+          <artifactId>arquillian-protocol-servlet-jakarta</artifactId>
         </dependency>
         <dependency>
             <groupId>org.wildfly.arquillian</groupId>

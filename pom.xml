@@ -100,8 +100,6 @@
                 <plugin>
                     <artifactId>maven-javadoc-plugin</artifactId>
                     <configuration>
-                        <!-- Using this doesn't require the JAVA_HOME to be set -->
-                        <javadocExecutable>${java.home}${file.separator}bin</javadocExecutable>
                         <!-- Set the source to 8 as that is the target, but allows this to be compiled with new versions
                              of Java.
                          -->

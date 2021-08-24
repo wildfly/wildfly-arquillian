@@ -5,7 +5,7 @@ name: WildFly Test Build
 on:
   push:
     branches:
-      - 'main'
+      - '4.x'
   schedule:
     - cron: '0 0 * * *' # Every day at 00:00 UTC
 
@@ -46,7 +46,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest]
-        java: ['1.8', '11']
+        java: ['8', '11', '16']
 
     steps:
       - uses: actions/checkout@v2
@@ -64,6 +64,7 @@ jobs:
         uses: actions/setup-java@v1
         with:
           java-version: ${{ matrix.java }}
+          distribution: 'adopt'
       - name: Build with Maven Java ${{ matrix.java }}
         run: mvn clean verify '-Dorg.wildfly.logging.skipLogManagerCheck=true' '-Dversion.org.wildfly.full=${{needs.wildfly-build.outputs.wildfly-version}}' '-Dversion.org.wildfly=${{needs.wildfly-build.outputs.wildfly-version}}'
       - name: Upload surefire reports

@@ -19,7 +19,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest ]
-        java: ['1.8', '11']
+        java: ['8', '11']
 
     steps:
       - uses: actions/checkout@v2
@@ -33,6 +33,7 @@ jobs:
         uses: actions/setup-java@v1
         with:
           java-version: ${{ matrix.java }}
+          distribution: 'adopt'
       - name: Build with Maven Java ${{ matrix.java }}
         run: mvn clean verify '-Dorg.wildfly.logging.skipLogManagerCheck=true'
       - uses: actions/upload-artifact@v2

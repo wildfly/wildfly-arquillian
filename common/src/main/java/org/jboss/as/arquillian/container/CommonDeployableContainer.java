@@ -36,9 +36,9 @@ import org.jboss.arquillian.core.api.annotation.ApplicationScoped;
 import org.jboss.arquillian.core.api.annotation.Inject;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.ModelControllerClientConfiguration;
+import org.jboss.as.controller.client.helpers.ClientConstants;
 import org.jboss.as.controller.client.helpers.DelegatingModelControllerClient;
 import org.jboss.as.controller.client.helpers.Operations;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.logging.Logger;
@@ -54,6 +54,7 @@ import org.jboss.shrinkwrap.descriptor.api.Descriptor;
 public abstract class CommonDeployableContainer<T extends CommonContainerConfiguration> implements DeployableContainer<T> {
 
     private static final String JBOSS_URL_PKG_PREFIX = "org.jboss.ejb.client.naming";
+    private static final String READ_OPERATION_DESCRIPTION_OPERATION = "read-operation-description";
 
     private T containerConfig;
 
@@ -231,14 +232,14 @@ public abstract class CommonDeployableContainer<T extends CommonContainerConfigu
         final ModelControllerClient client = getModelControllerClient();
         final ModelNode op;
         if (address == null) {
-            op = Operations.createOperation(ModelDescriptionConstants.READ_OPERATION_DESCRIPTION_OPERATION);
+            op = Operations.createOperation(READ_OPERATION_DESCRIPTION_OPERATION);
         } else {
-            op = Operations.createOperation(ModelDescriptionConstants.READ_OPERATION_DESCRIPTION_OPERATION, address);
+            op = Operations.createOperation(READ_OPERATION_DESCRIPTION_OPERATION, address);
         }
-        op.get(ModelDescriptionConstants.NAME).set(operationName);
+        op.get(ClientConstants.NAME).set(operationName);
         final ModelNode result = client.execute(op);
         if (Operations.isSuccessfulOutcome(result)) {
-            final ModelNode params = Operations.readResult(result).get(ModelDescriptionConstants.REQUEST_PROPERTIES);
+            final ModelNode params = Operations.readResult(result).get("request-properties");
             return params.keys().contains(attributeName);
         }
         final String msg;

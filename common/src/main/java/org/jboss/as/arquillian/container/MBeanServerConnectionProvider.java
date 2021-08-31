@@ -19,14 +19,12 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-
 import javax.management.MBeanServerConnection;
 import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 
 import org.jboss.logging.Logger;
-import org.xnio.IoUtils;
 
 /**
  * A provider for the JSR160 connection.
@@ -85,6 +83,9 @@ public final class MBeanServerConnectionProvider implements Closeable {
 
     @Override
     public void close() throws IOException {
-        IoUtils.safeClose(jmxConnector);
+        if (jmxConnector != null) try {
+            jmxConnector.close();
+        } catch (Throwable ignore) {
+        }
     }
 }

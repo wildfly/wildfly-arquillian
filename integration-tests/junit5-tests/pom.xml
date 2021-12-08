@@ -21,7 +21,7 @@
     <parent>
         <artifactId>elytron</artifactId>
         <groupId>org.wildfly.arquillian</groupId>
-        <version>5.0.0.Alpha2</version>
+        <version>5.0.0-SNAPSHOT</version>
         <relativePath>../elytron/pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>

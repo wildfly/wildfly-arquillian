@@ -115,7 +115,7 @@
             <plugin>
                 <groupId>org.wildfly.plugins</groupId>
                 <artifactId>wildfly-jar-maven-plugin</artifactId>   
-                <version>5.0.1.Final</version>
+                <version>${version.org.wildfly.plugins.wildfly-jar-maven-plugin}</version>
                 <configuration>
                     <skip>${skipTests}</skip>
                     <feature-pack-location>wildfly-preview@maven(org.jboss.universe:community-universe)#${version.org.wildfly.full}</feature-pack-location>

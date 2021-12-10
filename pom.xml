@@ -57,6 +57,7 @@
         <version.org.jboss.remotingjmx.remoting-jmx>3.0.4.Final</version.org.jboss.remotingjmx.remoting-jmx>
         <version.org.jboss.xnio>3.8.4.Final</version.org.jboss.xnio>
         <version.org.wildfly.common.wildfly-common>1.5.4.Final</version.org.wildfly.common.wildfly-common>
+        <version.org.wildfly.plugins.wildfly-jar-maven-plugin>6.1.1.Final</version.org.wildfly.plugins.wildfly-jar-maven-plugin>
         <version.org.wildfly.plugins.wildfly-maven-plugin>2.0.2.Final</version.org.wildfly.plugins.wildfly-maven-plugin>
         <version.org.wildfly.security.wildfly-elytron>1.16.1.Final</version.org.wildfly.security.wildfly-elytron>
 

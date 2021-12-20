@@ -40,7 +40,7 @@
 
     <properties>
         <version.org.wildfly.core>16.0.1.Final</version.org.wildfly.core>
-        <version.org.wildfly.full>24.0.0.Final</version.org.wildfly.full>
+        <version.org.wildfly.full>26.0.0.Final</version.org.wildfly.full>
         <version.junit>4.13.1</version.junit>
         <version.com.squareup.okhttp3.okhttp>4.9.1</version.com.squareup.okhttp3.okhttp>
         <!-- The version used in OkHttp3, this is required because OkHttp3 has dependency and transitive dependency on this -->
@@ -724,11 +724,6 @@
         <dependency>
             <groupId>org.jboss.arquillian.core</groupId>
             <artifactId>arquillian-core-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <scope>test</scope>
         </dependency>
     </dependencies>
 

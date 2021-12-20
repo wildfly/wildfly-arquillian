@@ -18,7 +18,6 @@ package org.jboss.as.arquillian.container.domain.remote.test;
 import org.jboss.arquillian.container.test.api.ContainerController;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
-import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.junit.InSequence;
@@ -38,34 +37,29 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 public class RemoteDomainTestCase {
 
-    @Deployment(name = "dep1") @TargetsContainer("main-server-group")
+    @ArquillianResource
+    ContainerController controller;
+
+    @Deployment(name = "dep1")
+    @TargetsContainer("main-server-group")
     public static JavaArchive create1() {
         return ShrinkWrap.create(JavaArchive.class);
     }
 
-    @ArquillianResource
-    ContainerController controller;
-
-    @Test @InSequence(1) @OperateOnDeployment("dep1") @TargetsContainer("master:server-one")
+    @Test
+    @InSequence(1)
+    @OperateOnDeployment("dep1")
+    @TargetsContainer("master:server-one")
     public void shouldRunInContainer1() throws Exception {
         Assert.assertTrue(controller.isStarted("master:server-one"));
         System.out.println("in..container");
     }
 
-    @Test @InSequence(2) @OperateOnDeployment("dep1") @TargetsContainer("master:server-two")
+    @Test
+    @InSequence(2)
+    @OperateOnDeployment("dep1")
+    @TargetsContainer("master:server-two")
     public void shouldRunInContainer2() throws Exception {
         Assert.assertTrue(controller.isStarted("master:server-two"));
-    }
-
-    @Test @InSequence(3) @RunAsClient
-    public void shouldBeAbleToStop() throws Exception {
-        controller.stop("master:server-two");
-        Assert.assertFalse(controller.isStarted("master:server-two"));
-    }
-
-    @Test @InSequence(4) @OperateOnDeployment("dep1") @TargetsContainer("master:server-one")
-    public void shouldStartContainer() throws Exception {
-        Assert.assertFalse(controller.isStarted("master:server-two"));
-        controller.start("master:server-two");
     }
 }

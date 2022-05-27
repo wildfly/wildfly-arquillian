@@ -65,7 +65,7 @@
 
         <!-- keep this in sync with version that is used in arquillian -->
         <version.org.jboss.shrinkwrap.descriptors>2.0.0</version.org.jboss.shrinkwrap.descriptors>
-        <version.org.jboss.ejb-client>4.0.42.Final</version.org.jboss.ejb-client>
+        <version.org.jboss.ejb-client>4.0.44.Final</version.org.jboss.ejb-client>
         <version.org.testng>6.13.1</version.org.testng>
         <version.jakarta.ejb>3.2.6</version.jakarta.ejb>
         <version.jakarta.enterprise>2.0.2</version.jakarta.enterprise>
@@ -342,6 +342,10 @@
                     <exclusion>
                         <groupId>org.wildfly.client</groupId>
                         <artifactId>wildfly-client-config</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.wildfly.security</groupId>
+                        <artifactId>*</artifactId>
                     </exclusion>
                 </exclusions>
                 <scope>test</scope>

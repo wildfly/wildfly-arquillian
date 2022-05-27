@@ -69,8 +69,7 @@ public class ClientTestCase {
     @Deployment
     public static WebArchive create() {
         return ShrinkWrap.create(WebArchive.class)
-                .addClass(GreeterServlet.class)
-                .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
+                .addClass(GreeterServlet.class);
     }
 
     @Test

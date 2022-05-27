@@ -16,9 +16,12 @@
 
 package org.wildfly.arquillian.integration.test.junit5;
 
+import jakarta.enterprise.context.ApplicationScoped;
+
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
+@ApplicationScoped
 public class Greeter {
 
     public String greet(String name) {

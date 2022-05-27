@@ -46,7 +46,6 @@
         <!-- The version used in OkHttp3, this is required because OkHttp3 has dependency and transitive dependency on this -->
         <version.org.jetbrains.kotlin.kotlin-stdlib>1.4.10</version.org.jetbrains.kotlin.kotlin-stdlib>
         <version.org.junit>5.7.2</version.org.junit>
-        <version.junit>4.12</version.junit>
         <version.org.jboss.arquillian.core>1.7.0.Alpha10</version.org.jboss.arquillian.core>
         <version.org.jboss.galleon>4.2.8.Final</version.org.jboss.galleon>
         <version.org.jboss.jandex>2.2.3.Final</version.org.jboss.jandex>

@@ -39,33 +39,32 @@
     <name>WildFly: Arquillian</name>
 
     <properties>
-        <version.org.wildfly.core>18.0.1.Final</version.org.wildfly.core>
-        <version.org.wildfly.full>26.0.0.Final</version.org.wildfly.full>
+        <version.org.wildfly.core>18.1.1.Final</version.org.wildfly.core>
+        <version.org.wildfly.full>26.1.1.Final</version.org.wildfly.full>
         <version.junit>4.13.1</version.junit>
         <version.com.squareup.okhttp3.okhttp>4.9.1</version.com.squareup.okhttp3.okhttp>
         <!-- The version used in OkHttp3, this is required because OkHttp3 has dependency and transitive dependency on this -->
         <version.org.jetbrains.kotlin.kotlin-stdlib>1.4.10</version.org.jetbrains.kotlin.kotlin-stdlib>
         <version.org.junit>5.7.2</version.org.junit>
-        <version.junit>4.12</version.junit>
         <version.org.jboss.arquillian.core>1.7.0.Alpha10</version.org.jboss.arquillian.core>
         <version.org.jboss.galleon>4.2.8.Final</version.org.jboss.galleon>
         <version.org.jboss.jandex>2.2.3.Final</version.org.jboss.jandex>
         <version.org.jboss.logging.jboss-logging>3.4.2.Final</version.org.jboss.logging.jboss-logging>
         <version.org.jboss.marshalling.jboss-marshalling>2.0.12.Final</version.org.jboss.marshalling.jboss-marshalling>
         <version.org.jboss.msc.jboss-msc>1.4.13.Final</version.org.jboss.msc.jboss-msc>
-        <version.org.jboss.remoting.jboss-remoting>5.0.23.Final</version.org.jboss.remoting.jboss-remoting>
+        <version.org.jboss.remoting.jboss-remoting>5.0.24.Final</version.org.jboss.remoting.jboss-remoting>
         <version.org.jboss.remotingjmx.remoting-jmx>3.0.4.Final</version.org.jboss.remotingjmx.remoting-jmx>
-        <version.org.jboss.xnio>3.8.4.Final</version.org.jboss.xnio>
+        <version.org.jboss.xnio>3.8.7.Final</version.org.jboss.xnio>
         <!-- Required by Elytron dependencies -->
         <version.org.slf4j>1.7.32</version.org.slf4j>
         <version.org.wildfly.common.wildfly-common>1.5.4.Final</version.org.wildfly.common.wildfly-common>
         <version.org.wildfly.plugins.wildfly-jar-maven-plugin>6.1.1.Final</version.org.wildfly.plugins.wildfly-jar-maven-plugin>
-        <version.org.wildfly.plugins.wildfly-maven-plugin>2.1.0.Final</version.org.wildfly.plugins.wildfly-maven-plugin>
-        <version.org.wildfly.security.wildfly-elytron>1.18.1.Final</version.org.wildfly.security.wildfly-elytron>
+        <version.org.wildfly.plugins.wildfly-maven-plugin>3.0.0.Final</version.org.wildfly.plugins.wildfly-maven-plugin>
+        <version.org.wildfly.security.wildfly-elytron>1.19.0.Final</version.org.wildfly.security.wildfly-elytron>
 
         <!-- keep this in sync with version that is used in arquillian -->
         <version.org.jboss.shrinkwrap.descriptors>2.0.0</version.org.jboss.shrinkwrap.descriptors>
-        <version.org.jboss.ejb-client>4.0.42.Final</version.org.jboss.ejb-client>
+        <version.org.jboss.ejb-client>4.0.44.Final</version.org.jboss.ejb-client>
         <version.org.testng>6.13.1</version.org.testng>
         <version.jakarta.ejb>4.0.0</version.jakarta.ejb>
         <version.jakarta.enterprise>3.0.0</version.jakarta.enterprise>
@@ -343,6 +342,10 @@
                     <exclusion>
                         <groupId>org.wildfly.client</groupId>
                         <artifactId>wildfly-client-config</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.wildfly.security</groupId>
+                        <artifactId>*</artifactId>
                     </exclusion>
                 </exclusions>
                 <scope>test</scope>
@@ -705,7 +708,7 @@
                 <version>${version.org.wildfly.plugins.wildfly-maven-plugin}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>org.wildfly.core</groupId>
+                        <groupId>*</groupId>
                         <artifactId>*</artifactId>
                     </exclusion>
                 </exclusions>

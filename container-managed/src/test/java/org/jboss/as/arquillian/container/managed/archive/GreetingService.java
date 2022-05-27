@@ -15,12 +15,15 @@
  */
 package org.jboss.as.arquillian.container.managed.archive;
 
+import jakarta.enterprise.context.ApplicationScoped;
+
 /**
  * GreetingService
  *
  * @author <a href="mailto:aslak@redhat.com">Aslak Knutsen</a>
  * @version $Revision: $
  */
+@ApplicationScoped
 public class GreetingService {
     public String greet(String name) {
         return "Hello " + name + "!";

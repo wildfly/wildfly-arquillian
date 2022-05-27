@@ -86,6 +86,7 @@
 
         <maven.test.skip>false</maven.test.skip>
         <skipTests>${maven.test.skip}</skipTests>
+        <galleon.skip>${skipTests}</galleon.skip>
 
         <!-- Build minimums -->
         <maven.min.version>3.6.0</maven.min.version>
@@ -165,7 +166,7 @@
                             </goals>
                             <configuration>
                                 <install-dir>${jboss.home}</install-dir>
-                                <skip>${skipTests}</skip>
+                                <skip>${galleon.skip}</skip>
                                 <record-state>false</record-state>
                                 <log-time>${galleon.log.time}</log-time>
                                 <offline>${galleon.offline}</offline>

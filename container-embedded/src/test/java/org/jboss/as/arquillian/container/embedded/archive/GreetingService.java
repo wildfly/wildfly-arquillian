@@ -15,11 +15,14 @@
  */
 package org.jboss.as.arquillian.container.embedded.archive;
 
+import jakarta.enterprise.context.ApplicationScoped;
+
 /**
  * Test CDI Bean
  *
  * @author <a href="mailto:alr@jboss.org">Andrew Lee Rubinger</a>
  */
+@ApplicationScoped
 public class GreetingService {
 
     public static final String GREETING_PREPENDED = "Hello, ";

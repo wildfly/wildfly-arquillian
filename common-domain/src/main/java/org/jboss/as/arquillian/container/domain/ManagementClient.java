@@ -190,6 +190,16 @@ public class ManagementClient {
     }
 
     /**
+     * Returns the value of the {@code local-host-name} attribute.
+     *
+     * @return the local host name
+     */
+    public String getLocalHostName() {
+        lazyLoadRootNode();
+        return rootNode.get("local-host-name").asString();
+    }
+
+    /**
      * Starts the servers in the server group.
      *
      * @param groupName the server group to start the servers for

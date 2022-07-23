@@ -16,10 +16,6 @@
 
 package org.jboss.as.arquillian.container.domain.managed.test;
 
-import java.io.IOException;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
@@ -27,11 +23,6 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.domain.Domain;
 import org.jboss.as.arquillian.container.domain.ManagementClient;
-import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.as.controller.client.helpers.ClientConstants;
-import org.jboss.as.controller.client.helpers.Operations;
-import org.jboss.as.controller.client.helpers.Operations.CompositeOperationBuilder;
-import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.After;
@@ -113,6 +104,6 @@ public class DomainManualModeInjectionTestCase {
 
     private static void testClient(final ManagementClient client) {
         Assert.assertTrue("The primary container should have been started", client.isDomainInRunningState());
-        Assert.assertTrue(client.isServerStarted(new Domain.Server("server-one", "master", "main-server-group", true)));
+        Assert.assertTrue(client.isServerStarted(new Domain.Server("server-one", client.getLocalHostName(), "main-server-group", true)));
     }
 }

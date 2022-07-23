@@ -22,6 +22,7 @@
     <container qualifier="jboss" default="true">
         <configuration>
             <property name="jbossHome">${jboss.home}</property>
+            <property name="containerNameMap">primary:server-one=master:server-one,primary:server-two=master:server-two</property>
         </configuration>
     </container>
 </arquillian>

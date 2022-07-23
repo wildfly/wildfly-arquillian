@@ -95,14 +95,14 @@ public abstract class AbstractDomainManualModeTestCase {
 
     @Test
     public void testServerControl() throws Exception {
-        final String hostName = "master";
+        final String hostName = client.getLocalHostName();
         final String serverName = "server-two";
         controller.stopServer(PRIMARY_CONTAINER, hostName, serverName);
-        Assert.assertFalse("server-two on host master should not be started", controller.isServerStarted(PRIMARY_CONTAINER, hostName, serverName));
+        Assert.assertFalse("server-two on host " + hostName + " should not be started", controller.isServerStarted(PRIMARY_CONTAINER, hostName, serverName));
 
         // Attempt to start server-two
         controller.startServer(PRIMARY_CONTAINER, hostName, serverName);
-        Assert.assertTrue("server-two should not be started on host master, but was not", controller.isServerStarted(PRIMARY_CONTAINER, hostName, serverName));
+        Assert.assertTrue("server-two should not be started on host " + hostName + ", but was not", controller.isServerStarted(PRIMARY_CONTAINER, hostName, serverName));
     }
 
     ModelNode executeForSuccess(final ModelNode op) throws IOException {

@@ -46,7 +46,7 @@ public class DomainManualModeClientTestCase extends AbstractDomainManualModeTest
     public void testServerGroupControl() throws Exception {
         final String serverGroupName = "main-server-group";
         controller.stopServers(PRIMARY_CONTAINER, serverGroupName);
-        final String hostName = "master";
+        final String hostName = client.getLocalHostName();
 
         // The servers should all be stopped
         for (String serverName : getServerGroupServers(serverGroupName)) {
@@ -97,15 +97,15 @@ public class DomainManualModeClientTestCase extends AbstractDomainManualModeTest
         // Start the wildfly container
         try {
             controller.start(SECONDARY_CONTAINER);
-            final String hostName = "master";
+            final String hostName = client.getLocalHostName();
             final String serverName = "server-one";
 
             controller.stopServer(SECONDARY_CONTAINER, hostName, serverName);
-            Assert.assertFalse("server-one on host master should not be started", controller.isServerStarted(SECONDARY_CONTAINER, hostName, serverName));
+            Assert.assertFalse("server-one on host " + hostName + " should not be started", controller.isServerStarted(SECONDARY_CONTAINER, hostName, serverName));
 
             // Attempt to start server-one
             controller.startServer(SECONDARY_CONTAINER, hostName, serverName);
-            Assert.assertTrue("server-one should not be started on host master, but was not", controller.isServerStarted(SECONDARY_CONTAINER, hostName, serverName));
+            Assert.assertTrue("server-one should not be started on host " + hostName + ", but was not", controller.isServerStarted(SECONDARY_CONTAINER, hostName, serverName));
         } finally {
             controller.stop(SECONDARY_CONTAINER);
         }

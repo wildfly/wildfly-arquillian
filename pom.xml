@@ -424,6 +424,11 @@
             </dependency>
             <dependency>
                 <groupId>org.jboss.arquillian.protocol</groupId>
+                <artifactId>arquillian-protocol-rest-jakarta</artifactId>
+                <version>${version.org.jboss.arquillian.core}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.arquillian.protocol</groupId>
                 <artifactId>arquillian-protocol-servlet-jakarta</artifactId>
                 <version>${version.org.jboss.arquillian.core}</version>
             </dependency>

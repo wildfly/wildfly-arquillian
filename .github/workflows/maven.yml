@@ -28,7 +28,7 @@ jobs:
         with:
           java-version: ${{ matrix.java }}
           distribution: 'adopt'
-          cach: 'maven'
+          cache: 'maven'
       - name: Build with Maven Java ${{ matrix.java }}
         run: mvn clean verify '-Dorg.wildfly.logging.skipLogManagerCheck=true'
       - uses: actions/upload-artifact@v2

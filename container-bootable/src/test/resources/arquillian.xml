@@ -23,7 +23,7 @@
             <property name="installDir">${install.dir}</property>
             <property name="jarFile">${bootable.jar}</property>
             <property name="jbossArguments">-Dorg.jboss.as.arquillian.container.managed.prop1=prop1 -Dorg.jboss.as.arquillian.container.managed.prop2=prop2</property>
-            <property name="javaVmArguments">${jvm.args}</property>
+            <property name="javaVmArguments">${debug.vm.args} ${jvm.args}</property>
             
             <!--
                  Please leave this as false. It is a good, early catch for the reviewers to make

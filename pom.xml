@@ -79,14 +79,18 @@
         <jboss.home>${project.build.directory}${file.separator}wildfly</jboss.home>
 
         <!-- Other properties -->
-        <maven.test.redirectTestOutputToFile>true</maven.test.redirectTestOutputToFile>
-        <default.jvm.args>-Dmaven.repo.local=${settings.localRepository}</default.jvm.args>
-        <jvm.args>${default.jvm.args}</jvm.args>
         <wildfly.standalone.config>standalone.xml</wildfly.standalone.config>
 
         <maven.test.skip>false</maven.test.skip>
         <skipTests>${maven.test.skip}</skipTests>
         <galleon.skip>${skipTests}</galleon.skip>
+
+        <!-- Surefire properties -->
+        <maven.test.redirectTestOutputToFile>true</maven.test.redirectTestOutputToFile>
+        <default.jvm.args>-Dmaven.repo.local=${settings.localRepository}</default.jvm.args>
+        <jvm.args>${default.jvm.args}</jvm.args>
+        <debug.vm.args/>
+        <debug.port>8787</debug.port>
 
         <!-- Build minimums -->
         <maven.min.version>3.6.0</maven.min.version>
@@ -728,6 +732,29 @@
             <properties>
                 <!-- Skip the log manager validation in the logging subsystem -->
                 <jvm.args>${default.jvm.args} -Dorg.wildfly.logging.skipLogManagerCheck=true</jvm.args>
+            </properties>
+        </profile>
+        <profile>
+            <id>debug</id>
+            <activation>
+                <property>
+                    <name>debug</name>
+                </property>
+            </activation>
+            <properties>
+                <debug.vm.args>-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=*:${debug.port}</debug.vm.args>
+            </properties>
+        </profile>
+        <profile>
+            <id>debug-jdk8</id>
+            <activation>
+                <property>
+                    <name>debug</name>
+                </property>
+                <jdk>1.8</jdk>
+            </activation>
+            <properties>
+                <debug.vm.args>-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=${debug.port}</debug.vm.args>
             </properties>
         </profile>
     </profiles>

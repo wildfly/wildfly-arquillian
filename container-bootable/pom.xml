@@ -36,10 +36,6 @@
             <artifactId>wildfly-arquillian-common</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.wildfly.arquillian</groupId>
-            <artifactId>wildfly-arquillian-protocol-jmx</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.jboss.xnio</groupId>
             <artifactId>xnio-api</artifactId>
         </dependency>
@@ -89,6 +85,11 @@
         <dependency>
             <groupId>org.jboss.arquillian.protocol</groupId>
             <artifactId>arquillian-protocol-servlet</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.arquillian</groupId>
+            <artifactId>wildfly-arquillian-protocol-jmx</artifactId>
             <scope>test</scope>
         </dependency>
 
@@ -152,7 +153,28 @@
                         <configuration>
                             <skip>false</skip>
                             <excludedGroups>org.jboss.as.arquillian.container.managed.manual.ManualMode</excludedGroups>
+                            <excludes>
+                                <exclude>**/ThreadContextClassloaderTest.java</exclude>
+                            </excludes>
                             <systemPropertyVariables>
+                                <install.dir>${jboss.home}</install.dir>
+                                <bootable.jar>target/test-wildfly.jar</bootable.jar>
+                            </systemPropertyVariables>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>jmx-tests</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>test</goal>
+                        </goals>
+                        <configuration>
+                            <skip>false</skip>
+                            <includes>
+                                <include>**/ThreadContextClassloaderTest.java</include>
+                            </includes>
+                            <systemPropertyVariables>
+                                <arquillian.xml>jmx-arquillian.xml</arquillian.xml>
                                 <install.dir>${jboss.home}</install.dir>
                                 <bootable.jar>target/test-wildfly.jar</bootable.jar>
                             </systemPropertyVariables>

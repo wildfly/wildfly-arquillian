@@ -85,6 +85,7 @@ import org.wildfly.common.Assert;
  * <p>
  * Instances of this type are not thread-safe.
  * </p>
+ *
  * @author <a href="aslak@redhat.com">Aslak Knutsen</a>
  */
 public class ManagementClient implements Closeable {
@@ -94,6 +95,7 @@ public class ManagementClient implements Closeable {
     private static final String SUBDEPLOYMENT = "subdeployment";
 
     private static final String UNDERTOW = "undertow";
+    private static final String REST = "jaxrs";
     private static final String NAME = "name";
     private static final String SERVLET = "servlet";
 
@@ -265,9 +267,11 @@ public class ManagementClient implements Closeable {
             try {
                 final ModelNode deploymentNode = readDeploymentNode(deploymentName);
                 if (isWebArchive(deploymentName)) {
-                    extractWebArchiveContexts(context, deploymentNode);
+                    extractWebArchiveContexts(context, deploymentNode.get(UNDERTOW));
+                    extractWebArchiveContexts(context, deploymentNode.get(REST));
                 } else if (isEnterpriseArchive(deploymentName)) {
-                    extractEnterpriseArchiveContexts(context, deploymentNode);
+                    extractEnterpriseArchiveContexts(context, deploymentNode.get(UNDERTOW));
+                    extractEnterpriseArchiveContexts(context, deploymentNode.get(REST));
                 }
             } catch (Exception e) {
                 throw new RuntimeException(e);
@@ -335,7 +339,9 @@ public class ManagementClient implements Closeable {
     }
 
     private static ModelNode defined(final ModelNode node, final String message) {
-        if (!node.isDefined()) { throw new IllegalStateException(message); }
+        if (!node.isDefined()) {
+            throw new IllegalStateException(message);
+        }
         return node;
     }
 
@@ -483,6 +489,12 @@ public class ManagementClient implements Closeable {
              * Servlet or not. AS7 does not expose jsp / default servlet in mgm api
              */
             context.add(new Servlet("default", contextName));
+        } else if (deploymentNode.isDefined() && deploymentNode.hasDefined("rest-resource")) {
+            for (Property restResource : deploymentNode.get("rest-resource").asPropertyList()) {
+                // Register REST endpoints
+                findRestContext(restResource.getValue()
+                        .get("rest-resource-paths")).forEach((name, contextRoot) -> context.add(new Servlet(name, contextRoot)));
+            }
         }
     }
 
@@ -492,6 +504,25 @@ public class ManagementClient implements Closeable {
             correctedName = correctedName.substring(1);
         }
         return correctedName;
+    }
+
+    private Map<String, String> findRestContext(final ModelNode resourcePaths) {
+        final Map<String, String> result = new HashMap<>();
+        if (resourcePaths.isDefined() && resourcePaths.getType() == ModelType.LIST) {
+            for (ModelNode current : resourcePaths.asList()) {
+                final String resourcePath = current.hasDefined("resource-path") ? current.get("resource-path")
+                        .asString() : "";
+                if (current.hasDefined("resource-methods")) {
+                    // We'll just take the first one
+                    final String rawValue = current.get("resource-methods").asList().get(0).asString();
+                    // The first part should be the method, followed by the path. We need to get the path.
+                    final int start = rawValue.indexOf(' ') + 1;
+                    final int end = rawValue.indexOf(resourcePath);
+                    result.put(toContextName(resourcePath), toContextName(rawValue.substring(start, end == -1 ? rawValue.length() : end)));
+                }
+            }
+        }
+        return result;
     }
 
     //-------------------------------------------------------------------------------------||
@@ -506,49 +537,53 @@ public class ManagementClient implements Closeable {
     }
 
     private ModelNode readDeploymentNode(final String deploymentName) throws IOException, UnSuccessfulOperationException {
-        final ModelNode address;
+        final ModelNode undertowAddress;
+        final ModelNode restAddress;
         if (isWebArchive(deploymentName)) {
-            address = Operations.createAddress(DEPLOYMENT, deploymentName, SUBSYSTEM, UNDERTOW);
+            undertowAddress = Operations.createAddress(DEPLOYMENT, deploymentName, SUBSYSTEM, UNDERTOW);
+            restAddress = Operations.createAddress(DEPLOYMENT, deploymentName, SUBSYSTEM, REST);
         } else if (isEnterpriseArchive(deploymentName)) {
-            address = Operations.createAddress(DEPLOYMENT, deploymentName, SUBDEPLOYMENT, "*", SUBSYSTEM, UNDERTOW);
+            undertowAddress = Operations.createAddress(DEPLOYMENT, deploymentName, SUBDEPLOYMENT, "*", SUBSYSTEM, UNDERTOW);
+            restAddress = Operations.createAddress(DEPLOYMENT, deploymentName, SUBDEPLOYMENT, "*", SUBSYSTEM, REST);
         } else {
             // We don't have a web context so just return the meta data
             return new ModelNode();
         }
-        final ModelNode operation = Operations.createReadResourceOperation(address);
+        final ModelNode model = new ModelNode();
+
+        ModelNode operation = Operations.createReadResourceOperation(undertowAddress);
         operation.get(RECURSIVE_DEPTH).set(2);
         operation.get(INCLUDE_RUNTIME).set(true);
-        // Normally this could just use the executeForResult(). However singleton deployments may not be on a
-        // node that has been started and therefore the deployment may not have an undertow subsystem resource.
-        final ModelNode result = client.execute(operation);
-        if (Operations.isSuccessfulOutcome(result)) {
-            return Operations.readResult(result);
-        } else {
-            // This check is a bit heavy, however we need to determine whether or not the error was due to not
-            // having the undertow resource on the deployment or the failure was a different type of failure.
-            // It's possible we could get the failure description and just check the message id. However that
-            // could be fragile for future usage. We can just check if the subsystem resource is defined and
-            // has an undertow subsystem. If it does, there was a different type of failure and we should just
-            // throw an exception.
-            final ModelNode checkOp = Operations.createOperation(READ_CHILDREN_NAMES_OPERATION,
-                    Operations.createAddress(DEPLOYMENT, deploymentName));
-            checkOp.get(CHILD_TYPE).set(SUBSYSTEM);
-            final ModelNode r = client.execute(checkOp);
-            if (Operations.isSuccessfulOutcome(r)) {
-                final ModelNode children = Operations.readResult(r);
-                if (children.isDefined()) {
-                    for (ModelNode child : children.asList()) {
-                        if (UNDERTOW.equals(child.asString())) {
-                            throw new UnSuccessfulOperationException(Operations.getFailureDescription(result).asString());
-                        }
-                    }
-                }
-            } else {
-                // The read-children-names failed, but we'll just throw the original failure
-                throw new UnSuccessfulOperationException(Operations.getFailureDescription(result).asString());
-            }
+
+        // Check the Undertow subsystem
+        final ModelNode undertowResult = client.execute(operation);
+        if (Operations.isSuccessfulOutcome(undertowResult)) {
+            model.get(UNDERTOW).set(Operations.readResult(undertowResult));
         }
-        return new ModelNode();
+
+        operation = Operations.createReadResourceOperation(restAddress);
+        operation.get(RECURSIVE_DEPTH).set(2);
+        operation.get(INCLUDE_RUNTIME).set(true);
+
+        // Add the REST subsystem
+        final ModelNode restResult = client.execute(operation);
+        if (Operations.isSuccessfulOutcome(restResult)) {
+            model.get(REST).set(Operations.readResult(restResult));
+        }
+
+        // There should be two results, if one fails it's okay as the resource is likely not there. If both fail a
+        // different error has occurred.
+        if (!model.isDefined()) {
+            throw new UnSuccessfulOperationException(String.format("Neither %s or %s deployment information found.%n%s%n%s", UNDERTOW, REST,
+                    Operations.getFailureDescription(undertowResult), Operations.getFailureDescription(restResult)));
+        }
+        if (!model.hasDefined(UNDERTOW)) {
+            model.get(UNDERTOW);
+        }
+        if (!model.hasDefined(REST)) {
+            model.get(REST);
+        }
+        return model;
     }
 
     private void checkSuccessful(final ModelNode result,

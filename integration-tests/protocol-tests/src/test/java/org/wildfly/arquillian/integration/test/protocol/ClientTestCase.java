@@ -38,13 +38,12 @@ import org.junit.jupiter.api.extension.ExtendWith;
 @ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class ClientTestCase {
-    private static final String DEPLOYMENT_NAME = ClientTestCase.class.getSimpleName();
     @ArquillianResource
     private URI uri;
 
     @Deployment
     public static WebArchive create() {
-        return ShrinkWrap.create(WebArchive.class, DEPLOYMENT_NAME + ".war")
+        return ShrinkWrap.create(WebArchive.class, ClientTestCase.class.getSimpleName() + ".war")
                 .addClasses(ProtocolResource.class, RestActivator.class, Protocol.class);
     }
 
@@ -53,7 +52,7 @@ public class ClientTestCase {
         final Client restClient = ClientBuilder.newClient();
         try (
                 Response response = restClient.target(UriBuilder.fromUri(uri)
-                                .path(DEPLOYMENT_NAME + "/rest/protocol"))
+                                .path("/rest/protocol"))
                         .request().get()
         ) {
             Assertions.assertEquals(Response.Status.OK, response.getStatusInfo());

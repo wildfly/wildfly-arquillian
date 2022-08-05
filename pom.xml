@@ -21,9 +21,7 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
@@ -35,7 +33,7 @@
     <artifactId>wildfly-arquillian-parent</artifactId>
 
     <groupId>org.wildfly.arquillian</groupId>
-    <version>5.0.0.Alpha4-SNAPSHOT</version>
+    <version>5.0.0.Alpha4</version>
     <name>WildFly: Arquillian</name>
 
     <properties>
@@ -89,7 +87,7 @@
         <maven.test.redirectTestOutputToFile>true</maven.test.redirectTestOutputToFile>
         <default.jvm.args>-Dmaven.repo.local=${settings.localRepository}</default.jvm.args>
         <jvm.args>${default.jvm.args}</jvm.args>
-        <debug.vm.args/>
+        <debug.vm.args />
         <debug.port>8787</debug.port>
 
         <!-- Release properties -->
@@ -137,7 +135,7 @@
                         <configLocation>wildfly-checkstyle/checkstyle.xml</configLocation>
                         <consoleOutput>true</consoleOutput>
                         <failsOnError>true</failsOnError>
-                        <useFile/>
+                        <useFile />
                     </configuration>
                     <dependencies>
                         <dependency>
@@ -266,7 +264,7 @@
                         </goals>
                         <configuration>
                             <rules>
-                                <dependencyConvergence/>
+                                <dependencyConvergence />
                             </rules>
                         </configuration>
                     </execution>
@@ -818,4 +816,8 @@
             <layout>default</layout>
         </repository>
     </repositories>
+
+  <scm>
+    <tag>5.0.0.Alpha4</tag>
+  </scm>
 </project>

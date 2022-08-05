@@ -21,14 +21,13 @@
   -Djava.util.logging.manager=org.jboss.logmanager.LogManager
   -Djboss.home=${workspace_loc:jboss-as-build}/target/jboss-as-9.0.0.Alpha1-SNAPSHOT
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
         <groupId>org.wildfly.arquillian</groupId>
         <artifactId>wildfly-arquillian-parent</artifactId>
-        <version>5.0.0.Alpha4-SNAPSHOT</version>
+        <version>5.0.0.Alpha4</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -36,7 +35,7 @@
 
     <name>WildFly: Arquillian Embedded Container</name>
     <properties>
-        <modular.jdk.args/>
+        <modular.jdk.args />
     </properties>
 
     <packaging>jar</packaging>

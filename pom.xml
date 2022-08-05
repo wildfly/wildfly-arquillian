@@ -87,6 +87,11 @@
         <maven.test.skip>false</maven.test.skip>
         <skipTests>${maven.test.skip}</skipTests>
 
+        <!-- Release properties -->
+        <version.release.plugin>3.0.0-M6</version.release.plugin>
+        <autoVersionSubmodules>true</autoVersionSubmodules>
+        <pushChanges>false</pushChanges>
+
         <!-- Build minimums -->
         <maven.min.version>3.6.0</maven.min.version>
     </properties>
@@ -145,6 +150,17 @@
                             </goals>
                         </execution>
                     </executions>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-release-plugin</artifactId>
+                    <configuration>
+                        <arguments>-DskipTests</arguments>
+                        <autoVersionSubmodules>${autoVersionSubmodules}</autoVersionSubmodules>
+                        <localRepoDirectory>${settings.localRepository}</localRepoDirectory>
+                        <pushChanges>${pushChanges}</pushChanges>
+                        <signTag>true</signTag>
+                        <tagNameFormat>@{project.version}</tagNameFormat>
+                    </configuration>
                 </plugin>
                 <plugin>
                     <artifactId>maven-surefire-plugin</artifactId>

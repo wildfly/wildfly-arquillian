@@ -33,7 +33,7 @@
     <artifactId>wildfly-arquillian-parent</artifactId>
 
     <groupId>org.wildfly.arquillian</groupId>
-    <version>5.0.0.Alpha4</version>
+    <version>5.0.0.Alpha5-SNAPSHOT</version>
     <name>WildFly: Arquillian</name>
 
     <properties>
@@ -816,8 +816,4 @@
             <layout>default</layout>
         </repository>
     </repositories>
-
-  <scm>
-    <tag>5.0.0.Alpha4</tag>
-  </scm>
 </project>

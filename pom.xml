@@ -93,6 +93,7 @@
         <debug.port>8787</debug.port>
 
         <!-- Release properties -->
+        <version.release.plugin>3.0.0-M6</version.release.plugin>
         <autoVersionSubmodules>true</autoVersionSubmodules>
         <pushChanges>false</pushChanges>
 

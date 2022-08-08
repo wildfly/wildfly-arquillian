@@ -467,7 +467,6 @@ public class ManagementClient implements Closeable {
 
     private static ModelNode parseResult(final ModelNode result) {
         final ModelNode model = new ModelNode();
-
         // Find the undertow and REST subsystem
         for (ModelNode subsystemResult : Operations.readResult(result).asList()) {
             final ModelNode a = Operations.getOperationAddress(subsystemResult);
@@ -481,17 +480,15 @@ public class ManagementClient implements Closeable {
                 }
             }
         }
-        // There should be two results, if one fails it's okay as the resource is likely not there. If both fail a
-        // different error has occurred.
-        if (!model.isDefined()) {
-            throw new RuntimeException(String.format("Neither %s or %s deployment information found.%n%s", UNDERTOW, REST, result));
-        }
         return model;
     }
 
     private static Collection<Servlet> resolveServletContexts(final Iterable<ModelNode> deployments) {
         final Collection<Servlet> contexts = new ArrayList<>();
         for (ModelNode deployment : deployments) {
+            if (!deployment.isDefined()) {
+                continue;
+            }
             String contextName = null;
             if (deployment.hasDefined(UNDERTOW)) {
                 final ModelNode undertow = deployment.get(UNDERTOW);

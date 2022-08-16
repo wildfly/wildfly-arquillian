@@ -202,14 +202,21 @@ public class ManagementClient implements Closeable {
                         } catch (URISyntaxException e) {
                             throw new RuntimeException(e);
                         }
-                        if (undertowSubsystem != null && undertowSubsystem.hasDefined("server")) {
-                            List<Property> vhosts = undertowSubsystem.get("server").asPropertyList();
-                            ModelNode socketBinding = new ModelNode();
-                            if (!vhosts.isEmpty()) {//if empty no virtual hosts defined
-                                socketBinding = vhosts.get(0).getValue().get("http-listener", "default").get("socket-binding");
-                            }
-                            if (socketBinding.isDefined()) {
-                                webUri = getBinding("http", socketBinding.asString());
+                        if (config != null && config.getSocketBindingGroup() != null) {
+                            webUri = getBinding(config.getSocketBindingGroup());
+                        } else {
+                            if (undertowSubsystem != null && undertowSubsystem.hasDefined("server")) {
+                                List<Property> vhosts = undertowSubsystem.get("server").asPropertyList();
+                                ModelNode socketBinding = new ModelNode();
+                                if (!vhosts.isEmpty()) {//if empty no virtual hosts defined
+                                    socketBinding = vhosts.get(0)
+                                            .getValue()
+                                            .get("http-listener", "default")
+                                            .get("socket-binding");
+                                }
+                                if (socketBinding.isDefined()) {
+                                    webUri = getBinding(socketBinding.asString());
+                                }
                             }
                         }
                         ManagementClient.this.webUri = webUri;
@@ -266,7 +273,7 @@ public class ManagementClient implements Closeable {
         }
         if (undertowSubsystemPresent) {
             URI webURI = getWebUri();
-            HTTPContext context = new HTTPContext(webURI.getHost(), webURI.getPort());
+            HTTPContext context = new SecureHttpContext(webURI.getHost(), webURI.getPort(), "https".equalsIgnoreCase(webURI.getScheme()));
             metaData.addContext(context);
 
             try {
@@ -345,12 +352,14 @@ public class ManagementClient implements Closeable {
         return node;
     }
 
-    private URI getBinding(final String protocol, final String socketBinding) {
+    private URI getBinding(final String socketBinding) {
+        String protocol = "http";
         String host = null;
         int port = -1;
         if (config != null) {
             host = config.getHost();
             port = config.getPort();
+            protocol = config.getProtocol();
         }
         try {
             if (host == null || port < 0) {
@@ -523,10 +532,10 @@ public class ManagementClient implements Closeable {
     }
 
     private static String toContextName(String deploymentName) {
-        if (deploymentName.charAt(0) == '/') {
-            return deploymentName.substring(1);
+        if (deploymentName.isEmpty() || deploymentName.charAt(0) != '/') {
+            return deploymentName;
         }
-        return deploymentName;
+        return deploymentName.substring(1);
     }
 
     private static Map<String, String> findRestContext(final ModelNode resourcePaths, final String servletContext) {
@@ -935,6 +944,72 @@ public class ManagementClient implements Closeable {
                 throw new RuntimeException(e);
             }
             return connection;
+        }
+    }
+
+    private static class SecureHttpContext extends HTTPContext {
+        private final boolean secure;
+
+        public SecureHttpContext(final String host, final int port, final boolean secure) {
+            super(host, port);
+            this.secure = secure;
+        }
+
+        @Override
+        public HTTPContext add(final Servlet servlet) {
+            return super.add(SchemeServlet.of(servlet, this, secure ? "https" : "http"));
+        }
+    }
+
+    private static class SchemeServlet extends Servlet {
+        private final String scheme;
+        private final String host;
+        private final int port;
+
+        private SchemeServlet(final String name, final String contextRoot, final String scheme, final String host, final int port) {
+            super(name, contextRoot);
+            this.scheme = scheme;
+            this.host = host;
+            this.port = port;
+        }
+
+        static SchemeServlet of(final Servlet servlet, final HTTPContext context, final String scheme) {
+            return new SchemeServlet(servlet.getName(), servlet.getContextRoot(), scheme, context.getHost(), context.getPort());
+        }
+
+        @Override
+        public URI getBaseURI() {
+            return URI.create(getBaseURIAsString(getContextRoot()));
+        }
+
+        @Override
+        public URI getFullURI() {
+            return URI.create(getBaseURIAsString(getContextRoot(), getName()));
+        }
+
+        private String getBaseURIAsString(final String... paths) {
+            final StringBuilder result = new StringBuilder()
+                    .append(scheme)
+                    .append("://")
+                    .append(host)
+                    .append(':')
+                    .append(port);
+            for (String path : paths) {
+                if (path.isEmpty() || path.charAt(0) != '/') {
+                    result.append('/').append(path);
+                } else {
+                    result.append(path);
+                }
+            }
+            if (result.charAt(result.length() - 1) != '/') {
+                result.append('/');
+            }
+            return result.toString();
+        }
+
+        @Override
+        public String toString() {
+            return "SchemeServlet [name=" + getName() + ", contextRoot=" + getContextRoot() + ", scheme=" + scheme + "]";
         }
     }
 }

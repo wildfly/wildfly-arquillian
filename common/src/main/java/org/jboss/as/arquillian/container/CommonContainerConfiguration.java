@@ -35,8 +35,11 @@ public class CommonContainerConfiguration implements ContainerConfiguration {
     private String username;
     private String password;
     private String authenticationConfig;
+
+    private String protocol = "http";
     private String host;
     private int port;
+    private String socketBindingGroup;
 
     /**
      * Optional connection timeout in millis.
@@ -84,6 +87,36 @@ public class CommonContainerConfiguration implements ContainerConfiguration {
 
     public String getManagementProtocol() {
         return managementProtocol;
+    }
+
+    /**
+     * Returns the protocol to for HTTP connections. This currently only supports http and https with a default of http.
+     *
+     * @return the protocol
+     */
+    public String getProtocol() {
+        return protocol;
+    }
+
+    /**
+     * Sets the protocol for HTTP connections. If {@code null} the default of http is used.
+     *
+     * @param protocol the protocol to use, this must be http or https
+     */
+    public void setProtocol(final String protocol) {
+        this.protocol = protocol == null ? "http" : protocol;
+        if (!("http".equalsIgnoreCase(this.protocol) || "https".equalsIgnoreCase(this.protocol))) {
+            throw new ConfigurationException("Only http and https are allowed protocol settings, found " + protocol);
+        }
+    }
+
+    /**
+     * Returns the socket binding name to use.
+     *
+     * @return the socket binding name or {@code null} to discover one
+     */
+    public String getSocketBindingGroup() {
+        return socketBindingGroup;
     }
 
     public String getHost() {
@@ -138,10 +171,27 @@ public class CommonContainerConfiguration implements ContainerConfiguration {
         this.authenticationConfig = authenticationConfig;
     }
 
+    /**
+     * Sets the socket binding name to use for determining the host and port for HTTP connections. This can be used to
+     * override discovering the first binding name.
+     * <p>
+     * The socket binding name is configured in WildFly. If this is not set, one will be determined from the Undertow
+     * subsystem.
+     * </p>
+     *
+     * @param socketBindingName the socket binding name or {@code null} for one to be determined
+     */
+    public void setSocketBindingGroup(final String socketBindingName) {
+        this.socketBindingGroup = socketBindingName;
+    }
+
     @Override
     public void validate() throws ConfigurationException {
         if (username != null && password == null) {
             throw new ConfigurationException("username has been set, but no password given");
+        }
+        if (protocol != null && !("http".equalsIgnoreCase(protocol) || "https".equalsIgnoreCase(protocol))) {
+            throw new ConfigurationException("Only http and https are allowed protocol settings, found " + protocol);
         }
     }
 }

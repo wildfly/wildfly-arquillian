@@ -103,6 +103,29 @@
                         <JBOSS_HOME>${jboss.home}</JBOSS_HOME>
                     </environmentVariables>
                 </configuration>
+                <executions>
+                    <execution>
+                        <id>default-test</id>
+                        <goals>
+                            <goal>test</goal>
+                        </goals>
+                        <configuration>
+                            <groups>!OverrideWebUri</groups>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>override-web-uri</id>
+                        <goals>
+                            <goal>test</goal>
+                        </goals>
+                        <configuration>
+                            <groups>OverrideWebUri</groups>
+                            <systemPropertyVariables>
+                                <arquillian.xml>override-web-uri-arquillian.xml</arquillian.xml>
+                            </systemPropertyVariables>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

@@ -63,7 +63,12 @@ jobs:
           distribution: 'adopt'
           cache: 'maven'
       - name: Build with Maven Java ${{ matrix.java }}
-        run: mvn clean verify '-Dorg.wildfly.logging.skipLogManagerCheck=true' '-Dversion.org.wildfly.full=${{needs.wildfly-build.outputs.wildfly-version}}' '-Dversion.org.wildfly=${{needs.wildfly-build.outputs.wildfly-version}}'
+        run: |
+          mvn clean verify '-Dorg.wildfly.logging.skipLogManagerCheck=true' \
+            '-Dversion.org.wildfly.full=${{needs.wildfly-build.outputs.wildfly-version}}' \
+            '-Dversion.org.wildfly=${{needs.wildfly-build.outputs.wildfly-version}}' \
+            '-Dversion.org.wildfly.plugins.wildfly-jar-maven-plugin=8.0.0.Final' \
+            '-Dversion.org.jboss.galleon=5.0.5.Final'
       - name: Upload surefire reports
         uses: actions/upload-artifact@v2
         if: failure()

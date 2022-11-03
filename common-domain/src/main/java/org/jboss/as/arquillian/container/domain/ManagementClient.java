@@ -66,8 +66,6 @@ public class ManagementClient {
     private static final String SUBDEPLOYMENT = "subdeployment";
     private static final String UNDERTOW = "undertow";
 
-    private static final String PROTOCOL_HTTP = "http";
-
     private static final String NAME = "name";
     private static final String SERVLET = "servlet";
 
@@ -79,6 +77,7 @@ public class ManagementClient {
     private final DomainClient client;
     private final DomainClient userClient;
     private final Map<String, URI> subsystemURICache;
+    private final CommonDomainContainerConfiguration configuration;
     private final DomainManager domainManager;
 
     // cache static RootNode
@@ -89,12 +88,27 @@ public class ManagementClient {
      *
      * @param client        the client to delegate management operations to
      * @param domainManager the domain manager
+     *
+     * @deprecated use {@link ManagementClient#ManagementClient(ModelControllerClient, CommonDomainContainerConfiguration, DomainManager)}
      */
+    @Deprecated
     protected ManagementClient(final ModelControllerClient client, final DomainManager domainManager) {
+        this(client, new CommonDomainContainerConfiguration(), domainManager);
+    }
+
+    /**
+     * Creates a new management client.
+     *
+     * @param client        the client to delegate management operations to
+     * @param configuration the arquillian.xml configuration
+     * @param domainManager the domain manager
+     */
+    protected ManagementClient(final ModelControllerClient client, final CommonDomainContainerConfiguration configuration, final DomainManager domainManager) {
         if (client == null) {
             throw new IllegalArgumentException("Client must be specified");
         }
         this.client = (client instanceof DomainClient ? ((DomainClient) client) : DomainClient.Factory.create(client));
+        this.configuration = configuration;
         this.subsystemURICache = new HashMap<>();
         userClient = DomainClient.Factory.create(new NonClosingDomainClient(client));
         this.domainManager = domainManager;
@@ -170,8 +184,9 @@ public class ManagementClient {
 
     public HTTPContext getHTTPDeploymentMetaData(Server server, String uniqueDeploymentName) {
 
-        URI webURI = getProtocolURI(server, PROTOCOL_HTTP);
-        HTTPContext context = new HTTPContext(webURI.getHost(), webURI.getPort());
+        final String protocol = configuration.getProtocol();
+        final URI webURI = getProtocolURI(server, protocol);
+        HTTPContext context = new SecureHttpContext(webURI.getHost(), webURI.getPort(), "https".equalsIgnoreCase(protocol));
         try {
             ModelNode deploymentNode = readResource(createHostServerDeploymentAddress(
                     server.getHost(), server.getName(), uniqueDeploymentName));
@@ -293,10 +308,12 @@ public class ManagementClient {
 
     private URI extractProtocolURI(Server server, String protocol) {
         try {
+            final String socketBindingGroup = getSocketBindingGroup(server.getGroup());
             ModelNode node = readResource(createHostServerSocketBindingsAddress(server.getHost(), server.getName(),
-                    getSocketBindingGroup(server.getGroup())));
+                    socketBindingGroup));
 
-            ModelNode socketBinding = node.get(SOCKET_BINDING).get(protocol);
+            final String socketBindingName = configuration.getSocketBindingName();
+            ModelNode socketBinding = node.get(SOCKET_BINDING).get(socketBindingName == null ? "http" : socketBindingName);
             return URI.create(protocol + "://" + socketBinding.get("bound-address").asString() + ":"
                     + socketBinding.get("bound-port"));
 
@@ -450,6 +467,72 @@ public class ManagementClient {
         @Override
         public void close() throws IOException {
             // Do nothing
+        }
+    }
+
+    private static class SecureHttpContext extends HTTPContext {
+        private final boolean secure;
+
+        public SecureHttpContext(final String host, final int port, final boolean secure) {
+            super(host, port);
+            this.secure = secure;
+        }
+
+        @Override
+        public HTTPContext add(final Servlet servlet) {
+            return super.add(SchemeServlet.of(servlet, this, secure ? "https" : "http"));
+        }
+    }
+
+    private static class SchemeServlet extends Servlet {
+        private final String scheme;
+        private final String host;
+        private final int port;
+
+        private SchemeServlet(final String name, final String contextRoot, final String scheme, final String host, final int port) {
+            super(name, contextRoot);
+            this.scheme = scheme;
+            this.host = host;
+            this.port = port;
+        }
+
+        static SchemeServlet of(final Servlet servlet, final HTTPContext context, final String scheme) {
+            return new SchemeServlet(servlet.getName(), servlet.getContextRoot(), scheme, context.getHost(), context.getPort());
+        }
+
+        @Override
+        public URI getBaseURI() {
+            return URI.create(getBaseURIAsString(getContextRoot()));
+        }
+
+        @Override
+        public URI getFullURI() {
+            return URI.create(getBaseURIAsString(getContextRoot(), getName()));
+        }
+
+        private String getBaseURIAsString(final String... paths) {
+            final StringBuilder result = new StringBuilder()
+                    .append(scheme)
+                    .append("://")
+                    .append(host)
+                    .append(':')
+                    .append(port);
+            for (String path : paths) {
+                if (path.isEmpty() || path.charAt(0) != '/') {
+                    result.append('/').append(path);
+                } else {
+                    result.append(path);
+                }
+            }
+            if (result.charAt(result.length() - 1) != '/') {
+                result.append('/');
+            }
+            return result.toString();
+        }
+
+        @Override
+        public String toString() {
+            return "SchemeServlet [name=" + getName() + ", contextRoot=" + getContextRoot() + ", scheme=" + scheme + "]";
         }
     }
 

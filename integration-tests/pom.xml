@@ -32,6 +32,7 @@
         <module>elytron</module>
         <module>junit5-tests</module>
         <module>protocol-tests</module>
+        <module>domain</module>
     </modules>
 
 

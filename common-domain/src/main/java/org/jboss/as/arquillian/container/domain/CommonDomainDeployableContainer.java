@@ -103,7 +103,7 @@ public abstract class CommonDomainDeployableContainer<T extends CommonDomainCont
         // Register on setup so these can be injected into manual mode client tests
         final DomainClient domainClient = DomainClient.Factory.create(new DelegatingModelControllerClient(DomainDelegateProvider.INSTANCE));
         domainManager = new ContainerDomainManager(getContainerName(), isControllable(), domainClient);
-        managementClient = new ManagementClient(domainClient, domainManager);
+        managementClient = new ManagementClient(domainClient, config, domainManager);
         managementClientInst.set(managementClient);
 
         ArchiveDeployer archiveDeployer = new ArchiveDeployer(managementClient);

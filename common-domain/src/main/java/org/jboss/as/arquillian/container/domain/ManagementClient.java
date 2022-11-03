@@ -186,7 +186,7 @@ public class ManagementClient {
 
         final String protocol = configuration.getProtocol();
         final URI webURI = getProtocolURI(server, protocol);
-        HTTPContext context = new SecureHttpContext(webURI.getHost(), webURI.getPort(), "https".equalsIgnoreCase(protocol));
+        HTTPContext context = new HTTPContext(webURI.getHost(), webURI.getPort(), "https".equalsIgnoreCase(protocol));
         try {
             ModelNode deploymentNode = readResource(createHostServerDeploymentAddress(
                     server.getHost(), server.getName(), uniqueDeploymentName));
@@ -467,72 +467,6 @@ public class ManagementClient {
         @Override
         public void close() throws IOException {
             // Do nothing
-        }
-    }
-
-    private static class SecureHttpContext extends HTTPContext {
-        private final boolean secure;
-
-        public SecureHttpContext(final String host, final int port, final boolean secure) {
-            super(host, port);
-            this.secure = secure;
-        }
-
-        @Override
-        public HTTPContext add(final Servlet servlet) {
-            return super.add(SchemeServlet.of(servlet, this, secure ? "https" : "http"));
-        }
-    }
-
-    private static class SchemeServlet extends Servlet {
-        private final String scheme;
-        private final String host;
-        private final int port;
-
-        private SchemeServlet(final String name, final String contextRoot, final String scheme, final String host, final int port) {
-            super(name, contextRoot);
-            this.scheme = scheme;
-            this.host = host;
-            this.port = port;
-        }
-
-        static SchemeServlet of(final Servlet servlet, final HTTPContext context, final String scheme) {
-            return new SchemeServlet(servlet.getName(), servlet.getContextRoot(), scheme, context.getHost(), context.getPort());
-        }
-
-        @Override
-        public URI getBaseURI() {
-            return URI.create(getBaseURIAsString(getContextRoot()));
-        }
-
-        @Override
-        public URI getFullURI() {
-            return URI.create(getBaseURIAsString(getContextRoot(), getName()));
-        }
-
-        private String getBaseURIAsString(final String... paths) {
-            final StringBuilder result = new StringBuilder()
-                    .append(scheme)
-                    .append("://")
-                    .append(host)
-                    .append(':')
-                    .append(port);
-            for (String path : paths) {
-                if (path.isEmpty() || path.charAt(0) != '/') {
-                    result.append('/').append(path);
-                } else {
-                    result.append(path);
-                }
-            }
-            if (result.charAt(result.length() - 1) != '/') {
-                result.append('/');
-            }
-            return result.toString();
-        }
-
-        @Override
-        public String toString() {
-            return "SchemeServlet [name=" + getName() + ", contextRoot=" + getContextRoot() + ", scheme=" + scheme + "]";
         }
     }
 

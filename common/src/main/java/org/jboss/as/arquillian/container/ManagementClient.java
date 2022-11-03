@@ -44,6 +44,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javax.management.Attribute;
@@ -107,6 +108,7 @@ public class ManagementClient implements Closeable {
     private static final String POSTFIX_WEB = ".war";
     private static final String POSTFIX_EAR = ".ear";
     private static final ModelNode UNDERTOW_SUBSYSTEM_ADDRESS = new ModelNode().add("subsystem", UNDERTOW);
+    private static final String REST_APPLICATION_PATH = "ArquillianRESTRunnerEE9";
 
     private final String mgmtAddress;
     private final int mgmtPort;
@@ -273,7 +275,7 @@ public class ManagementClient implements Closeable {
         }
         if (undertowSubsystemPresent) {
             URI webURI = getWebUri();
-            HTTPContext context = new SecureHttpContext(webURI.getHost(), webURI.getPort(), "https".equalsIgnoreCase(webURI.getScheme()));
+            HTTPContext context = new HTTPContext(webURI.getHost(), webURI.getPort(), "https".equalsIgnoreCase(webURI.getScheme()));
             metaData.addContext(context);
 
             try {
@@ -521,9 +523,9 @@ public class ManagementClient implements Closeable {
                 final ModelNode rest = deployment.get(REST);
                 if (rest.isDefined() && rest.hasDefined("rest-resource")) {
                     for (Property restResource : rest.get("rest-resource").asPropertyList()) {
-                        // Register REST endpoints
-                        findRestContext(restResource.getValue().get("rest-resource-paths"), contextName)
-                                .forEach((name, contextRoot) -> contexts.add(new Servlet(name, contextRoot)));
+                        // Register the REST protocol context if found
+                        findRestServlet(restResource.getValue()
+                                .get("rest-resource-paths"), contextName).ifPresent(contexts::add);
                     }
                 }
             }
@@ -538,25 +540,22 @@ public class ManagementClient implements Closeable {
         return deploymentName.substring(1);
     }
 
-    private static Map<String, String> findRestContext(final ModelNode resourcePaths, final String servletContext) {
-        final Map<String, String> result = new HashMap<>();
+    private static Optional<Servlet> findRestServlet(final ModelNode resourcePaths, final String servletContext) {
         if (resourcePaths.isDefined() && resourcePaths.getType() == ModelType.LIST) {
             for (ModelNode current : resourcePaths.asList()) {
-                final String resourcePath = current.hasDefined("resource-path") ? current.get("resource-path")
-                        .asString() : "";
-                if (servletContext != null) {
-                    result.put(toContextName(resourcePath), servletContext);
-                } else if (current.hasDefined("resource-methods")) {
-                    // We'll just take the first one
-                    final String rawValue = current.get("resource-methods").asList().get(0).asString();
-                    // The first part should be the method, followed by the path. We need to get the path.
-                    final int start = rawValue.indexOf(' ') + 1;
-                    final int end = rawValue.lastIndexOf(resourcePath);
-                    result.put(toContextName(resourcePath), toContextName(rawValue.substring(start, end == -1 ? rawValue.length() : end)));
+                // Check if we contain the supported REST context
+                if (current.hasDefined("resource-methods")) {
+                    for (ModelNode resourceMethod : current.get("resource-methods").asList()) {
+                        final String rawValue = resourceMethod.asString();
+                        // Check if this is the context for the REST protocol, if so add it and
+                        if (rawValue.contains(REST_APPLICATION_PATH)) {
+                            return Optional.of(new Servlet(REST_APPLICATION_PATH, toContextName(servletContext)));
+                        }
+                    }
                 }
             }
         }
-        return result;
+        return Optional.empty();
     }
 
     //-------------------------------------------------------------------------------------||
@@ -944,72 +943,6 @@ public class ManagementClient implements Closeable {
                 throw new RuntimeException(e);
             }
             return connection;
-        }
-    }
-
-    private static class SecureHttpContext extends HTTPContext {
-        private final boolean secure;
-
-        public SecureHttpContext(final String host, final int port, final boolean secure) {
-            super(host, port);
-            this.secure = secure;
-        }
-
-        @Override
-        public HTTPContext add(final Servlet servlet) {
-            return super.add(SchemeServlet.of(servlet, this, secure ? "https" : "http"));
-        }
-    }
-
-    private static class SchemeServlet extends Servlet {
-        private final String scheme;
-        private final String host;
-        private final int port;
-
-        private SchemeServlet(final String name, final String contextRoot, final String scheme, final String host, final int port) {
-            super(name, contextRoot);
-            this.scheme = scheme;
-            this.host = host;
-            this.port = port;
-        }
-
-        static SchemeServlet of(final Servlet servlet, final HTTPContext context, final String scheme) {
-            return new SchemeServlet(servlet.getName(), servlet.getContextRoot(), scheme, context.getHost(), context.getPort());
-        }
-
-        @Override
-        public URI getBaseURI() {
-            return URI.create(getBaseURIAsString(getContextRoot()));
-        }
-
-        @Override
-        public URI getFullURI() {
-            return URI.create(getBaseURIAsString(getContextRoot(), getName()));
-        }
-
-        private String getBaseURIAsString(final String... paths) {
-            final StringBuilder result = new StringBuilder()
-                    .append(scheme)
-                    .append("://")
-                    .append(host)
-                    .append(':')
-                    .append(port);
-            for (String path : paths) {
-                if (path.isEmpty() || path.charAt(0) != '/') {
-                    result.append('/').append(path);
-                } else {
-                    result.append(path);
-                }
-            }
-            if (result.charAt(result.length() - 1) != '/') {
-                result.append('/');
-            }
-            return result.toString();
-        }
-
-        @Override
-        public String toString() {
-            return "SchemeServlet [name=" + getName() + ", contextRoot=" + getContextRoot() + ", scheme=" + scheme + "]";
         }
     }
 }

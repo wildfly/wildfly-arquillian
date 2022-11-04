@@ -195,8 +195,8 @@ public class ManagementClient implements Closeable {
                         } catch (URISyntaxException e) {
                             throw new RuntimeException(e);
                         }
-                        if (config != null && config.getSocketBindingGroup() != null) {
-                            webUri = getBinding(config.getSocketBindingGroup());
+                        if (config != null && config.getSocketBindingName() != null) {
+                            webUri = getBinding(config.getSocketBindingName());
                         } else {
                             if (undertowSubsystem != null && undertowSubsystem.hasDefined("server")) {
                                 List<Property> vhosts = undertowSubsystem.get("server").asPropertyList();

@@ -39,7 +39,7 @@ public class CommonContainerConfiguration implements ContainerConfiguration {
     private String protocol = "http";
     private String host;
     private int port;
-    private String socketBindingGroup;
+    private String socketBindingName;
 
     /**
      * Optional connection timeout in millis.
@@ -115,8 +115,8 @@ public class CommonContainerConfiguration implements ContainerConfiguration {
      *
      * @return the socket binding name or {@code null} to discover one
      */
-    public String getSocketBindingGroup() {
-        return socketBindingGroup;
+    public String getSocketBindingName() {
+        return socketBindingName;
     }
 
     public String getHost() {
@@ -181,8 +181,8 @@ public class CommonContainerConfiguration implements ContainerConfiguration {
      *
      * @param socketBindingName the socket binding name or {@code null} for one to be determined
      */
-    public void setSocketBindingGroup(final String socketBindingName) {
-        this.socketBindingGroup = socketBindingName;
+    public void setSocketBindingName(final String socketBindingName) {
+        this.socketBindingName = socketBindingName;
     }
 
     @Override

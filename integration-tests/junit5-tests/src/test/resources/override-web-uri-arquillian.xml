@@ -24,7 +24,7 @@
             <property name="javaVmArguments">${debug.vm.args} ${jvm.args}</property>
             <property name="allowConnectingToRunningServer">false</property>
             <property name="protocol">https</property>
-            <property name="socketBindingGroup">https</property>
+            <property name="socketBindingName">https</property>
         </configuration>
     </container>
 </arquillian>

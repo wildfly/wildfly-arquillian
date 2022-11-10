@@ -97,6 +97,12 @@
 
         <!-- Build minimums -->
         <maven.min.version>3.6.0</maven.min.version>
+
+        <!-- Require at least Java 11 to compile -->
+        <jdk.min.version>11</jdk.min.version>
+        <maven.compiler.release>11</maven.compiler.release>
+        <maven.compiler.target>11</maven.compiler.target>
+        <maven.compiler.source>11</maven.compiler.source>
     </properties>
 
     <licenses>
@@ -120,10 +126,8 @@
                 <plugin>
                     <artifactId>maven-javadoc-plugin</artifactId>
                     <configuration>
-                        <!-- Set the source to 8 as that is the target, but allows this to be compiled with new versions
-                             of Java.
-                         -->
-                        <source>8</source>
+                        <release>${maven.compiler.release}</release>
+                        <additionalJOption>--no-module-directories</additionalJOption>
                     </configuration>
                 </plugin>
                 <!-- Checkstyle -->

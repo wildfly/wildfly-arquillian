@@ -5,8 +5,10 @@ name: Java CI with Maven
 
 on:
   push:
-    branches:
-      - '**'
+    branches-ignore:
+      - 'dependabot/**'
+    paths-ignore:
+      - ".github/workflows/manual-*.yml"
   pull_request:
     branches:
       - '**'

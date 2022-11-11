@@ -19,9 +19,37 @@ updates:
       - dependency-name: 'org.jboss:jboss-ejb-client'
         update-types: ['version-update:semver-major', 'version-update:semver-minor']
     open-pull-requests-limit: 10
+  - package-ecosystem: "maven"
+    directory: "/"
+    schedule:
+      interval: "daily"
+    target-branch: "4.x"
+    ignore:
+      - dependency-name: 'jakarta.ejb:jakarta.ejb-api'
+        update-types: ['version-update:semver-major', 'version-update:semver-minor']
+      - dependency-name: 'jakarta.enterprise:jakarta.enterprise.cdi-api'
+        update-types: ['version-update:semver-major', 'version-update:semver-minor']
+      - dependency-name: 'jakarta.inject:jakarta.inject-api'
+        update-types: ['version-update:semver-major', 'version-update:semver-minor']
+      - dependency-name: 'jakarta.servlet:jakarta.servlet-api'
+        update-types: ['version-update:semver-major', 'version-update:semver-minor']
+      - dependency-name: 'org.jboss:jboss-ejb-client'
+        update-types: ['version-update:semver-major', 'version-update:semver-minor']
+      - dependency-name: 'org.wildfly.core:*'
+        update-types: ['version-update:semver-major', 'version-update:semver-minor']
+      - dependency-name: 'org.wildfly.plugins:*'
+        update-types: ['version-update:semver-major', 'version-update:semver-minor']
+      - dependency-name: 'org.wildfly.security:*'
+        update-types: ['version-update:semver-major', 'version-update:semver-minor']
+    open-pull-requests-limit: 10
   - package-ecosystem: "github-actions"
     # Workflow files stored in the
     # default location of `.github/workflows`
     directory: "/"
     schedule:
       interval: "daily"
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "daily"
+    target-branch: "4.x"

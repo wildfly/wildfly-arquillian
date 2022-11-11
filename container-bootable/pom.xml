@@ -126,9 +126,6 @@
                     <feature-pack-location>wildfly-preview@maven(org.jboss.universe:community-universe)#${version.org.wildfly.full}</feature-pack-location>
                     <hollowJar>true</hollowJar>
                     <outputFileName>test-wildfly.jar</outputFileName>
-                    <plugin-options>
-                        <jboss-jakarta-transform-artifacts>true</jboss-jakarta-transform-artifacts>
-                    </plugin-options>
                 </configuration>
                 <executions>
                     <execution>

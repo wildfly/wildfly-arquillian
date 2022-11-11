@@ -38,7 +38,7 @@
 
     <properties>
         <version.org.wildfly.core>19.0.0.Final</version.org.wildfly.core>
-        <version.org.wildfly.full>26.1.2.Final</version.org.wildfly.full>
+        <version.org.wildfly.full>27.0.0.Final</version.org.wildfly.full>
         <version.junit>4.13.2</version.junit>
         <version.com.squareup.okhttp3.okhttp>4.10.0</version.com.squareup.okhttp3.okhttp>
         <!-- The version used in OkHttp3, this is required because OkHttp3 has dependency and transitive dependency on this -->
@@ -56,7 +56,7 @@
         <!-- Required by Elytron dependencies -->
         <version.org.slf4j>1.7.36</version.org.slf4j>
         <version.org.wildfly.common.wildfly-common>1.5.4.Final</version.org.wildfly.common.wildfly-common>
-        <version.org.wildfly.plugins.wildfly-jar-maven-plugin>6.1.3.Final</version.org.wildfly.plugins.wildfly-jar-maven-plugin>
+        <version.org.wildfly.plugins.wildfly-jar-maven-plugin>8.1.0.Final</version.org.wildfly.plugins.wildfly-jar-maven-plugin>
         <version.org.wildfly.plugins.wildfly-maven-plugin>4.0.0.Final</version.org.wildfly.plugins.wildfly-maven-plugin>
         <version.org.wildfly.security.wildfly-elytron>2.0.0.Final</version.org.wildfly.security.wildfly-elytron>
 

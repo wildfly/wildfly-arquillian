@@ -59,7 +59,7 @@
         <version.org.slf4j>1.7.32</version.org.slf4j>
         <version.org.wildfly.common.wildfly-common>1.5.4.Final</version.org.wildfly.common.wildfly-common>
         <version.org.wildfly.plugins.wildfly-jar-maven-plugin>6.1.1.Final</version.org.wildfly.plugins.wildfly-jar-maven-plugin>
-        <version.org.wildfly.plugins.wildfly-maven-plugin>3.0.0.Final</version.org.wildfly.plugins.wildfly-maven-plugin>
+        <version.org.wildfly.plugins.wildfly-maven-plugin>3.0.2.Final</version.org.wildfly.plugins.wildfly-maven-plugin>
         <version.org.wildfly.security.wildfly-elytron>1.19.0.Final</version.org.wildfly.security.wildfly-elytron>
 
         <!-- keep this in sync with version that is used in arquillian -->

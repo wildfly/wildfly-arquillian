@@ -16,18 +16,19 @@
 
 package org.wildfly.arquillian.integration.test.domain.config;
 
-import java.security.SecureRandom;
+import java.net.Socket;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
-import java.util.concurrent.TimeUnit;
+import java.time.Duration;
 import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManager;
+import javax.net.ssl.SSLEngine;
+import javax.net.ssl.X509ExtendedTrustManager;
 import javax.net.ssl.X509TrustManager;
 
-import okhttp3.Call;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
-import okhttp3.ResponseBody;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -36,19 +37,36 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.wildfly.arquillian.domain.api.TargetsServerGroup;
+import org.wildfly.security.ssl.SSLContextBuilder;
 
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 public class WarClientOverrideWebUriTestCase extends AbstractOverrideWebUriTest {
 
-    private static final X509TrustManager TRUST_ALL = new X509TrustManager() {
+    private static final X509TrustManager TRUST_ALL = new X509ExtendedTrustManager() {
         @Override
-        public void checkClientTrusted(final X509Certificate[] chain, final String authType) {
+        public void checkClientTrusted(final X509Certificate[] chain, final String authType, final Socket socket) throws CertificateException {
         }
 
         @Override
-        public void checkServerTrusted(final X509Certificate[] chain, final String authType) {
+        public void checkServerTrusted(final X509Certificate[] chain, final String authType, final Socket socket) throws CertificateException {
+        }
+
+        @Override
+        public void checkClientTrusted(final X509Certificate[] chain, final String authType, final SSLEngine engine) throws CertificateException {
+        }
+
+        @Override
+        public void checkServerTrusted(final X509Certificate[] chain, final String authType, final SSLEngine engine) throws CertificateException {
+        }
+
+        @Override
+        public void checkClientTrusted(final X509Certificate[] chain, final String authType) throws CertificateException {
+        }
+
+        @Override
+        public void checkServerTrusted(final X509Certificate[] chain, final String authType) throws CertificateException {
         }
 
         @Override
@@ -68,22 +86,25 @@ public class WarClientOverrideWebUriTestCase extends AbstractOverrideWebUriTest 
     @Test
     @RunAsClient
     public void httpsConnection() throws Exception {
-        final SSLContext sslContext = SSLContext.getInstance("SSL");
-        sslContext.init(null, new TrustManager[] {TRUST_ALL}, new SecureRandom());
-        final OkHttpClient client = new OkHttpClient.Builder()
-                .readTimeout(5, TimeUnit.SECONDS)
-                .hostnameVerifier((hostname, session) -> true)
-                .sslSocketFactory(sslContext.getSocketFactory(), TRUST_ALL)
+        final SSLContext sslContext = new SSLContextBuilder()
+                .setTrustManager(TRUST_ALL)
+                .setClientMode(true)
+                .setNeedClientAuth(false)
+                .build()
+                .create();
+        final HttpClient client = HttpClient.newBuilder()
+                .sslContext(sslContext)
+                .connectTimeout(Duration.ofSeconds(5))
                 .build();
-        final Request request = new Request.Builder()
-                .url(url + GreeterServlet.URL_PATTERN)
-                .build();
-        final Call call = client.newCall(request);
-        try (final Response response = call.execute()) {
-            Assertions.assertEquals(200, response.code());
-            final ResponseBody body = response.body();
-            Assertions.assertNotNull(body);
-            Assertions.assertEquals(GreeterServlet.GREETING, body.string());
-        }
+        final HttpResponse<String> response = client.send(
+                HttpRequest.newBuilder(URI.create(url.toString() + GreeterServlet.URL_PATTERN))
+                        .GET()
+                        .build(),
+                HttpResponse.BodyHandlers.ofString()
+        );
+        Assertions.assertEquals(200, response.statusCode());
+        final String body = response.body();
+        Assertions.assertNotNull(body);
+        Assertions.assertEquals(GreeterServlet.GREETING, body);
     }
 }

@@ -15,13 +15,15 @@
  */
 package org.jboss.as.arquillian.testng;
 
+import java.net.URI;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.arquillian.testng.Arquillian;
-import org.jboss.msc.service.ServiceContainer;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.testng.Assert;
+import org.testng.annotations.Ignore;
 import org.testng.annotations.Test;
 
 /**
@@ -29,6 +31,7 @@ import org.testng.annotations.Test;
  * 
  * @author <a href="mailto:alr@jboss.org">Andrew Lee Rubinger</a>
  */
+@Ignore("WFARQ-129")
 public class BasicTestNGIntegrationTestCase extends Arquillian {
 
     @Deployment
@@ -38,10 +41,10 @@ public class BasicTestNGIntegrationTestCase extends Arquillian {
     }
 
     @ArquillianResource
-    private ServiceContainer service;
+    private URI uri;
 
     @Test
     public void shouldBeAbleToInject() throws Exception {
-        Assert.assertNotNull(service);
+        Assert.assertNotNull(uri);
     }
 }

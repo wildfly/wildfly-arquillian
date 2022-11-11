@@ -68,7 +68,7 @@
         <version.org.testng>6.13.1</version.org.testng>
         <version.jakarta.ejb>3.2.6</version.jakarta.ejb>
         <version.jakarta.enterprise>2.0.2</version.jakarta.enterprise>
-        <version.jakarta.inject>1.0</version.jakarta.inject>
+        <version.jakarta.inject>1.0.3.redhat-00001</version.jakarta.inject>
         <version.jakarta.servlet>4.0.4</version.jakarta.servlet>
         <version.org.wildfly.checkstyle-config>1.0.8.Final</version.org.wildfly.checkstyle-config>
 

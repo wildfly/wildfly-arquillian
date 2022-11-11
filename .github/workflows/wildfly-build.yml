@@ -107,7 +107,7 @@ jobs:
           name: server-logs-${{ matrix.os }}-${{ matrix.java }}
           path: '**/server.log'
       - name: Delete the shared repository
-        uses: geekyeggo/delete-artifact@v1
+        uses: geekyeggo/delete-artifact@v2
         with:
           name: maven-repository
           failOnError: false

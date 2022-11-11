@@ -40,9 +40,6 @@
         <version.org.wildfly.core>19.0.0.Final</version.org.wildfly.core>
         <version.org.wildfly.full>27.0.0.Final</version.org.wildfly.full>
         <version.junit>4.13.2</version.junit>
-        <version.com.squareup.okhttp3.okhttp>4.10.0</version.com.squareup.okhttp3.okhttp>
-        <!-- The version used in OkHttp3, this is required because OkHttp3 has dependency and transitive dependency on this -->
-        <version.org.jetbrains.kotlin.kotlin-stdlib>1.6.21</version.org.jetbrains.kotlin.kotlin-stdlib>
         <version.org.junit>5.9.1</version.org.junit>
         <version.org.jboss.arquillian.core>1.7.0.Alpha13</version.org.jboss.arquillian.core>
         <version.org.jboss.galleon>5.0.5.Final</version.org.jboss.galleon>
@@ -304,12 +301,6 @@
             </dependency>
 
             <dependency>
-                <groupId>com.squareup.okhttp3</groupId>
-                <artifactId>okhttp</artifactId>
-                <version>${version.com.squareup.okhttp3.okhttp}</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
                 <groupId>jakarta.ejb</groupId>
                 <artifactId>jakarta.ejb-api</artifactId>
                 <version>${version.jakarta.ejb}</version>
@@ -338,19 +329,6 @@
                 <artifactId>junit</artifactId>
                 <scope>test</scope>
                 <version>${version.junit}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jetbrains.kotlin</groupId>
-                <artifactId>kotlin-stdlib</artifactId>
-                <version>${version.org.jetbrains.kotlin.kotlin-stdlib}</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.jetbrains.kotlin</groupId>
-                <artifactId>kotlin-stdlib-common</artifactId>
-                <version>${version.org.jetbrains.kotlin.kotlin-stdlib}</version>
-                <scope>test</scope>
             </dependency>
 
             <dependency>

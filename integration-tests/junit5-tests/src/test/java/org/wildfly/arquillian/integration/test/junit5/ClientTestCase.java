@@ -17,16 +17,14 @@
 package org.wildfly.arquillian.integration.test.junit5;
 
 import java.io.IOException;
+import java.net.URI;
 import java.net.URL;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
-import okhttp3.Call;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
-import okhttp3.ResponseBody;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit5.ArquillianExtension;
@@ -39,7 +37,6 @@ import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.as.controller.client.helpers.Operations.CompositeOperationBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -74,18 +71,14 @@ public class ClientTestCase {
 
     @Test
     public void testGreet() throws Exception {
-        final OkHttpClient client = new OkHttpClient.Builder()
-                .readTimeout(5, TimeUnit.SECONDS)
+        final HttpClient client = HttpClient.newHttpClient();
+        final HttpRequest request = HttpRequest.newBuilder(URI.create(url + GreeterServlet.URL_PATTERN))
                 .build();
-        final Request request = new Request.Builder()
-                .url(url + GreeterServlet.URL_PATTERN)
-                .build();
-        final Call call = client.newCall(request);
-        final Response response = call.execute();
-        Assertions.assertEquals(200, response.code());
-        final ResponseBody body = response.body();
+        final HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        Assertions.assertEquals(200, response.statusCode());
+        final String body = response.body();
         Assertions.assertNotNull(body);
-        Assertions.assertEquals(GreeterServlet.GREETING, body.string());
+        Assertions.assertEquals(GreeterServlet.GREETING, body);
     }
 
     @Test

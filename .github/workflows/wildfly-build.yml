@@ -28,7 +28,7 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
       - name: Build with Maven Java ${{ matrix.java }}
-        run: mvn -B clean verify '-Dorg.wildfly.logging.skipLogManagerCheck=true' '-Dversion.org.wildfly.full=${{ matrix.wildfly-version }}'
+        run: mvn -B clean verify '-Dorg.wildfly.logging.skipLogManagerCheck=true' '-Dversion.org.wildfly.full=${{ matrix.wildfly-version }}' '-Dwildfly.preview'
       - uses: actions/upload-artifact@v3
         if: failure()
         with:

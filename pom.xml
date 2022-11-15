@@ -72,6 +72,8 @@
         <galleon.log.time>true</galleon.log.time>
         <galleon.offline>false</galleon.offline>
         <jboss.home>${project.build.directory}${file.separator}wildfly</jboss.home>
+        <galleon.feature.pack.artifactId>wildfly-ee-galleon-pack</galleon.feature.pack.artifactId>
+        <galleon.feature.pack.location>wildfly@maven(org.jboss.universe:community-universe)#${version.org.wildfly.full}</galleon.feature.pack.location>
 
         <!-- Other properties -->
         <wildfly.standalone.config>standalone.xml</wildfly.standalone.config>
@@ -198,7 +200,7 @@
                                 <feature-packs>
                                     <feature-pack>
                                         <groupId>org.wildfly</groupId>
-                                        <artifactId>wildfly-preview-feature-pack</artifactId>
+                                        <artifactId>${galleon.feature.pack.artifactId}</artifactId>
                                         <version>${version.org.wildfly.full}</version>
                                         <excluded-packages>
                                             <name>product.conf</name>
@@ -767,15 +769,15 @@
             </properties>
         </profile>
         <profile>
-            <id>debug-jdk8</id>
+            <id>wildfly-preview</id>
             <activation>
                 <property>
-                    <name>debug</name>
+                    <name>wildfly.preview</name>
                 </property>
-                <jdk>1.8</jdk>
             </activation>
             <properties>
-                <debug.vm.args>-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=${debug.port}</debug.vm.args>
+                <galleon.feature.pack.artifactId>wildfly-preview-feature-pack</galleon.feature.pack.artifactId>
+                <galleon.feature.pack.location>wildfly-preview@maven(org.jboss.universe:community-universe)#${version.org.wildfly.full}</galleon.feature.pack.location>
             </properties>
         </profile>
     </profiles>

@@ -123,7 +123,7 @@
                 <version>${version.org.wildfly.plugins.wildfly-jar-maven-plugin}</version>
                 <configuration>
                     <skip>${skipTests}</skip>
-                    <feature-pack-location>wildfly-preview@maven(org.jboss.universe:community-universe)#${version.org.wildfly.full}</feature-pack-location>
+                    <feature-pack-location>${galleon.feature.pack.location}</feature-pack-location>
                     <hollowJar>true</hollowJar>
                     <outputFileName>test-wildfly.jar</outputFileName>
                 </configuration>

@@ -35,7 +35,7 @@
 
     <name>WildFly: Arquillian Embedded Container</name>
     <properties>
-        <modular.jdk.args />
+        <modular.jdk.args>--add-modules=java.se --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.base/java.lang=ALL-UNNAMED</modular.jdk.args>
     </properties>
 
     <packaging>jar</packaging>
@@ -129,16 +129,4 @@
             </plugin>
         </plugins>
     </build>
-
-    <profiles>
-        <profile>
-            <id>java11</id>
-            <activation>
-                <jdk>[9,)</jdk>
-            </activation>
-            <properties>
-                <modular.jdk.args>--add-modules=java.se --add-opens=java.base/java.util=ALL-UNNAMED</modular.jdk.args>
-            </properties>
-        </profile>
-    </profiles>
 </project>

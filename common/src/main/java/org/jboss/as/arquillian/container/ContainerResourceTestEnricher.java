@@ -137,7 +137,7 @@ public class ContainerResourceTestEnricher implements TestEnricher {
     private Object lookupContext(Class<?> type, ContainerResource resource, Annotation... qualifiers) {
         try {
             final Properties env = new Properties();
-            env.put(Context.INITIAL_CONTEXT_FACTORY, "org.jboss.naming.remote.client.InitialContextFactory");
+            env.put(Context.INITIAL_CONTEXT_FACTORY, "org.wildfly.naming.client.WildFlyInitialContextFactory");
             env.put(Context.PROVIDER_URL, managementClient.get().getRemoteEjbURL().toString());
             env.put("jboss.naming.client.connect.options.org.xnio.Options.SASL_POLICY_NOPLAINTEXT", "false");
             env.put("jboss.naming.client.security.callback.handler.class", Authentication.CallbackHandler.class.getName());

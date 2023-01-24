@@ -32,7 +32,7 @@ public class ManagedContainerConfiguration extends DistributionContainerConfigur
 
     private String serverConfig = System.getProperty("jboss.server.config.file.name");
 
-    private String readOnlyServerConfig;
+    private String readOnlyServerConfig = System.getProperty("jboss.server.config.file.name.readonly");
 
     private boolean enableAssertions = true;
 

@@ -59,7 +59,7 @@
 
         <!-- keep this in sync with version that is used in arquillian -->
         <version.org.jboss.shrinkwrap.descriptors>2.0.0</version.org.jboss.shrinkwrap.descriptors>
-        <version.org.jboss.ejb-client>4.0.49.Final</version.org.jboss.ejb-client>
+        <version.org.jboss.ejb-client>4.0.51.Final</version.org.jboss.ejb-client>
         <version.org.testng>7.6.1</version.org.testng>
         <version.jakarta.ejb>4.0.1</version.jakarta.ejb>
         <version.jakarta.enterprise>3.0.1</version.jakarta.enterprise>

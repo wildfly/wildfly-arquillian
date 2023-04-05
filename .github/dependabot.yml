@@ -35,6 +35,12 @@ updates:
         update-types: ['version-update:semver-major', 'version-update:semver-minor']
       - dependency-name: 'org.jboss:jboss-ejb-client'
         update-types: ['version-update:semver-major', 'version-update:semver-minor']
+      - dependency-name: 'org.jboss.galleon:galleon-maven-plugin'
+        update-types: ['version-update:semver-major', 'version-update:semver-minor']
+      - dependency-name: 'org.jboss.logging:jboss-logging'
+        update-types: ['version-update:semver-major', 'version-update:semver-minor']
+      - dependency-name: 'org.jboss.msc:jboss-msc'
+        update-types: ['version-update:semver-major', 'version-update:semver-minor']
       - dependency-name: 'org.wildfly.core:*'
         update-types: ['version-update:semver-major', 'version-update:semver-minor']
       - dependency-name: 'org.wildfly.plugins:*'

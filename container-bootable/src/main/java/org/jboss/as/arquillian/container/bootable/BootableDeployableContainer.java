@@ -76,6 +76,7 @@ public final class BootableDeployableContainer extends CommonManagedDeployableCo
         if (jbossArguments != null && !jbossArguments.trim().isEmpty()) {
             commandBuilder.addServerArguments(ParameterUtils.splitParams(jbossArguments));
         }
+
         return commandBuilder;
     }
 

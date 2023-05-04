@@ -47,5 +47,16 @@
                 <property name="readOnlyServerConfig">${wildfly.standalone.config}</property>
             </configuration>
         </container>
+        <!-- A separate container is required as setting values when starting the container, the values will be constant
+             for this container.
+         -->
+        <container qualifier="yaml" mode="manual">
+            <configuration>
+                <property name="jbossHome">${jboss.home}</property>
+                <property name="allowConnectingToRunningServer">false</property>
+                <property name="javaVmArguments">${jvm.args}</property>
+                <property name="serverConfig">${wildfly.standalone.config}</property>
+            </configuration>
+        </container>
     </group>
 </arquillian>

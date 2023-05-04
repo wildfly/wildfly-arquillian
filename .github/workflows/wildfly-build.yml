@@ -46,34 +46,12 @@ jobs:
           path: '**/server.log'
 
   wildfly-build:
-    runs-on: ubuntu-latest
-    outputs:
-      wildfly-version: ${{steps.version.outputs.wildfly-version}}
-    steps:
-      - name: Checkout WildFly
-        uses: actions/checkout@v3
-        with:
-          repository: wildfly/wildfly
-          fetch-depth: 0
-      - name: Set up JDK 11
-        uses: actions/setup-java@v3
-        with:
-          java-version: 11
-          distribution: 'temurin'
-          cache: 'maven'
-      - name: Build WildFly
-        run: 'mvn clean install -DskipTests -Dcheckstyle.skip=true -Denforcer.skip=true'
-      - id: version
-        run: echo "::set-output name=wildfly-version::$(mvn -B help:evaluate -Dexpression=project.version -pl . | grep -v '^\[')"
-      - name: Archive the repository
-        run: tar -czf maven-repository.tgz -C ~ .m2/repository
-      - uses: actions/upload-artifact@v3
-        with:
-          name: maven-repository
-          path: maven-repository.tgz
-          retention-days: 5
+    uses: wildfly/wildfly/.github/workflows/shared-wildfly-build.yml@main
+    with:
+      wildfly-branch: "main"
+      wildfly-repo: "wildfly/wildfly"
 
-  wildfly-arquillin-build:
+  wildfly-arquillian-build:
     runs-on: ${{ matrix.os }}
     needs: wildfly-build
     strategy:
@@ -86,11 +64,11 @@ jobs:
       - uses: actions/checkout@v3
       - uses: actions/download-artifact@v3
         with:
-          name: maven-repository
+          name: wildfly-maven-repository
           path: .
       - name: Extract Maven Repo
         shell: bash
-        run: tar -xzf maven-repository.tgz -C ~
+        run: tar -xzf wildfly-maven-repository.tar.gz -C ~
       - name: Set up JDK ${{ matrix.java }}
         uses: actions/setup-java@v3
         with:
@@ -98,7 +76,8 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
       - name: Build with Maven Java ${{ matrix.java }}
-        run: mvn clean verify '-Dorg.wildfly.logging.skipLogManagerCheck=true' '-Dversion.org.wildfly.full=${{needs.wildfly-build.outputs.wildfly-version}}' '-Dversion.org.wildfly=${{needs.wildfly-build.outputs.wildfly-version}}'
+        run: |
+          mvn clean install '-Dversion.org.wildfly.full=${{needs.wildfly-build.outputs.wildfly-version}}' '-Dorg.wildfly.logging.skipLogManagerCheck=true'
       - name: Upload surefire reports
         uses: actions/upload-artifact@v3
         if: failure()
@@ -110,9 +89,4 @@ jobs:
         if: failure()
         with:
           name: server-logs-${{ matrix.os }}-${{ matrix.java }}
-          path: '**/server.log'
-      - name: Delete the shared repository
-        uses: geekyeggo/delete-artifact@v2
-        with:
-          name: maven-repository
-          failOnError: false
+          path: '**/*.log'

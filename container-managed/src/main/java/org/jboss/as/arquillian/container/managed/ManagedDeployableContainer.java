@@ -24,6 +24,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.StringJoiner;
 import java.util.regex.Pattern;
 
 import org.jboss.as.arquillian.container.CommonManagedDeployableContainer;
@@ -82,8 +85,9 @@ public final class ManagedDeployableContainer extends CommonManagedDeployableCon
             commandBuilder.addJavaOption("-ea");
         }
 
-        if (config.isAdminOnly())
+        if (config.isAdminOnly()) {
             commandBuilder.setAdminOnly();
+        }
 
         if (jbossArguments != null && !jbossArguments.trim().isEmpty()) {
             commandBuilder.addServerArguments(ParameterUtils.splitParams(jbossArguments));
@@ -94,6 +98,10 @@ public final class ManagedDeployableContainer extends CommonManagedDeployableCon
             commandBuilder.setServerConfiguration(config.getServerConfig());
         } else if (config.getReadOnlyServerConfig() != null) {
             commandBuilder.setServerReadOnlyConfiguration(config.getReadOnlyServerConfig());
+        }
+
+        if (config.getYamlConfiguration() != null) {
+            commandBuilder.setYamlFiles(findSupplementalConfigurationFiles(commandBuilder.getConfigurationDirectory(), config.getYamlConfiguration()));
         }
 
         // Create a clean server base to run the container; ARQ-638
@@ -111,6 +119,42 @@ public final class ManagedDeployableContainer extends CommonManagedDeployableCon
         // the module path has been defined as well.
         commandBuilder.addJavaOption("-Djboss.home.dir=" + commandBuilder.getWildFlyHome());
         return commandBuilder;
+    }
+
+    private Path[] findSupplementalConfigurationFiles(final Path serverConfigurationDirPath, String yaml) {
+        List<Path> yamlPaths = new ArrayList<>();
+        StringJoiner joiner = new StringJoiner(", ");
+        boolean error = false;
+        if (yaml != null && !yaml.isEmpty()) {
+            for (String yamlFile : yaml.split(",|;|:")) {
+                Path yamlPath = new File(yamlFile).toPath();
+                if (!yamlPath.isAbsolute()) {
+                    if (Files.exists(yamlPath) && Files.isRegularFile(yamlPath)) {
+                        yamlPaths.add(yamlPath);
+                    } else if (serverConfigurationDirPath != null) {
+                        yamlPath = serverConfigurationDirPath.resolve(yamlFile);
+                        if (Files.exists(yamlPath) && Files.isRegularFile(yamlPath)) {
+                            yamlPaths.add(yamlPath);
+                        } else {
+                            error = true;
+                            joiner.add('\'' + yamlFile + '\'');
+                        }
+                    } else {
+                        error = true;
+                        joiner.add('\'' + yamlFile + '\'');
+                    }
+                } else if (Files.exists(yamlPath) && Files.isRegularFile(yamlPath)) {
+                    yamlPaths.add(yamlPath);
+                } else {
+                    error = true;
+                    joiner.add('\'' + yamlFile + '\'');
+                }
+            }
+        }
+        if (error) {
+            throw ServerLogger.ROOT_LOGGER.unableToFindYaml(joiner.toString());
+        }
+        return yamlPaths.toArray(new Path[yamlPaths.size()]);
     }
 
     @Override

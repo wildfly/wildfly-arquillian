@@ -18,6 +18,9 @@ updates:
         update-types: ['version-update:semver-major', 'version-update:semver-minor']
       - dependency-name: 'org.jboss:jboss-ejb-client'
         update-types: ['version-update:semver-major', 'version-update:semver-minor']
+        # We must stay on RESTEasy 6.0 for now as this is a Jakarta EE 9 requirement
+      - dependency-name: 'org.jboss.resteasy:*'
+        update-types: ['version-update:semver-major', 'version-update:semver-minor']
     open-pull-requests-limit: 10
   - package-ecosystem: "maven"
     directory: "/"

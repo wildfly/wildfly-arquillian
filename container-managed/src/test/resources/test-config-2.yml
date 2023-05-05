@@ -1,0 +1,4 @@
+wildfly-configuration:
+  system-property:
+    test-yaml2:
+      value: "yaml2"

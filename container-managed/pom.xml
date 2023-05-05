@@ -122,6 +122,25 @@
                 <artifactId>galleon-maven-plugin</artifactId>
             </plugin>
             <plugin>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>enable-yaml-configuration</id>
+                        <phase>process-test-classes</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                <mkdir dir="${jboss.home}/modules/system/layers/base/org/jboss/as/controller/main/dir/META-INF/services/"/>
+                                <echo file="${jboss.home}/modules/system/layers/base/org/jboss/as/controller/main/dir/META-INF/services/org.jboss.as.controller.persistence.ConfigurationExtension"
+                                      append="false" message="org.jboss.as.controller.persistence.yaml.YamlConfigurationExtension"/>
+                            </target>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>

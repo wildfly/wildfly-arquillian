@@ -25,13 +25,11 @@ import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
-import java.util.List;
-import java.util.StringJoiner;
+import java.util.Collection;
 import java.util.regex.Pattern;
 
 import org.jboss.as.arquillian.container.CommonManagedDeployableContainer;
 import org.jboss.as.arquillian.container.ParameterUtils;
-import org.jboss.as.server.logging.ServerLogger;
 import org.jboss.logging.Logger;
 import org.wildfly.core.launcher.CommandBuilder;
 import org.wildfly.core.launcher.StandaloneCommandBuilder;
@@ -44,6 +42,7 @@ import org.wildfly.core.launcher.StandaloneCommandBuilder;
  * @since 17-Nov-2010
  */
 public final class ManagedDeployableContainer extends CommonManagedDeployableContainer<ManagedContainerConfiguration> {
+    private static final Pattern WHITESPACE_OR_COMMA_DELIMITED = Pattern.compile("(\\s+|,)(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)");
 
     static final String TEMP_CONTAINER_DIRECTORY = "arquillian-temp-container";
 
@@ -121,40 +120,28 @@ public final class ManagedDeployableContainer extends CommonManagedDeployableCon
         return commandBuilder;
     }
 
-    private Path[] findSupplementalConfigurationFiles(final Path serverConfigurationDirPath, String yaml) {
-        List<Path> yamlPaths = new ArrayList<>();
-        StringJoiner joiner = new StringJoiner(", ");
-        boolean error = false;
-        if (yaml != null && !yaml.isEmpty()) {
-            for (String yamlFile : yaml.split(",|;|:")) {
-                Path yamlPath = new File(yamlFile).toPath();
-                if (!yamlPath.isAbsolute()) {
-                    if (Files.exists(yamlPath) && Files.isRegularFile(yamlPath)) {
-                        yamlPaths.add(yamlPath);
-                    } else if (serverConfigurationDirPath != null) {
-                        yamlPath = serverConfigurationDirPath.resolve(yamlFile);
-                        if (Files.exists(yamlPath) && Files.isRegularFile(yamlPath)) {
-                            yamlPaths.add(yamlPath);
-                        } else {
-                            error = true;
-                            joiner.add('\'' + yamlFile + '\'');
-                        }
-                    } else {
-                        error = true;
-                        joiner.add('\'' + yamlFile + '\'');
-                    }
-                } else if (Files.exists(yamlPath) && Files.isRegularFile(yamlPath)) {
-                    yamlPaths.add(yamlPath);
-                } else {
-                    error = true;
-                    joiner.add('\'' + yamlFile + '\'');
-                }
+    private Path[] findSupplementalConfigurationFiles(final Path serverConfigurationDirPath, final String yaml) {
+        final Collection<Path> yamlFiles = new ArrayList<>();
+        // Validate the paths exist
+        for (var yamlFile : WHITESPACE_OR_COMMA_DELIMITED.split(yaml)) {
+            var path = Path.of(yamlFile);
+            if (path.isAbsolute()) {
+                yamlFiles.add(path);
+            } else {
+                yamlFiles.add(serverConfigurationDirPath.resolve(path));
             }
         }
-        if (error) {
-            throw ServerLogger.ROOT_LOGGER.unableToFindYaml(joiner.toString());
+        // Validate the YAML files before we return them
+        final Collection<Path> invalidPaths = new ArrayList<>();
+        for (var yamlFile : yamlFiles) {
+            if (Files.notExists(yamlFile)) {
+                invalidPaths.add(yamlFile);
+            }
         }
-        return yamlPaths.toArray(new Path[yamlPaths.size()]);
+        if (!invalidPaths.isEmpty()) {
+            throw new IllegalStateException(String.format("Invalid YAML paths found in %s: %s", yaml, invalidPaths));
+        }
+        return yamlFiles.toArray(new Path[0]);
     }
 
     @Override
@@ -176,10 +163,10 @@ public final class ManagedDeployableContainer extends CommonManagedDeployableCon
         }
 
         if (Files.notExists(cleanBase)) {
-            throw ServerLogger.ROOT_LOGGER.serverBaseDirectoryDoesNotExist(cleanBase.toFile());
+            throw new IllegalStateException(String.format("Base directory %s does not exist.", cleanBase));
         }
         if (!Files.isDirectory(cleanBase)) {
-            throw ServerLogger.ROOT_LOGGER.serverBaseDirectoryIsNotADirectory(cleanBase.toFile());
+            throw new IllegalStateException(String.format("Base directory %s is not a directory.", cleanBase));
         }
 
         final Path currentConfigDir = commandBuilder.getConfigurationDirectory();

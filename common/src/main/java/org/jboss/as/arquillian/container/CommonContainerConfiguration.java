@@ -40,7 +40,6 @@ public class CommonContainerConfiguration implements ContainerConfiguration {
     private String host;
     private int port;
     private String socketBindingName;
-    private String yamlConfiguration;
 
     /**
      * Optional connection timeout in millis.
@@ -142,16 +141,6 @@ public class CommonContainerConfiguration implements ContainerConfiguration {
 
     public int getConnectionTimeout() {
         return this.connectionTimeout;
-    }
-
-    public String getYamlConfiguration() {
-        return yamlConfiguration;
-    }
-
-    public void setYamlConfiguration(String yamlConfiguration) {
-        if (yamlConfiguration != null && !yamlConfiguration.isBlank()) {
-            this.yamlConfiguration = yamlConfiguration;
-        }
     }
 
     /**

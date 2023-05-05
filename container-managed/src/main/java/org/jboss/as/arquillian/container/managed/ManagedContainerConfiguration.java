@@ -41,6 +41,7 @@ public class ManagedContainerConfiguration extends DistributionContainerConfigur
     private boolean setupCleanServerBaseDir = false;
 
     private String cleanServerBaseDir;
+    private String yamlConfiguration;
 
     public ManagedContainerConfiguration() {
     }
@@ -129,5 +130,15 @@ public class ManagedContainerConfiguration extends DistributionContainerConfigur
 
     public void setCleanServerBaseDir(String cleanServerBaseDir) {
         this.cleanServerBaseDir = cleanServerBaseDir;
+    }
+
+    public String getYamlConfiguration() {
+        return yamlConfiguration;
+    }
+
+    public void setYamlConfiguration(String yamlConfiguration) {
+        if (yamlConfiguration != null && !yamlConfiguration.isBlank()) {
+            this.yamlConfiguration = yamlConfiguration;
+        }
     }
 }

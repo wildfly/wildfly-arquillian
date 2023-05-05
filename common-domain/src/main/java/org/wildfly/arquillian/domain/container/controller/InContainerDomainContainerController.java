@@ -84,7 +84,9 @@ public class InContainerDomainContainerController extends ContainerContainerCont
     }
 
     @Override
-    public void suspendServer(final String containerQualifier, final String hostName, final String serverName, final int timeout) {
-        getCommandService().execute(new ServerLifecycleCommand(containerQualifier, Lifecycle.SUSPEND, hostName, serverName, timeout));
+    public void suspendServer(final String containerQualifier, final String hostName, final String serverName,
+            final int timeout) {
+        getCommandService()
+                .execute(new ServerLifecycleCommand(containerQualifier, Lifecycle.SUSPEND, hostName, serverName, timeout));
     }
 }

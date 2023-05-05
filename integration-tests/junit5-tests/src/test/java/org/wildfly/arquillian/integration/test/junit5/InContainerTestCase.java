@@ -20,6 +20,7 @@ import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.HashMap;
 import java.util.Map;
+
 import javax.inject.Inject;
 
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -104,7 +105,8 @@ public class InContainerTestCase {
 
             final ModelNode result = managementClient.getControllerClient().execute(builder.build());
             if (!Operations.isSuccessfulOutcome(result)) {
-                throw new RuntimeException("Failed to configure properties: " + Operations.getFailureDescription(result).asString());
+                throw new RuntimeException(
+                        "Failed to configure properties: " + Operations.getFailureDescription(result).asString());
             }
         }
 
@@ -117,7 +119,8 @@ public class InContainerTestCase {
 
             final ModelNode result = managementClient.getControllerClient().execute(builder.build());
             if (!Operations.isSuccessfulOutcome(result)) {
-                throw new RuntimeException("Failed to configure properties: " + Operations.getFailureDescription(result).asString());
+                throw new RuntimeException(
+                        "Failed to configure properties: " + Operations.getFailureDescription(result).asString());
             }
         }
     }

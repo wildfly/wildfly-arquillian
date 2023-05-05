@@ -29,7 +29,8 @@ import org.jboss.modules.Module;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
- * Sets up and tears down a set of contexts, represented by a list of {@link SetupAction}s. If {@link #setup(java.util.Map)} completes
+ * Sets up and tears down a set of contexts, represented by a list of {@link SetupAction}s. If {@link #setup(java.util.Map)}
+ * completes
  * successfully then {@link #teardown(java.util.Map)} must be called.
  *
  * @author Stuart Douglas

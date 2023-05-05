@@ -33,8 +33,7 @@ public class DomainArquillianDeploymentAppender extends CachedAuxilliaryArchiveA
                 .addPackages(
                         true,
                         "org.wildfly.arquillian.domain.api",
-                        "org.wildfly.arquillian.domain.container.controller"
-                )
+                        "org.wildfly.arquillian.domain.container.controller")
                 .addClasses(AbstractTargetsContainerProvider.class, DomainRemoteExtension.class)
                 .addAsServiceProvider(RemoteLoadableExtension.class, DomainRemoteExtension.class);
     }

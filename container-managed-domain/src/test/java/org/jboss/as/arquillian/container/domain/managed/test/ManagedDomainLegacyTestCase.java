@@ -24,7 +24,6 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.wildfly.arquillian.domain.api.TargetsServerGroup;
 
 /**
  * For Domain server DeployableContainer implementations, the DeployableContainer will register

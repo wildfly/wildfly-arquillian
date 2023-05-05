@@ -46,16 +46,16 @@ public class ReadOnlyServerConfigTestCase {
     private static final String READ_ONLY_CONTAINER_ID = "read-only-config";
 
     @ArquillianResource
-    @SuppressWarnings({"unused", "StaticVariableMayNotBeInitialized"})
+    @SuppressWarnings({ "unused", "StaticVariableMayNotBeInitialized" })
     private static ContainerController controller;
 
     @ArquillianResource
-    @SuppressWarnings({"unused", "InstanceVariableMayNotBeInitialized"})
+    @SuppressWarnings({ "unused", "InstanceVariableMayNotBeInitialized" })
     @TargetsContainer(READ_ONLY_CONTAINER_ID)
     private ManagementClient readOnlyClient;
 
     @ArquillianResource
-    @SuppressWarnings({"unused", "InstanceVariableMayNotBeInitialized"})
+    @SuppressWarnings({ "unused", "InstanceVariableMayNotBeInitialized" })
     @TargetsContainer(DEFAULT_CONTAINER_ID)
     private ManagementClient defaultClient;
 
@@ -119,10 +119,12 @@ public class ReadOnlyServerConfigTestCase {
         executeOperation(client, op, false);
     }
 
-    private static void executeOperation(final ManagementClient client, final ModelNode op, final boolean expectFailure) throws IOException {
+    private static void executeOperation(final ManagementClient client, final ModelNode op, final boolean expectFailure)
+            throws IOException {
         final ModelNode result = client.getControllerClient().execute(op);
         if (expectFailure) {
-            Assert.assertFalse(String.format("Expected operation %s to fail: %n%s", op, result), Operations.isSuccessfulOutcome(result));
+            Assert.assertFalse(String.format("Expected operation %s to fail: %n%s", op, result),
+                    Operations.isSuccessfulOutcome(result));
         } else {
             if (!Operations.isSuccessfulOutcome(result)) {
                 Assert.fail(Operations.getFailureDescription(result).asString());

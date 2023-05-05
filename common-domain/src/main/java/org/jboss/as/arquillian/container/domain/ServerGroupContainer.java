@@ -41,10 +41,12 @@ import org.wildfly.arquillian.domain.api.DomainManager;
  */
 public class ServerGroupContainer implements DeployableContainer<EmptyConfiguration> {
 
-    @Inject @ContainerScoped
+    @Inject
+    @ContainerScoped
     private InstanceProducer<ArchiveDeployer> archiveDeployerInst;
 
-    @Inject @ContainerScoped
+    @Inject
+    @ContainerScoped
     private InstanceProducer<ModelControllerClient> clientInst;
 
     @Inject
@@ -56,7 +58,8 @@ public class ServerGroupContainer implements DeployableContainer<EmptyConfigurat
     private Domain domain;
     private final DomainManager domainManager;
 
-    public ServerGroupContainer(ManagementClient client, ArchiveDeployer deployer, Domain domain, ServerGroup serverGroup, final DomainManager domainManager) {
+    public ServerGroupContainer(ManagementClient client, ArchiveDeployer deployer, Domain domain, ServerGroup serverGroup,
+            final DomainManager domainManager) {
         this.client = client;
         this.deployer = deployer;
         this.domain = domain;

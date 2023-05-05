@@ -32,9 +32,9 @@ import javax.servlet.http.HttpServletResponse;
 @WebServlet(name = "HelloWorldServlet", urlPatterns = HelloWorldServlet.URL_PATTERN)
 public class HelloWorldServlet extends HttpServlet {
     private static final long serialVersionUID = 2202174128107400113L;
-    
+
     public static final String URL_PATTERN = "/greet";
-    
+
     public static final String GREETING = "Hello, World";
 
     @Override

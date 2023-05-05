@@ -20,6 +20,7 @@ import javax.ejb.Stateless;
 
 /**
  * Test EJB used for binding only
+ *
  * @author <a href="mailto:alr@jboss.org">Andrew Lee Rubinger</a>
  */
 @Stateless

@@ -75,15 +75,19 @@ public abstract class AbstractManualModeTestCase {
     public void testServerControl() throws Exception {
         // The primary container should already be started
         controller.start(PRIMARY_CONTAINER);
-        Assert.assertTrue(String.format("The container \"%s\" should be started", PRIMARY_CONTAINER), controller.isStarted(PRIMARY_CONTAINER));
+        Assert.assertTrue(String.format("The container \"%s\" should be started", PRIMARY_CONTAINER),
+                controller.isStarted(PRIMARY_CONTAINER));
         controller.stop(PRIMARY_CONTAINER);
-        Assert.assertFalse(String.format("The container \"%s\" should be stopped", PRIMARY_CONTAINER), controller.isStarted(PRIMARY_CONTAINER));
+        Assert.assertFalse(String.format("The container \"%s\" should be stopped", PRIMARY_CONTAINER),
+                controller.isStarted(PRIMARY_CONTAINER));
 
         // Start and stop the secondary controller
         controller.start(SECONDARY_CONTAINER);
-        Assert.assertTrue(String.format("The container \"%s\" should be started", SECONDARY_CONTAINER), controller.isStarted(SECONDARY_CONTAINER));
+        Assert.assertTrue(String.format("The container \"%s\" should be started", SECONDARY_CONTAINER),
+                controller.isStarted(SECONDARY_CONTAINER));
         controller.stop(SECONDARY_CONTAINER);
-        Assert.assertFalse(String.format("The container \"%s\" should be stopped", SECONDARY_CONTAINER), controller.isStarted(SECONDARY_CONTAINER));
+        Assert.assertFalse(String.format("The container \"%s\" should be stopped", SECONDARY_CONTAINER),
+                controller.isStarted(SECONDARY_CONTAINER));
     }
 
     @Test
@@ -105,7 +109,8 @@ public abstract class AbstractManualModeTestCase {
         if (Operations.isSuccessfulOutcome(result)) {
             return Operations.readResult(result);
         }
-        Assert.fail(String.format("Failed to execute operation: %s%n%s", op, Operations.getFailureDescription(result).asString()));
+        Assert.fail(
+                String.format("Failed to execute operation: %s%n%s", op, Operations.getFailureDescription(result).asString()));
         return new ModelNode();
     }
 

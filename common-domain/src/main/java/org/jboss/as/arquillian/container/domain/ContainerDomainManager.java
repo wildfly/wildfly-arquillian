@@ -36,7 +36,8 @@ class ContainerDomainManager extends AbstractDomainManager {
      * @param lifecycleControlAllowed {@code true} if the lifecycle operations are allowed
      * @param client                  the management client used to communicate with the running container
      */
-    ContainerDomainManager(final String containerName, final boolean lifecycleControlAllowed, final ModelControllerClient client) {
+    ContainerDomainManager(final String containerName, final boolean lifecycleControlAllowed,
+            final ModelControllerClient client) {
         this(containerName, lifecycleControlAllowed, client, false);
     }
 
@@ -48,7 +49,8 @@ class ContainerDomainManager extends AbstractDomainManager {
      * @param client                  the management client used to communicate with the running container
      * @param containerStarted        the default container setting
      */
-    ContainerDomainManager(final String containerName, final boolean lifecycleControlAllowed, final ModelControllerClient client, final boolean containerStarted) {
+    ContainerDomainManager(final String containerName, final boolean lifecycleControlAllowed,
+            final ModelControllerClient client, final boolean containerStarted) {
         super(containerName, lifecycleControlAllowed);
         this.client = client;
         this.containerStarted = containerStarted;

@@ -101,7 +101,8 @@ public abstract class CommonDomainDeployableContainer<T extends CommonDomainCont
         containerConfig = config;
 
         // Register on setup so these can be injected into manual mode client tests
-        final DomainClient domainClient = DomainClient.Factory.create(new DelegatingModelControllerClient(DomainDelegateProvider.INSTANCE));
+        final DomainClient domainClient = DomainClient.Factory
+                .create(new DelegatingModelControllerClient(DomainDelegateProvider.INSTANCE));
         domainManager = new ContainerDomainManager(getContainerName(), isControllable(), domainClient);
         managementClient = new ManagementClient(domainClient, config, domainManager);
         managementClientInst.set(managementClient);
@@ -150,10 +151,10 @@ public abstract class CommonDomainDeployableContainer<T extends CommonDomainCont
         domainInst.set(domain);
 
         // Register all ServerGroups
-        for (ServerGroup serverGroup: domain.getServerGroups()) {
+        for (ServerGroup serverGroup : domain.getServerGroups()) {
             Container serverContainer = createServerGroupContainer(registry, archiveDeployerInst.get(), domain, serverGroup);
             String mode = mapMode(modeMap, serverContainer.getName());
-            if(mode != null) {
+            if (mode != null) {
                 serverContainer.getContainerConfiguration().setMode(mode);
             }
             setupEvent.fire(new SetupContainer(serverContainer));
@@ -164,7 +165,7 @@ public abstract class CommonDomainDeployableContainer<T extends CommonDomainCont
         for (Server server : domain.getServers()) {
             Container serverContainer = createServerContainer(registry, server);
             String mode = mapMode(modeMap, serverContainer.getName());
-            if(mode != null) {
+            if (mode != null) {
                 serverContainer.getContainerConfiguration().setMode(mode);
             }
             String serverStatus = managementClient.getServerState(server);
@@ -272,8 +273,8 @@ public abstract class CommonDomainDeployableContainer<T extends CommonDomainCont
 
     private Container createServerContainer(ContainerRegistry registry, final Server server) {
         ContainerDef def = new ContainerDefImpl("arquillian")
-                                .container(server.getContainerName())
-                                .setMode(getContainerMode());
+                .container(server.getContainerName())
+                .setMode(getContainerMode());
 
         return registry.create(def, new ServiceLoader() {
 
@@ -300,8 +301,8 @@ public abstract class CommonDomainDeployableContainer<T extends CommonDomainCont
     private Container createServerGroupContainer(ContainerRegistry registry, final ArchiveDeployer archiveDeployer,
             final Domain domain, final ServerGroup serverGroup) {
         ContainerDef def = new ContainerDefImpl("arquillian")
-                                .container(serverGroup.getContainerName())
-                                .setMode(getContainerMode());
+                .container(serverGroup.getContainerName())
+                .setMode(getContainerMode());
 
         return registry.create(def, new ServiceLoader() {
 
@@ -345,9 +346,10 @@ public abstract class CommonDomainDeployableContainer<T extends CommonDomainCont
     }
 
     private String mapMode(Map<String, String> modeMap, String name) {
-        for(Map.Entry<String, String> entry : modeMap.entrySet()) {
-            if(name.matches(entry.getKey())) {
-                log.info("Mapping " + name + " to container mode " + entry.getValue() + " based on expression " + entry.getKey());
+        for (Map.Entry<String, String> entry : modeMap.entrySet()) {
+            if (name.matches(entry.getKey())) {
+                log.info("Mapping " + name + " to container mode " + entry.getValue() + " based on expression "
+                        + entry.getKey());
                 return entry.getValue();
             }
         }

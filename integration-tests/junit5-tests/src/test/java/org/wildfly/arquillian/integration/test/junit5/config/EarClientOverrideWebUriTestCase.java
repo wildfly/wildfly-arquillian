@@ -32,7 +32,6 @@ public class EarClientOverrideWebUriTestCase extends AbstractOverrideWebUriTest 
         return ShrinkWrap.create(EnterpriseArchive.class, EarClientOverrideWebUriTestCase.class.getSimpleName() + ".ear")
                 .addAsModule(
                         ShrinkWrap.create(WebArchive.class, EarClientOverrideWebUriTestCase.class.getSimpleName() + "-war.war")
-                                .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml")
-                );
+                                .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml"));
     }
 }

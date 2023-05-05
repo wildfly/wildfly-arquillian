@@ -153,7 +153,8 @@ public class ServerGroupArchive<T extends Archive<T>> implements Archive<T> {
     }
 
     @Override
-    public <X extends Archive<X>> Collection<X> getAsType(final Class<X> type, final Filter<ArchivePath> filter, final ArchiveFormat archiveFormat) {
+    public <X extends Archive<X>> Collection<X> getAsType(final Class<X> type, final Filter<ArchivePath> filter,
+            final ArchiveFormat archiveFormat) {
         return delegate.getAsType(type, filter, archiveFormat);
     }
 
@@ -193,12 +194,14 @@ public class ServerGroupArchive<T extends Archive<T>> implements Archive<T> {
     }
 
     @Override
-    public T add(final Archive<?> archive, final ArchivePath path, final Class<? extends StreamExporter> exporter) throws IllegalArgumentException {
+    public T add(final Archive<?> archive, final ArchivePath path, final Class<? extends StreamExporter> exporter)
+            throws IllegalArgumentException {
         return delegate.add(archive, path, exporter);
     }
 
     @Override
-    public T add(final Archive<?> archive, final String path, final Class<? extends StreamExporter> exporter) throws IllegalArgumentException {
+    public T add(final Archive<?> archive, final String path, final Class<? extends StreamExporter> exporter)
+            throws IllegalArgumentException {
         return delegate.add(archive, path, exporter);
     }
 
@@ -223,17 +226,20 @@ public class ServerGroupArchive<T extends Archive<T>> implements Archive<T> {
     }
 
     @Override
-    public T merge(final Archive<?> source, final ArchivePath path, final Filter<ArchivePath> filter) throws IllegalArgumentException {
+    public T merge(final Archive<?> source, final ArchivePath path, final Filter<ArchivePath> filter)
+            throws IllegalArgumentException {
         return delegate.merge(source, path, filter);
     }
 
     @Override
-    public T merge(final Archive<?> source, final String path, final Filter<ArchivePath> filter) throws IllegalArgumentException {
+    public T merge(final Archive<?> source, final String path, final Filter<ArchivePath> filter)
+            throws IllegalArgumentException {
         return delegate.merge(source, path, filter);
     }
 
     @Override
-    public T move(final ArchivePath source, final ArchivePath target) throws IllegalArgumentException, IllegalArchivePathException {
+    public T move(final ArchivePath source, final ArchivePath target)
+            throws IllegalArgumentException, IllegalArchivePathException {
         return delegate.move(source, target);
     }
 

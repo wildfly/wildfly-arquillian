@@ -27,7 +27,7 @@ import org.testng.annotations.Test;
 
 /**
  * Ensures that the basic startup/deployment etc facilities of the Arquillian container are working with TestNG w/ AS7. AS7-1303
- * 
+ *
  * @author <a href="mailto:alr@jboss.org">Andrew Lee Rubinger</a>
  */
 public class BasicTestNGIntegrationTestCase extends Arquillian {

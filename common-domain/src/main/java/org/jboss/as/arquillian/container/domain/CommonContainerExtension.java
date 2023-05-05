@@ -22,8 +22,8 @@ import org.jboss.arquillian.test.spi.enricher.resource.ResourceProvider;
 import org.wildfly.arquillian.domain.DomainArquillianDeploymentAppender;
 import org.wildfly.arquillian.domain.ServerGroupDeploymentObserver;
 import org.wildfly.arquillian.domain.container.controller.ClientDomainContainerControllerCreator;
-import org.wildfly.arquillian.domain.container.controller.command.DomainContainerCommandObserver;
 import org.wildfly.arquillian.domain.container.controller.DomainContainerControllerProvider;
+import org.wildfly.arquillian.domain.container.controller.command.DomainContainerCommandObserver;
 
 /**
  * The extensions used by the any jboss container.

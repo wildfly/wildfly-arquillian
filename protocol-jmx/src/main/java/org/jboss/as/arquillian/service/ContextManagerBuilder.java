@@ -26,7 +26,7 @@ import org.jboss.as.server.deployment.SetupAction;
  * Builds a {@link ContextManager}
  *
  * @author Stuart Douglas
- *@author <a href="mailto:alr@jboss.org">Andrew Lee Rubinger</a>
+ * @author <a href="mailto:alr@jboss.org">Andrew Lee Rubinger</a>
  */
 public class ContextManagerBuilder {
 

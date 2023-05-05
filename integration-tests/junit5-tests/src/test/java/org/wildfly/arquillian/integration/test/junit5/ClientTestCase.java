@@ -22,11 +22,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import okhttp3.Call;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
-import okhttp3.ResponseBody;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit5.ArquillianExtension;
@@ -44,6 +39,12 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+
+import okhttp3.Call;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
+import okhttp3.ResponseBody;
 
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
@@ -98,8 +99,10 @@ public class ClientTestCase {
 
     private String getProperty(final String key) throws IOException {
         final ModelNode address = Operations.createAddress("system-property", key);
-        final ModelNode result = client.getControllerClient().execute(Operations.createReadAttributeOperation(address, "value"));
-        Assertions.assertTrue(Operations.isSuccessfulOutcome(result), () -> Operations.getFailureDescription(result).asString());
+        final ModelNode result = client.getControllerClient()
+                .execute(Operations.createReadAttributeOperation(address, "value"));
+        Assertions.assertTrue(Operations.isSuccessfulOutcome(result),
+                () -> Operations.getFailureDescription(result).asString());
         return Operations.readResult(result).asString();
     }
 
@@ -116,7 +119,8 @@ public class ClientTestCase {
 
             final ModelNode result = managementClient.getControllerClient().execute(builder.build());
             if (!Operations.isSuccessfulOutcome(result)) {
-                throw new RuntimeException("Failed to configure properties: " + Operations.getFailureDescription(result).asString());
+                throw new RuntimeException(
+                        "Failed to configure properties: " + Operations.getFailureDescription(result).asString());
             }
         }
 
@@ -129,7 +133,8 @@ public class ClientTestCase {
 
             final ModelNode result = managementClient.getControllerClient().execute(builder.build());
             if (!Operations.isSuccessfulOutcome(result)) {
-                throw new RuntimeException("Failed to configure properties: " + Operations.getFailureDescription(result).asString());
+                throw new RuntimeException(
+                        "Failed to configure properties: " + Operations.getFailureDescription(result).asString());
             }
         }
     }

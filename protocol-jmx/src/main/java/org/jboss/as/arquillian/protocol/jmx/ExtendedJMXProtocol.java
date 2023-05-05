@@ -43,7 +43,7 @@ public class ExtendedJMXProtocol extends AbstractJMXProtocol<ExtendedJMXProtocol
 
     @Override
     public DeploymentPackager getPackager() {
-        if(archiveHolderInst.get() == null) {
+        if (archiveHolderInst.get() == null) {
             archiveHolderInst.set(new ServiceArchiveHolder());
         }
         return new JMXProtocolPackager(archiveHolderInst.get());
@@ -75,13 +75,13 @@ public class ExtendedJMXProtocol extends AbstractJMXProtocol<ExtendedJMXProtocol
         }
 
         void addPreparedDeployment(String deploymentName) {
-            if(deploymentName != null) {
+            if (deploymentName != null) {
                 preparedDeployments.add(deploymentName);
             }
         }
 
         public boolean deploymentExistsAndRemove(String deploymentName) {
-            if(deploymentName != null) {
+            if (deploymentName != null) {
                 return preparedDeployments.remove(deploymentName);
             }
             return false;

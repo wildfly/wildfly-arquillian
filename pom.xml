@@ -27,9 +27,9 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.jboss</groupId>
-        <artifactId>jboss-parent</artifactId>
-        <version>39</version>
+        <groupId>org.wildfly.tools</groupId>
+        <artifactId>wildfly-parent</artifactId>
+        <version>1.0.1.Final</version>
     </parent>
 
     <artifactId>wildfly-arquillian-parent</artifactId>
@@ -98,6 +98,11 @@
 
         <!-- Build minimums -->
         <maven.min.version>3.6.0</maven.min.version>
+
+        <!-- Default to Java 8 -->
+        <jdk.min.version>11</jdk.min.version>
+        <maven.compiler.target>8</maven.compiler.target>
+        <maven.compiler.source>8</maven.compiler.source>
     </properties>
 
     <licenses>

@@ -56,7 +56,8 @@ public class ArquillianServiceDeployer {
 
     private Set<String> serviceArchiveDeployed = new HashSet<String>();
 
-    public synchronized void doServiceDeploy(@Observes(precedence = 1) BeforeDeploy event, Container container, ServiceArchiveHolder archiveHolder) {
+    public synchronized void doServiceDeploy(@Observes(precedence = 1) BeforeDeploy event, Container container,
+            ServiceArchiveHolder archiveHolder) {
         // already deployed?
         if (serviceArchiveDeployed.contains(container.getName())) {
             archiveHolder.deploymentExistsAndRemove(event.getDeployment().getName()); // cleanup
@@ -99,8 +100,8 @@ public class ArquillianServiceDeployer {
             try {
                 log.infof("Deploy arquillian service: %s", serviceArchive);
                 final Map<String, String> props = container.getContainerConfiguration().getContainerProperties();
-                //MASSIVE HACK
-                //write the management connection props to the archive, so we can access them from the server
+                // MASSIVE HACK
+                // write the management connection props to the archive, so we can access them from the server
                 final ByteArrayOutputStream bytes = new ByteArrayOutputStream();
                 ObjectOutputStream out = new ObjectOutputStream(bytes);
                 out.writeObject(props.get("managementPort"));
@@ -108,7 +109,8 @@ public class ArquillianServiceDeployer {
                 out.writeObject(NetworkUtils.formatPossibleIpv6Address(props.get("managementProtocol")));
                 out.writeObject(props.get("authenticationConfig"));
                 out.close();
-                serviceArchive.addAsManifestResource(new ByteArrayAsset(bytes.toByteArray()), "org.jboss.as.managementConnectionProps");
+                serviceArchive.addAsManifestResource(new ByteArrayAsset(bytes.toByteArray()),
+                        "org.jboss.as.managementConnectionProps");
 
                 DeployableContainer<?> deployableContainer = container.getDeployableContainer();
                 deployableContainer.deploy(serviceArchive);

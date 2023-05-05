@@ -15,7 +15,6 @@
  */
 package org.jboss.as.arquillian.container.controller;
 
-
 import org.jboss.arquillian.container.spi.event.SetupContainers;
 import org.jboss.arquillian.core.api.Injector;
 import org.jboss.arquillian.core.api.Instance;
@@ -45,4 +44,3 @@ public class ClientWildFlyContainerControllerCreator {
         controller.set(injector.get().inject(new ClientWildFlyContainerController()));
     }
 }
-

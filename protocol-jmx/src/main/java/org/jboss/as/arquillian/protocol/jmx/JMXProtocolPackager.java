@@ -104,7 +104,8 @@ public class JMXProtocolPackager implements DeploymentPackager {
     }
 
     @Override
-    public Archive<?> generateDeployment(TestDeployment testDeployment, Collection<ProtocolArchiveProcessor> protocolProcessors) {
+    public Archive<?> generateDeployment(TestDeployment testDeployment,
+            Collection<ProtocolArchiveProcessor> protocolProcessors) {
         final Archive<?> appArchive = testDeployment.getApplicationArchive();
         if (archiveHolder.getArchive() == null) {
             try {
@@ -132,8 +133,9 @@ public class JMXProtocolPackager implements DeploymentPackager {
 
         archive.addPackage(ArquillianService.class.getPackage());
         archive.addPackage(AbstractJMXProtocol.class.getPackage());
-        //add the classes required for server setup
-        archive.addClasses(ServerSetup.class, ServerSetupTask.class, ManagementClient.class, Authentication.class, NetworkUtils.class);
+        // add the classes required for server setup
+        archive.addClasses(ServerSetup.class, ServerSetupTask.class, ManagementClient.class, Authentication.class,
+                NetworkUtils.class);
 
         final Set<ModuleIdentifier> archiveDependencies = new LinkedHashSet<ModuleIdentifier>();
         archiveDependencies.add(ModuleIdentifier.create("org.jboss.as.jmx"));
@@ -193,9 +195,11 @@ public class JMXProtocolPackager implements DeploymentPackager {
 
         // Add the ServiceActivator
         String serviceActivatorPath = "META-INF/services/" + ServiceActivator.class.getName();
-        final URL serviceActivatorURL = this.getClass().getClassLoader().getResource("arquillian-service/" + serviceActivatorPath);
+        final URL serviceActivatorURL = this.getClass().getClassLoader()
+                .getResource("arquillian-service/" + serviceActivatorPath);
         if (serviceActivatorURL == null) {
-            throw new RuntimeException("No arquillian-service/" + serviceActivatorPath + " found by classloader: " + this.getClass().getClassLoader());
+            throw new RuntimeException("No arquillian-service/" + serviceActivatorPath + " found by classloader: "
+                    + this.getClass().getClassLoader());
         }
         archive.addAsResource(new UrlAsset(serviceActivatorURL), serviceActivatorPath);
 
@@ -222,7 +226,8 @@ public class JMXProtocolPackager implements DeploymentPackager {
     }
 
     /**
-     * Adds the Manifest Attribute "Dependencies" with the required dependencies for JBoss Modules to depend on the Arquillian Service.
+     * Adds the Manifest Attribute "Dependencies" with the required dependencies for JBoss Modules to depend on the Arquillian
+     * Service.
      *
      * @param appArchive The Archive to deploy
      */
@@ -242,7 +247,7 @@ public class JMXProtocolPackager implements DeploymentPackager {
             if (moduleDeps.indexOf(dep) < 0) {
                 moduleDeps.append("," + dep);
             }
-            if(optionalDeps.contains(dep)) {
+            if (optionalDeps.contains(dep)) {
                 moduleDeps.append(" optional");
             }
             // Any dependencies that require the services, META-INF/services, to be exported

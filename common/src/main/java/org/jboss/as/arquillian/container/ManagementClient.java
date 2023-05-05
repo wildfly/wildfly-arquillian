@@ -47,6 +47,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+
 import javax.management.Attribute;
 import javax.management.AttributeList;
 import javax.management.AttributeNotFoundException;
@@ -128,7 +129,8 @@ public class ManagementClient implements Closeable {
     private boolean jmxSubsystemPresent = false;
     private boolean closed = false;
 
-    public ManagementClient(ModelControllerClient client, final String mgmtAddress, final int managementPort, final String protocol) {
+    public ManagementClient(ModelControllerClient client, final String mgmtAddress, final int managementPort,
+            final String protocol) {
         if (client == null) {
             throw new IllegalArgumentException("Client must be specified");
         }
@@ -151,9 +153,9 @@ public class ManagementClient implements Closeable {
         this.config = config;
     }
 
-    //-------------------------------------------------------------------------------------||
+    // -------------------------------------------------------------------------------------||
     // Public API -------------------------------------------------------------------------||
-    //-------------------------------------------------------------------------------------||
+    // -------------------------------------------------------------------------------------||
 
     /**
      * Returns the client used to connect to the server.
@@ -210,7 +212,7 @@ public class ManagementClient implements Closeable {
                             if (undertowSubsystem != null && undertowSubsystem.hasDefined("server")) {
                                 List<Property> vhosts = undertowSubsystem.get("server").asPropertyList();
                                 ModelNode socketBinding = new ModelNode();
-                                if (!vhosts.isEmpty()) {//if empty no virtual hosts defined
+                                if (!vhosts.isEmpty()) {// if empty no virtual hosts defined
                                     socketBinding = vhosts.get(0)
                                             .getValue()
                                             .get("http-listener", "default")
@@ -223,7 +225,8 @@ public class ManagementClient implements Closeable {
                         }
                         ManagementClient.this.webUri = webUri;
                         try {
-                            ejbUri = new URI("http-remoting", webUri.getUserInfo(), webUri.getHost(), webUri.getPort(), null, null, null);
+                            ejbUri = new URI("http-remoting", webUri.getUserInfo(), webUri.getHost(), webUri.getPort(), null,
+                                    null, null);
                         } catch (URISyntaxException e) {
                             throw new RuntimeException(e);
                         }
@@ -275,7 +278,8 @@ public class ManagementClient implements Closeable {
         }
         if (undertowSubsystemPresent) {
             URI webURI = getWebUri();
-            HTTPContext context = new HTTPContext(webURI.getHost(), webURI.getPort(), "https".equalsIgnoreCase(webURI.getScheme()));
+            HTTPContext context = new HTTPContext(webURI.getHost(), webURI.getPort(),
+                    "https".equalsIgnoreCase(webURI.getScheme()));
             metaData.addContext(context);
 
             try {
@@ -393,7 +397,7 @@ public class ManagementClient implements Closeable {
     }
 
     static String formatIP(String ip) {
-        //it appears some system can return a binding with the zone specifier on the end
+        // it appears some system can return a binding with the zone specifier on the end
         if (ip.contains(":") && ip.contains("%")) {
             ip = ip.split("%")[0];
         }
@@ -404,9 +408,9 @@ public class ManagementClient implements Closeable {
         return ip;
     }
 
-    //-------------------------------------------------------------------------------------||
+    // -------------------------------------------------------------------------------------||
     // Metadata Extraction Operations -----------------------------------------------------||
-    //-------------------------------------------------------------------------------------||
+    // -------------------------------------------------------------------------------------||
 
     private boolean isEnterpriseArchive(String deploymentName) {
         return deploymentName.endsWith(POSTFIX_EAR);
@@ -443,9 +447,11 @@ public class ManagementClient implements Closeable {
                 .collect(Collectors.toSet());
     }
 
-    private List<ModelNode> readDeploymentNode(final String deploymentName, final Iterable<String> subDeploymentNames) throws IOException {
+    private List<ModelNode> readDeploymentNode(final String deploymentName, final Iterable<String> subDeploymentNames)
+            throws IOException {
         if (subDeploymentNames == null) {
-            ModelNode operation = Operations.createReadResourceOperation(Operations.createAddress(DEPLOYMENT, deploymentName, SUBSYSTEM));
+            ModelNode operation = Operations
+                    .createReadResourceOperation(Operations.createAddress(DEPLOYMENT, deploymentName, SUBSYSTEM));
             operation.get(RECURSIVE_DEPTH).set(2);
             operation.get(INCLUDE_RUNTIME).set(true);
 
@@ -459,7 +465,8 @@ public class ManagementClient implements Closeable {
         final List<ModelNode> deployments = new ArrayList<>();
         final Operations.CompositeOperationBuilder builder = Operations.CompositeOperationBuilder.create();
         for (String subDeploymentName : subDeploymentNames) {
-            ModelNode operation = Operations.createReadResourceOperation(Operations.createAddress(DEPLOYMENT, deploymentName, SUBDEPLOYMENT, subDeploymentName, SUBSYSTEM));
+            ModelNode operation = Operations.createReadResourceOperation(
+                    Operations.createAddress(DEPLOYMENT, deploymentName, SUBDEPLOYMENT, subDeploymentName, SUBSYSTEM));
             operation.get(RECURSIVE_DEPTH).set(2);
             operation.get(INCLUDE_RUNTIME).set(true);
             builder.addStep(operation);
@@ -558,9 +565,9 @@ public class ManagementClient implements Closeable {
         return Optional.empty();
     }
 
-    //-------------------------------------------------------------------------------------||
+    // -------------------------------------------------------------------------------------||
     // Common Management API Operations ---------------------------------------------------||
-    //-------------------------------------------------------------------------------------||
+    // -------------------------------------------------------------------------------------||
 
     private ModelNode executeForResult(final ModelNode operation) throws Exception {
         checkState();
@@ -570,7 +577,7 @@ public class ManagementClient implements Closeable {
     }
 
     private void checkSuccessful(final ModelNode result,
-                                 final ModelNode operation) throws UnSuccessfulOperationException {
+            final ModelNode operation) throws UnSuccessfulOperationException {
         if (!SUCCESS.equals(result.get(OUTCOME).asString())) {
             logger.error("Operation " + operation + " did not succeed. Result was " + result);
             throw new UnSuccessfulOperationException(result.get(
@@ -603,11 +610,14 @@ public class ManagementClient implements Closeable {
     public JMXServiceURL getRemoteJMXURL() {
         try {
             if ("http-remoting".equals(mgmtProtocol) || "remote+http".equals(mgmtProtocol)) {
-                return new JMXServiceURL("service:jmx:remote+http://" + NetworkUtils.formatPossibleIpv6Address(mgmtAddress) + ":" + mgmtPort);
+                return new JMXServiceURL(
+                        "service:jmx:remote+http://" + NetworkUtils.formatPossibleIpv6Address(mgmtAddress) + ":" + mgmtPort);
             } else if (mgmtProtocol.equals("https-remoting")) {
-                return new JMXServiceURL("service:jmx:remote+https://" + NetworkUtils.formatPossibleIpv6Address(mgmtAddress) + ":" + mgmtPort);
+                return new JMXServiceURL(
+                        "service:jmx:remote+https://" + NetworkUtils.formatPossibleIpv6Address(mgmtAddress) + ":" + mgmtPort);
             } else {
-                return new JMXServiceURL("service:jmx:remoting-jmx://" + NetworkUtils.formatPossibleIpv6Address(mgmtAddress) + ":" + mgmtPort);
+                return new JMXServiceURL(
+                        "service:jmx:remoting-jmx://" + NetworkUtils.formatPossibleIpv6Address(mgmtAddress) + ":" + mgmtPort);
             }
         } catch (Exception e) {
             throw new RuntimeException("Could not create JMXServiceURL:" + this, e);
@@ -644,9 +654,9 @@ public class ManagementClient implements Closeable {
         }
     }
 
-    //-------------------------------------------------------------------------------------||
+    // -------------------------------------------------------------------------------------||
     // Helper classes ---------------------------------------------------------------------||
-    //-------------------------------------------------------------------------------------||
+    // -------------------------------------------------------------------------------------||
     private static class UnSuccessfulOperationException extends Exception {
         private static final long serialVersionUID = 1L;
 
@@ -692,7 +702,7 @@ public class ManagementClient implements Closeable {
 
         @Override
         public ObjectInstance createMBean(String className, ObjectName name, ObjectName loaderName, Object[] params,
-                                          String[] signature) throws ReflectionException, InstanceAlreadyExistsException,
+                String[] signature) throws ReflectionException, InstanceAlreadyExistsException,
                 MBeanException, NotCompliantMBeanException, InstanceNotFoundException, IOException {
             checkConnection();
             return connection.createMBean(className, name, loaderName, params, signature);
@@ -819,7 +829,7 @@ public class ManagementClient implements Closeable {
 
         @Override
         public void addNotificationListener(ObjectName name, NotificationListener listener, NotificationFilter filter,
-                                            Object handback) throws InstanceNotFoundException, IOException {
+                Object handback) throws InstanceNotFoundException, IOException {
             try {
                 connection.addNotificationListener(name, listener, filter, handback);
             } catch (IOException e) {
@@ -889,7 +899,7 @@ public class ManagementClient implements Closeable {
 
         @Override
         public void removeNotificationListener(ObjectName name, NotificationListener listener, NotificationFilter filter,
-                                               Object handback) throws InstanceNotFoundException, ListenerNotFoundException, IOException {
+                Object handback) throws InstanceNotFoundException, ListenerNotFoundException, IOException {
             try {
                 connection.removeNotificationListener(name, listener, filter, handback);
             } catch (IOException e) {
@@ -937,7 +947,8 @@ public class ManagementClient implements Closeable {
             try {
                 final Map<String, Object> env = new HashMap<>();
                 env.put(CallbackHandler.class.getName(), Authentication.getCallbackHandler());
-                final JMXConnector connector = ManagementClient.this.connector = JMXConnectorFactory.connect(getRemoteJMXURL(), env);
+                final JMXConnector connector = ManagementClient.this.connector = JMXConnectorFactory.connect(getRemoteJMXURL(),
+                        env);
                 connection = connector.getMBeanServerConnection();
             } catch (IOException e) {
                 throw new RuntimeException(e);

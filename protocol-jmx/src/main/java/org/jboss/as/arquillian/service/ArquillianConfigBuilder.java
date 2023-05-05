@@ -79,7 +79,7 @@ class ArquillianConfigBuilder {
     static void handleParseAnnotations(final DeploymentUnit deploymentUnit) {
 
         final CompositeIndex compositeIndex = deploymentUnit.getAttachment(Attachments.COMPOSITE_ANNOTATION_INDEX);
-        if(compositeIndex == null) {
+        if (compositeIndex == null) {
             log.warnf("Cannot find composite annotation index in: %s", deploymentUnit);
             return;
         }
@@ -113,7 +113,7 @@ class ArquillianConfigBuilder {
             }
         }
         // TestNG
-        for(final ClassInfo classInfo : testNgTests){
+        for (final ClassInfo classInfo : testNgTests) {
             testClasses.add(classInfo.name().toString());
         }
         deploymentUnit.putAttachment(CLASSES, testClasses);

@@ -25,7 +25,8 @@ import org.wildfly.core.embedded.EmbeddedStandaloneServerFactory;
 import org.wildfly.core.embedded.StandaloneServer;
 
 /**
- * {@link org.jboss.arquillian.container.spi.client.container.DeployableContainer} implementation to bootstrap JBoss Logging (installing the LogManager if possible), use the JBoss
+ * {@link org.jboss.arquillian.container.spi.client.container.DeployableContainer} implementation to bootstrap JBoss Logging
+ * (installing the LogManager if possible), use the JBoss
  * Modules modular ClassLoading Environment to create a new server instance, and handle lifecycle of the Application Server in
  * the currently-running environment.
  *
@@ -44,10 +45,12 @@ public final class EmbeddedDeployableContainer extends CommonDeployableContainer
     public void setup(final EmbeddedContainerConfiguration config) {
         super.setup(config);
         if (config.getCleanServerBaseDir() != null) {
-            SecurityActions.setSystemProperty(EmbeddedStandaloneServerFactory.JBOSS_EMBEDDED_ROOT, config.getCleanServerBaseDir());
+            SecurityActions.setSystemProperty(EmbeddedStandaloneServerFactory.JBOSS_EMBEDDED_ROOT,
+                    config.getCleanServerBaseDir());
         }
         final String[] cmdArgs = getCommandArgs(config);
-        server = EmbeddedProcessFactory.createStandaloneServer(config.getJbossHome(), config.getModulePath(), config.getSystemPackagesArray(), cmdArgs);
+        server = EmbeddedProcessFactory.createStandaloneServer(config.getJbossHome(), config.getModulePath(),
+                config.getSystemPackagesArray(), cmdArgs);
     }
 
     @Override
@@ -81,7 +84,7 @@ public final class EmbeddedDeployableContainer extends CommonDeployableContainer
             if (configFile == null) {
                 return new String[0];
             }
-            return new String[]{"-c=" + configFile};
+            return new String[] { "-c=" + configFile };
         }
         List<String> splitParams = ParameterUtils.splitParams(arguments);
         if (configFile != null) {

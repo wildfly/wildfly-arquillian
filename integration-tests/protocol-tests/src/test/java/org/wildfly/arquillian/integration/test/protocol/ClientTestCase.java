@@ -22,6 +22,7 @@ import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.ClientBuilder;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriBuilder;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit5.ArquillianExtension;
@@ -52,9 +53,8 @@ public class ClientTestCase {
         final Client restClient = ClientBuilder.newClient();
         try (
                 Response response = restClient.target(UriBuilder.fromUri(uri)
-                                .path("/rest/protocol"))
-                        .request().get()
-        ) {
+                        .path("/rest/protocol"))
+                        .request().get()) {
             Assertions.assertEquals(Response.Status.OK, response.getStatusInfo());
             final String body = response.readEntity(String.class);
             Assertions.assertNotNull(body);

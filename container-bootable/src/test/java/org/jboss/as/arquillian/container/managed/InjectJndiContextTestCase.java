@@ -42,7 +42,7 @@ public class InjectJndiContextTestCase {
      */
     @Deployment(testable = false)
     public static JavaArchive createDeployment() throws Exception {
-        return ShrinkWrap.create(JavaArchive.class,"myejb.jar").addClasses(EjbBean.class,EjbBusiness.class);
+        return ShrinkWrap.create(JavaArchive.class, "myejb.jar").addClasses(EjbBean.class, EjbBusiness.class);
     }
 
     /**
@@ -50,7 +50,7 @@ public class InjectJndiContextTestCase {
      */
     @ArquillianResource
     private Context jndiContext;
-    
+
     private static final String JNDI_NAME = "ejb:/myejb//EjbBean!org.jboss.as.arquillian.container.managed.EjbBusiness";
 
     /**
@@ -60,7 +60,7 @@ public class InjectJndiContextTestCase {
     public void shouldInjectJndiContext() throws NamingException {
         Assert.assertNotNull("AS7-3111: JNDI Context must be injected", jndiContext);
         // Attempt to look up the remote EJB
-        final EjbBusiness ejb = (EjbBusiness)jndiContext.lookup(JNDI_NAME);
+        final EjbBusiness ejb = (EjbBusiness) jndiContext.lookup(JNDI_NAME);
         Assert.assertNotNull("Could not look up datasource using supplied JNDI Context", ejb);
     }
 }

@@ -35,7 +35,8 @@ public class ClientWildFlyContainerControllerProvider implements ResourceProvide
     private Instance<WildFlyContainerController> controller;
 
     /**
-     * @see org.jboss.arquillian.test.spi.enricher.resource.ResourceProvider#lookup(org.jboss.arquillian.test.api.ArquillianResource, java.lang.annotation.Annotation...)
+     * @see org.jboss.arquillian.test.spi.enricher.resource.ResourceProvider#lookup(org.jboss.arquillian.test.api.ArquillianResource,
+     *          java.lang.annotation.Annotation...)
      */
     @Override
     public Object lookup(ArquillianResource resource, Annotation... qualifiers) {

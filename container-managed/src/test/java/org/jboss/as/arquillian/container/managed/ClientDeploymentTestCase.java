@@ -26,7 +26,6 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -54,7 +53,8 @@ public class ClientDeploymentTestCase {
     }
 
     @Test
-    public void parameterDeploymentTest(@ArquillianResource ManagementClient client, @ArquillianResource ArchiveDeployer deployer) throws Exception {
+    public void parameterDeploymentTest(@ArquillianResource ManagementClient client,
+            @ArquillianResource ArchiveDeployer deployer) throws Exception {
         Assert.assertNotNull("Expected the ArchiveDeployer to be injected", deployer);
         testDeploy(deployer, client);
     }
@@ -65,7 +65,8 @@ public class ClientDeploymentTestCase {
 
         // Check the server for the deployment
         final ModelNode address = Operations.createAddress("deployment", deployment.getName());
-        final ModelNode result = client.getControllerClient().execute(Operations.createReadAttributeOperation(address, "status"));
+        final ModelNode result = client.getControllerClient()
+                .execute(Operations.createReadAttributeOperation(address, "status"));
         if (!Operations.isSuccessfulOutcome(result)) {
             Assert.fail(Operations.getFailureDescription(result).asString());
         }

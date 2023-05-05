@@ -29,11 +29,13 @@ public class ServerLifecycleCommand extends AbstractCommand<Boolean> {
     private final String serverName;
     private final int timeout;
 
-    public ServerLifecycleCommand(final String containerQualifier, final Lifecycle lifecycle, final String hostName, final String serverName) {
+    public ServerLifecycleCommand(final String containerQualifier, final Lifecycle lifecycle, final String hostName,
+            final String serverName) {
         this(containerQualifier, lifecycle, hostName, serverName, -1);
     }
 
-    public ServerLifecycleCommand(final String containerQualifier, final Lifecycle lifecycle, final String hostName, final String serverName, final int timeout) {
+    public ServerLifecycleCommand(final String containerQualifier, final Lifecycle lifecycle, final String hostName,
+            final String serverName, final int timeout) {
         this.containerQualifier = containerQualifier;
         this.lifecycle = lifecycle;
         this.hostName = hostName;

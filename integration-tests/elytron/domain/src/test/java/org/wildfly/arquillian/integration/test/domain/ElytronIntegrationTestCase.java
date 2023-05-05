@@ -44,7 +44,8 @@ public class ElytronIntegrationTestCase {
     @TargetsServerGroup("main-server-group")
     public static JavaArchive deployment() {
         return ShrinkWrap.create(JavaArchive.class)
-                .addAsResource(new StringAsset("Dependencies: org.jboss.dmr, org.jboss.as.controller\n"), "META-INF/MANIFEST.MF");
+                .addAsResource(new StringAsset("Dependencies: org.jboss.dmr, org.jboss.as.controller\n"),
+                        "META-INF/MANIFEST.MF");
     }
 
     @Test
@@ -53,7 +54,8 @@ public class ElytronIntegrationTestCase {
         final ModelNode result = client.getControllerClient().execute(Operations.createOperation("whoami"));
         Assert.assertTrue(Operations.isSuccessfulOutcome(result));
         final ModelNode identity = Operations.readResult(result);
-        Assert.assertEquals("Expected the connected user to be test-admin", "test-admin", identity.get("identity", "username").asString());
+        Assert.assertEquals("Expected the connected user to be test-admin", "test-admin",
+                identity.get("identity", "username").asString());
     }
 
     @Test
@@ -63,6 +65,7 @@ public class ElytronIntegrationTestCase {
         final ModelNode result = client.getControllerClient().execute(Operations.createOperation("whoami"));
         Assert.assertTrue(Operations.isSuccessfulOutcome(result));
         final ModelNode identity = Operations.readResult(result);
-        Assert.assertEquals("Expected the connected user to be test-admin", "test-admin", identity.get("identity", "username").asString());
+        Assert.assertEquals("Expected the connected user to be test-admin", "test-admin",
+                identity.get("identity", "username").asString());
     }
 }

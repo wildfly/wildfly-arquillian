@@ -31,7 +31,6 @@ import org.wildfly.arquillian.domain.api.DomainManager;
  */
 public class ClientDomainContainerController extends ClientContainerController implements DomainContainerController {
 
-
     @Inject
     private Instance<ContainerRegistry> containerRegistry;
 
@@ -91,7 +90,8 @@ public class ClientDomainContainerController extends ClientContainerController i
     }
 
     @Override
-    public void suspendServer(final String containerQualifier, final String hostName, final String serverName, final int timeout) {
+    public void suspendServer(final String containerQualifier, final String hostName, final String serverName,
+            final int timeout) {
         getDomainController(containerQualifier, true).suspendServer(hostName, serverName, timeout);
     }
 
@@ -105,7 +105,8 @@ public class ClientDomainContainerController extends ClientContainerController i
             throw new IllegalArgumentException("No container with the specified name exists");
         }
         if (requiresControllable && !isControllableContainer(registry.getContainers(), containerQualifier)) {
-            throw new IllegalArgumentException("Could not stop " + containerQualifier + " container. The container life cycle is controlled by Arquillian");
+            throw new IllegalArgumentException("Could not stop " + containerQualifier
+                    + " container. The container life cycle is controlled by Arquillian");
         }
 
         if (!isStarted(containerQualifier)) {
@@ -117,6 +118,7 @@ public class ClientDomainContainerController extends ClientContainerController i
         if (deployableContainer instanceof CommonDomainDeployableContainer) {
             return CommonDomainDeployableContainer.class.cast(deployableContainer).getDomainManager();
         }
-        throw new IllegalArgumentException(String.format("The container defined with %s is not a domain controller", containerQualifier));
+        throw new IllegalArgumentException(
+                String.format("The container defined with %s is not a domain controller", containerQualifier));
     }
 }

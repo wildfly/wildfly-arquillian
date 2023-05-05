@@ -65,7 +65,7 @@ public class ServerKillerExtension {
         }
         runOncePerSuite = false;
 
-        //server is running and port is open.
+        // server is running and port is open.
         Runtime rt = Runtime.getRuntime();
         if (System.getProperty("os.name").toLowerCase().indexOf("windows") > -1) {
             killWindows(rt);
@@ -79,7 +79,8 @@ public class ServerKillerExtension {
         String result = errorProcessTable;
         errorProcessTable = null;
         if (result != null) {
-            throw new RuntimeException("There was a server running at the start of the test run execution. jstack output was \n" + result);
+            throw new RuntimeException(
+                    "There was a server running at the start of the test run execution. jstack output was \n" + result);
         }
     }
 
@@ -91,22 +92,27 @@ public class ServerKillerExtension {
         return javaHome + File.separator + "bin" + File.separator + "jps";
     }
 
-
     private void killLinux(Runtime rt) {
         try {
 
-            //get a jstack of all the processes
-            Process process = rt.exec(new String[]{"/bin/sh", "-c", getJps() + " | egrep -v \"Jps|AgentMain|Launcher|RemoteMavenServer\" | awk '{ print $1; }' | xargs --no-run-if-empty " + getJStackPath()});
+            // get a jstack of all the processes
+            Process process = rt.exec(new String[] { "/bin/sh", "-c", getJps()
+                    + " | egrep -v \"Jps|AgentMain|Launcher|RemoteMavenServer\" | awk '{ print $1; }' | xargs --no-run-if-empty "
+                    + getJStackPath() });
             InputStream in = process.getInputStream();
             String processTable = readString(in);
             readString(process.getErrorStream());
             if (!processTable.isEmpty()) {
-                readString(rt.exec(new String[]{"/bin/sh", "-c", getJps() + " | egrep -v \"Jps|AgentMain|Launcher|RemoteMavenServer\" | awk '{ print $1; }' | xargs --no-run-if-empty kill -9"}).getInputStream());
+                readString(rt.exec(new String[] { "/bin/sh", "-c", getJps()
+                        + " | egrep -v \"Jps|AgentMain|Launcher|RemoteMavenServer\" | awk '{ print $1; }' | xargs --no-run-if-empty kill -9" })
+                        .getInputStream());
                 errorProcessTable = processTable;
             }
             long end = System.currentTimeMillis() + 5000;
             while (System.currentTimeMillis() < end) {
-                String running = readString(rt.exec(new String[]{"/bin/sh", "-c", getJps() + " | egrep -v \"Jps|AgentMain|Launcher|RemoteMavenServer\" | awk '{ print $1; }' | xargs --no-run-if-empty " + getJStackPath()}).getInputStream());
+                String running = readString(rt.exec(new String[] { "/bin/sh", "-c", getJps()
+                        + " | egrep -v \"Jps|AgentMain|Launcher|RemoteMavenServer\" | awk '{ print $1; }' | xargs --no-run-if-empty "
+                        + getJStackPath() }).getInputStream());
                 if (running.isEmpty()) {
                     break;
                 } else {
@@ -120,13 +126,14 @@ public class ServerKillerExtension {
     }
 
     private void killWindows(Runtime rt) {
-        final String GET_PROCESSES_COMMAND = "gwmi win32_process -filter \"name='java.exe' and commandLine like '%jboss-modules%' \" | foreach { " + getJStackPath() + " $_.ProcessId }";
+        final String GET_PROCESSES_COMMAND = "gwmi win32_process -filter \"name='java.exe' and commandLine like '%jboss-modules%' \" | foreach { "
+                + getJStackPath() + " $_.ProcessId }";
         final String KILL_PROCESSES_COMMAND = "gwmi win32_process -filter \"name='java.exe' and commandLine like '%jboss-modules%' \" | foreach { kill -id $_.ProcessId }";
 
         try {
             Path getProcessCommand = createCommandFile(GET_PROCESSES_COMMAND);
-            Process process = rt.exec(new String[]{"powershell.exe", "-NoProfile", "-NonInteractive", "-ExecutionPolicy", "ByPass", getProcessCommand.toString()});
-
+            Process process = rt.exec(new String[] { "powershell.exe", "-NoProfile", "-NonInteractive", "-ExecutionPolicy",
+                    "ByPass", getProcessCommand.toString() });
 
             InputStream in = process.getInputStream();
             String processTable = readString(in);
@@ -137,13 +144,15 @@ public class ServerKillerExtension {
 
             if (!processTable.isEmpty()) {
                 Path killProcessesCommand = createCommandFile(KILL_PROCESSES_COMMAND);
-                readString(rt.exec(new String[]{"powershell.exe", "-NoProfile", "-NonInteractive", "-ExecutionPolicy", "ByPass", killProcessesCommand.toString()}).getInputStream());
+                readString(rt.exec(new String[] { "powershell.exe", "-NoProfile", "-NonInteractive", "-ExecutionPolicy",
+                        "ByPass", killProcessesCommand.toString() }).getInputStream());
                 errorProcessTable = processTable;
                 Files.delete(killProcessesCommand);
             }
             long end = System.currentTimeMillis() + 5000;
             while (System.currentTimeMillis() < end) {
-                String running = readString(rt.exec(new String[]{"powershell.exe", "-NoProfile", "-NonInteractive", "-ExecutionPolicy", "ByPass", getProcessCommand.toString()}).getInputStream());
+                String running = readString(rt.exec(new String[] { "powershell.exe", "-NoProfile", "-NonInteractive",
+                        "-ExecutionPolicy", "ByPass", getProcessCommand.toString() }).getInputStream());
                 if (running.isEmpty()) {
                     break;
                 } else {
@@ -158,8 +167,8 @@ public class ServerKillerExtension {
     }
 
     /*
-        we save command into powershell script as otherwise there is too much issues with escaping
-         */
+     * we save command into powershell script as otherwise there is too much issues with escaping
+     */
     private static Path createCommandFile(String command) throws IOException {
         Path tmp = Files.createTempFile("pskiller", ".ps1");
         try (BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(tmp.toFile()))) {
@@ -187,7 +196,7 @@ public class ServerKillerExtension {
                 try {
                     stream.close();
                 } catch (IOException e) {
-                    //ignore
+                    // ignore
                 }
             }
         }

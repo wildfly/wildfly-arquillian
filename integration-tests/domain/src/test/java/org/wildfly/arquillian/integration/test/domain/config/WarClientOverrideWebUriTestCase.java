@@ -24,6 +24,7 @@ import java.net.http.HttpResponse;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.time.Duration;
+
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
 import javax.net.ssl.X509ExtendedTrustManager;
@@ -46,19 +47,23 @@ public class WarClientOverrideWebUriTestCase extends AbstractOverrideWebUriTest 
 
     private static final X509TrustManager TRUST_ALL = new X509ExtendedTrustManager() {
         @Override
-        public void checkClientTrusted(final X509Certificate[] chain, final String authType, final Socket socket) throws CertificateException {
+        public void checkClientTrusted(final X509Certificate[] chain, final String authType, final Socket socket)
+                throws CertificateException {
         }
 
         @Override
-        public void checkServerTrusted(final X509Certificate[] chain, final String authType, final Socket socket) throws CertificateException {
+        public void checkServerTrusted(final X509Certificate[] chain, final String authType, final Socket socket)
+                throws CertificateException {
         }
 
         @Override
-        public void checkClientTrusted(final X509Certificate[] chain, final String authType, final SSLEngine engine) throws CertificateException {
+        public void checkClientTrusted(final X509Certificate[] chain, final String authType, final SSLEngine engine)
+                throws CertificateException {
         }
 
         @Override
-        public void checkServerTrusted(final X509Certificate[] chain, final String authType, final SSLEngine engine) throws CertificateException {
+        public void checkServerTrusted(final X509Certificate[] chain, final String authType, final SSLEngine engine)
+                throws CertificateException {
         }
 
         @Override
@@ -100,8 +105,7 @@ public class WarClientOverrideWebUriTestCase extends AbstractOverrideWebUriTest 
                 HttpRequest.newBuilder(URI.create(url.toString() + GreeterServlet.URL_PATTERN))
                         .GET()
                         .build(),
-                HttpResponse.BodyHandlers.ofString()
-        );
+                HttpResponse.BodyHandlers.ofString());
         Assertions.assertEquals(200, response.statusCode());
         final String body = response.body();
         Assertions.assertNotNull(body);

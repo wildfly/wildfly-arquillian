@@ -37,8 +37,7 @@ public class JarInContainerTestCase extends AbstractInContainerTestCase {
                 .addClasses(Protocol.class,
                         // Not fully used, but needed for the deployment to not log errors
                         AbstractInContainerTestCase.class,
-                        ServerSetupTask.class
-                )
+                        ServerSetupTask.class)
                 .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
     }
 }

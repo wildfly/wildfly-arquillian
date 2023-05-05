@@ -90,8 +90,10 @@ public class ClientTestCase {
 
     private String getProperty(final String key) throws IOException {
         final ModelNode address = Operations.createAddress("system-property", key);
-        final ModelNode result = client.getControllerClient().execute(Operations.createReadAttributeOperation(address, "value"));
-        Assertions.assertTrue(Operations.isSuccessfulOutcome(result), () -> Operations.getFailureDescription(result).asString());
+        final ModelNode result = client.getControllerClient()
+                .execute(Operations.createReadAttributeOperation(address, "value"));
+        Assertions.assertTrue(Operations.isSuccessfulOutcome(result),
+                () -> Operations.getFailureDescription(result).asString());
         return Operations.readResult(result).asString();
     }
 
@@ -108,7 +110,8 @@ public class ClientTestCase {
 
             final ModelNode result = managementClient.getControllerClient().execute(builder.build());
             if (!Operations.isSuccessfulOutcome(result)) {
-                throw new RuntimeException("Failed to configure properties: " + Operations.getFailureDescription(result).asString());
+                throw new RuntimeException(
+                        "Failed to configure properties: " + Operations.getFailureDescription(result).asString());
             }
         }
 
@@ -121,7 +124,8 @@ public class ClientTestCase {
 
             final ModelNode result = managementClient.getControllerClient().execute(builder.build());
             if (!Operations.isSuccessfulOutcome(result)) {
-                throw new RuntimeException("Failed to configure properties: " + Operations.getFailureDescription(result).asString());
+                throw new RuntimeException(
+                        "Failed to configure properties: " + Operations.getFailureDescription(result).asString());
             }
         }
     }

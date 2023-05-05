@@ -49,11 +49,11 @@ public class YamlConfigTestCase {
     private static final String CONTAINER_ID = "yaml";
 
     @ArquillianResource
-    @SuppressWarnings({"unused", "StaticVariableMayNotBeInitialized"})
+    @SuppressWarnings({ "unused", "StaticVariableMayNotBeInitialized" })
     private static ContainerController controller;
 
     @ArquillianResource
-    @SuppressWarnings({"unused", "InstanceVariableMayNotBeInitialized"})
+    @SuppressWarnings({ "unused", "InstanceVariableMayNotBeInitialized" })
     @TargetsContainer(CONTAINER_ID)
     private ManagementClient defaultClient;
 
@@ -119,10 +119,12 @@ public class YamlConfigTestCase {
         return executeOperation(client, op, false);
     }
 
-    private static ModelNode executeOperation(final ManagementClient client, final ModelNode op, final boolean expectFailure) throws IOException {
+    private static ModelNode executeOperation(final ManagementClient client, final ModelNode op, final boolean expectFailure)
+            throws IOException {
         final ModelNode result = client.getControllerClient().execute(op);
         if (expectFailure) {
-            Assert.assertFalse(String.format("Expected operation %s to fail: %n%s", op, result), Operations.isSuccessfulOutcome(result));
+            Assert.assertFalse(String.format("Expected operation %s to fail: %n%s", op, result),
+                    Operations.isSuccessfulOutcome(result));
             return result;
         }
         if (!Operations.isSuccessfulOutcome(result)) {

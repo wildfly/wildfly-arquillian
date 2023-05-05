@@ -47,8 +47,7 @@ public class CommonContainerExtension implements LoadableExtension {
                 .service(ResourceProvider.class, ClientWildFlyContainerControllerProvider.class)
                 .observer(ClientWildFlyContainerControllerCreator.class)
                 .observer(WildFlyContainerCommandObserver.class)
-                .observer(WildFlyContainerLifecycleController.class)
-        ;
+                .observer(WildFlyContainerLifecycleController.class);
 
     }
 }

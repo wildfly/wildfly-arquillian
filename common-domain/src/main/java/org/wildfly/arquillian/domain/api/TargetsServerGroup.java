@@ -32,7 +32,7 @@ import java.lang.annotation.Target;
 @Documented
 @Repeatable(TargetsServerGroups.class)
 @Retention(RUNTIME)
-@Target({ElementType.METHOD})
+@Target({ ElementType.METHOD })
 public @interface TargetsServerGroup {
 
     /**

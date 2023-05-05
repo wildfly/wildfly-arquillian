@@ -58,7 +58,8 @@ public class ClientWildFlyContainerController extends ClientContainerController 
             }
 
             if (!isControllableContainer(registry.getContainers(), containerQualifier)) {
-                throw new IllegalArgumentException("Could not start " + containerQualifier + " container. The container life cycle is controlled by Arquillian");
+                throw new IllegalArgumentException("Could not start " + containerQualifier
+                        + " container. The container life cycle is controlled by Arquillian");
             }
 
             Container container = getContainerRegistry().get().getContainer(new TargetDescription(containerQualifier));

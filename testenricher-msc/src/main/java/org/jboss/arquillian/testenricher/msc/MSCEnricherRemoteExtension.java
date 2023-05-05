@@ -28,7 +28,7 @@ public class MSCEnricherRemoteExtension implements RemoteLoadableExtension {
     @Override
     public void register(ExtensionBuilder builder) {
         // Don't load the MSCTestEnricher unless the MSC classes can be found at runtime
-        if(Validate.classExists("org.jboss.msc.service.ServiceContainer")) {
+        if (Validate.classExists("org.jboss.msc.service.ServiceContainer")) {
             builder.service(ResourceProvider.class, ServiceContainerProvider.class);
             builder.service(ResourceProvider.class, ServiceTargetProvider.class);
         }

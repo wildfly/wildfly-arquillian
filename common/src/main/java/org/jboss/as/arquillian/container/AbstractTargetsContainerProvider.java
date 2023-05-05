@@ -61,7 +61,8 @@ abstract class AbstractTargetsContainerProvider extends OperatesOnDeploymentAwar
      *
      * @return the object found in the context
      */
-    private Object lookupInContainerContext(final TargetsContainer targetsContainer, final ArquillianResource resource, final Annotation... qualifiers) {
+    private Object lookupInContainerContext(final TargetsContainer targetsContainer, final ArquillianResource resource,
+            final Annotation... qualifiers) {
         final ContainerRegistry registry = containerRegistryInstance.get();
         final ContainerContext context = containerContext.get();
         boolean contextActivated = false;

@@ -33,8 +33,8 @@ class StandardContainerDescription implements ContainerDescription {
     private final ModelVersion modelVersion;
 
     StandardContainerDescription(final String productName, final String productVersion,
-                                 final String releaseCodename, final String releaseVersion,
-                                 final ModelVersion modelVersion) {
+            final String releaseCodename, final String releaseVersion,
+            final ModelVersion modelVersion) {
         this.productName = productName;
         this.productVersion = productVersion;
         this.releaseCodename = releaseCodename;

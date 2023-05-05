@@ -52,7 +52,8 @@ public class ClientManualModeTestCase extends AbstractManualModeTestCase {
         testDeploy(secondaryDeployer, secondaryClient, SECONDARY_CONTAINER);
     }
 
-    private static void testDeploy(final ArchiveDeployer deployer, final ManagementClient client, final String containerName) throws IOException, DeploymentException {
+    private static void testDeploy(final ArchiveDeployer deployer, final ManagementClient client, final String containerName)
+            throws IOException, DeploymentException {
         if (!controller.isStarted(containerName)) {
             controller.start(containerName);
         }
@@ -62,7 +63,8 @@ public class ClientManualModeTestCase extends AbstractManualModeTestCase {
             deployer.deploy(createDeployment());
             // Read each result, we should have two results for the first op and one for the second
             final int newDeployments = getCurrentDeploymentCount(client);
-            Assert.assertTrue("Expected 1 deployments found " + (newDeployments - currentDeployments) + " for container " + containerName,
+            Assert.assertTrue(
+                    "Expected 1 deployments found " + (newDeployments - currentDeployments) + " for container " + containerName,
                     newDeployments == (1 + currentDeployments));
         } finally {
             deployer.undeploy("dep1");

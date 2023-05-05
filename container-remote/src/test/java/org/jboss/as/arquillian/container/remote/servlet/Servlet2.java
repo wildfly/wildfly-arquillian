@@ -28,12 +28,11 @@ import jakarta.servlet.http.HttpServletResponse;
 public class Servlet2 extends HttpServlet {
 
     public static final String PATTERN = "Servlet2";
-            
+
     private static final long serialVersionUID = 1L;
 
     @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException 
-    {
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         resp.getWriter().append(this.getClass().getName());
     }
 }

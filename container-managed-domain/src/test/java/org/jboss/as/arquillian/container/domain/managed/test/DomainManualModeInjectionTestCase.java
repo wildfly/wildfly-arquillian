@@ -104,6 +104,7 @@ public class DomainManualModeInjectionTestCase {
 
     private static void testClient(final ManagementClient client) {
         Assert.assertTrue("The primary container should have been started", client.isDomainInRunningState());
-        Assert.assertTrue(client.isServerStarted(new Domain.Server("server-one", client.getLocalHostName(), "main-server-group", true)));
+        Assert.assertTrue(
+                client.isServerStarted(new Domain.Server("server-one", client.getLocalHostName(), "main-server-group", true)));
     }
 }

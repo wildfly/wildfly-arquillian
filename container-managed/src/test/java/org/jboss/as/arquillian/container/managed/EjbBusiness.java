@@ -19,6 +19,7 @@ import jakarta.ejb.Remote;
 
 /**
  * EJB Business Interface
+ *
  * @author <a href="mailto:alr@jboss.org">Andrew Lee Rubinger</a>
  */
 @Remote

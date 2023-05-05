@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicReference;
+
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -108,12 +109,12 @@ public abstract class CommonDeployableContainer<T extends CommonContainerConfigu
 
         // only "copy" the timeout if one was set.
         final int connectionTimeout = containerConfig.getConnectionTimeout();
-        if(connectionTimeout > 0) {
+        if (connectionTimeout > 0) {
             clientConfigBuilder.setConnectionTimeout(connectionTimeout);
         }
 
         // Check for username and password authentication
-        if(containerConfig.getUsername() != null) {
+        if (containerConfig.getUsername() != null) {
             Authentication.username = containerConfig.getUsername();
             Authentication.password = containerConfig.getPassword();
             clientConfigBuilder.setHandler(getCallbackHandler());
@@ -168,7 +169,8 @@ public abstract class CommonDeployableContainer<T extends CommonContainerConfigu
             try {
                 final ManagementClient client = getManagementClient();
                 // The management client should be set when the container is started
-                if (client == null) return null;
+                if (client == null)
+                    return null;
                 containerDescription = ContainerDescription.lookup(client);
             } catch (IOException e) {
                 Logger.getLogger(getClass()).warn("Failed to lookup the container description.", e);
@@ -198,14 +200,15 @@ public abstract class CommonDeployableContainer<T extends CommonContainerConfigu
      * container supports an attribute for the version running.
      *
      * <p>
-     * This is the same as executing {@link #isOperationAttributeSupported(ModelNode, String, String) isOperationAttriubuteSupported(null, operationName, attributeName)}
+     * This is the same as executing {@link #isOperationAttributeSupported(ModelNode, String, String)
+     * isOperationAttriubuteSupported(null, operationName, attributeName)}
      * </p>
      *
      * @param operationName the operation name
      * @param attributeName the attribute name
      *
      * @return {@code true} if the attribute is supported or {@code false} if the attribute was not found on the
-     * operation description
+     *             operation description
      *
      * @throws IOException           if an error occurs while attempting to execute the operation
      * @throws IllegalStateException if the operation fails
@@ -223,12 +226,13 @@ public abstract class CommonDeployableContainer<T extends CommonContainerConfigu
      * @param attributeName the attribute name
      *
      * @return {@code true} if the attribute is supported or {@code false} if the attribute was not found on the
-     * operation description
+     *             operation description
      *
      * @throws IOException           if an error occurs while attempting to execute the operation
      * @throws IllegalStateException if the operation fails
      */
-    protected boolean isOperationAttributeSupported(final ModelNode address, final String operationName, final String attributeName) throws IOException {
+    protected boolean isOperationAttributeSupported(final ModelNode address, final String operationName,
+            final String attributeName) throws IOException {
         final ModelControllerClient client = getModelControllerClient();
         final ModelNode op;
         if (address == null) {
@@ -244,9 +248,11 @@ public abstract class CommonDeployableContainer<T extends CommonContainerConfigu
         }
         final String msg;
         if (address == null) {
-            msg = String.format("Failed to determine if attribute %s is supported for operation %s. %s", attributeName, operationName, Operations.getFailureDescription(result));
+            msg = String.format("Failed to determine if attribute %s is supported for operation %s. %s", attributeName,
+                    operationName, Operations.getFailureDescription(result));
         } else {
-            msg = String.format("Failed to determine if attribute %s is supported for operation %s:%s. %s", attributeName, addressToCliString(address), operationName, Operations.getFailureDescription(result));
+            msg = String.format("Failed to determine if attribute %s is supported for operation %s:%s. %s", attributeName,
+                    addressToCliString(address), operationName, Operations.getFailureDescription(result));
         }
         throw new IllegalStateException(msg);
     }

@@ -44,4 +44,3 @@ public class InContainerWildFlyContainerControllerCreator {
         controller.set(injector.get().inject(new InContainerWildFlyContainerController()));
     }
 }
-

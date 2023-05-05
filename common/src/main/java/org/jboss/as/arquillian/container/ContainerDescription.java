@@ -107,11 +107,11 @@ public interface ContainerDescription {
             final ModelVersion modelVersion = new ModelVersion(
                     model.get("management-major-version").asInt(0),
                     model.get("management-minor-version").asInt(0),
-                    model.get("management-micro-version").asInt(0)
-            );
+                    model.get("management-micro-version").asInt(0));
             return new StandardContainerDescription(productName, productVersion, releaseCodename, releaseVersion, modelVersion);
         } else {
-            Logger.getLogger(ContainerDescription.class).errorf("Failed to read the root resource: ", Operations.getFailureDescription(result));
+            Logger.getLogger(ContainerDescription.class).errorf("Failed to read the root resource: ",
+                    Operations.getFailureDescription(result));
         }
 
         return StandardContainerDescription.NULL_DESCRIPTION;
@@ -161,4 +161,3 @@ public interface ContainerDescription {
         }
     }
 }
-

@@ -39,8 +39,7 @@ public class EarInContainerTestCase extends AbstractInContainerTestCase {
                 .addClasses(EarInContainerTestCase.class,
                         // Not fully used, but needed for the deployment to not log errors
                         AbstractInContainerTestCase.class,
-                        ServerSetupTask.class
-                )
+                        ServerSetupTask.class)
                 .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "jar-in-ear.jar")
                 .addClasses(Protocol.class)

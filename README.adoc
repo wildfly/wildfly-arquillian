@@ -14,7 +14,7 @@ Found a bug or want a new feature? Please file a bug on the https://issues.redha
 
 == Building
 
-The current minimum is Java 8 and Maven 3.6.0. To build execute the following command.
+The current minimum is Java 11 and Maven 3.6.0. To build execute the following command.
 
 ----
 mvn clean install

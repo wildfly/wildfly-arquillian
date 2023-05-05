@@ -31,7 +31,6 @@ import java.util.regex.Pattern;
 
 import org.jboss.as.arquillian.container.CommonManagedDeployableContainer;
 import org.jboss.as.arquillian.container.ParameterUtils;
-import org.jboss.as.server.logging.ServerLogger;
 import org.jboss.logging.Logger;
 import org.wildfly.core.launcher.CommandBuilder;
 import org.wildfly.core.launcher.StandaloneCommandBuilder;
@@ -152,7 +151,7 @@ public final class ManagedDeployableContainer extends CommonManagedDeployableCon
             }
         }
         if (error) {
-            throw ServerLogger.ROOT_LOGGER.unableToFindYaml(joiner.toString());
+            throw new IllegalStateException("Could not find the specified YAML file(s): " + joiner);
         }
         return yamlPaths.toArray(new Path[yamlPaths.size()]);
     }
@@ -176,10 +175,10 @@ public final class ManagedDeployableContainer extends CommonManagedDeployableCon
         }
 
         if (Files.notExists(cleanBase)) {
-            throw ServerLogger.ROOT_LOGGER.serverBaseDirectoryDoesNotExist(cleanBase.toFile());
+            throw new IllegalStateException(String.format("Base directory %s does not exist.", cleanBase));
         }
         if (!Files.isDirectory(cleanBase)) {
-            throw ServerLogger.ROOT_LOGGER.serverBaseDirectoryIsNotADirectory(cleanBase.toFile());
+            throw new IllegalStateException(String.format("Base directory %s is not a directory.", cleanBase));
         }
 
         final Path currentConfigDir = commandBuilder.getConfigurationDirectory();

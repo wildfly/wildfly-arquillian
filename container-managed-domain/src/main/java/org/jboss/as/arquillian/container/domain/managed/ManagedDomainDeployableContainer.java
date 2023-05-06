@@ -214,6 +214,7 @@ public class ManagedDomainDeployableContainer extends CommonDomainDeployableCont
 
     /**
      * Runnable that consumes the output of the process. If nothing consumes the output the AS will hang on some platforms
+     *
      * @author Stuart Douglas
      */
     private class ConsoleConsumer implements Runnable {
@@ -245,9 +246,11 @@ public class ManagedDomainDeployableContainer extends CommonDomainDeployableCont
 
     /**
      * Setup clean directories to run the container.
+     *
      * @param cleanServerBaseDirPath the clean server base directory
      */
-    private static void setupCleanServerDirectories(final DomainCommandBuilder commandBuilder, final String cleanServerBaseDirPath) throws IOException {
+    private static void setupCleanServerDirectories(final DomainCommandBuilder commandBuilder,
+            final String cleanServerBaseDirPath) throws IOException {
         final Path cleanBase;
         if (cleanServerBaseDirPath != null) {
             cleanBase = Paths.get(cleanServerBaseDirPath);
@@ -283,7 +286,7 @@ public class ManagedDomainDeployableContainer extends CommonDomainDeployableCont
     }
 
     private static void copyDir(final Path from, final Path to) throws IOException {
-        Files.walkFileTree(from, new SimpleFileVisitor<Path>(){
+        Files.walkFileTree(from, new SimpleFileVisitor<Path>() {
             @Override
             public FileVisitResult preVisitDirectory(final Path dir, final BasicFileAttributes attrs) throws IOException {
                 Files.copy(dir, to.resolve(from.relativize(dir)));

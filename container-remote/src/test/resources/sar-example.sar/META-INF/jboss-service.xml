@@ -13,9 +13,8 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
-<server xmlns="urn:jboss:service:7.0"
-      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-      xsi:schemaLocation="urn:jboss:service:7.0 jboss-service_7_0.xsd">
+<server xmlns="urn:jboss:service:7.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="urn:jboss:service:7.0 jboss-service_7_0.xsd">
 
     <mbean name="jboss:name=test,type=config" code="org.jboss.as.arquillian.container.remote.archive.ConfigService">
         <attribute name="intervalSeconds">1</attribute>

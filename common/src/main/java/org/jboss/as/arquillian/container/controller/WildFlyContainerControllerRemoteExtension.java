@@ -30,7 +30,6 @@ public class WildFlyContainerControllerRemoteExtension implements RemoteLoadable
     public void register(ExtensionBuilder builder) {
         builder
                 .service(ResourceProvider.class, InContainerWildFlyContainerControllerProvider.class)
-                .observer(InContainerWildFlyContainerControllerCreator.class)
-        ;
+                .observer(InContainerWildFlyContainerControllerCreator.class);
     }
 }

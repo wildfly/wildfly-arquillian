@@ -53,7 +53,8 @@ public class ServerGroupDeploymentObserver {
             final DeploymentDescription deploymentDescription = event.getDeployment();
             final Archive<?> delegate = deploymentDescription.getArchive();
             // Note that this breaks if anything else replaces this archive
-            deploymentDescription.setTestableArchive(new ServerGroupArchive<>(delegate, Collections.unmodifiableSet(serverGroupTargets.get(deploymentName))));
+            deploymentDescription.setTestableArchive(
+                    new ServerGroupArchive<>(delegate, Collections.unmodifiableSet(serverGroupTargets.get(deploymentName))));
         }
     }
 

@@ -47,7 +47,7 @@ public class DistributionContainerConfiguration extends CommonManagedContainerCo
 
     /**
      * @param jbossHome
-     *            the jbossHome to set
+     *                      the jbossHome to set
      */
     public void setJbossHome(String jbossHome) {
         this.jbossHome = jbossHome;

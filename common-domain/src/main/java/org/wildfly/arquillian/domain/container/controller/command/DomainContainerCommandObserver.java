@@ -47,7 +47,8 @@ public class DomainContainerCommandObserver {
                 controllerInst.get().stopServers(event.getContainerQualifier(), event.getServerGroupName());
                 break;
             case SUSPEND:
-                controllerInst.get().suspendServers(event.getContainerQualifier(), event.getServerGroupName(), event.getTimeout());
+                controllerInst.get().suspendServers(event.getContainerQualifier(), event.getServerGroupName(),
+                        event.getTimeout());
                 break;
             default:
                 // Shouldn't ever hit this
@@ -71,7 +72,8 @@ public class DomainContainerCommandObserver {
                 controllerInst.get().stopServer(event.getContainerQualifier(), event.getHostName(), event.getServerName());
                 break;
             case SUSPEND:
-                controllerInst.get().suspendServer(event.getContainerQualifier(), event.getHostName(), event.getServerName(), event.getTimeout());
+                controllerInst.get().suspendServer(event.getContainerQualifier(), event.getHostName(), event.getServerName(),
+                        event.getTimeout());
                 break;
             default:
                 // Shouldn't ever hit this
@@ -81,6 +83,7 @@ public class DomainContainerCommandObserver {
     }
 
     public void checkServerStatus(@Observes GetServerStatusCommand event) {
-        event.setResult(controllerInst.get().isServerStarted(event.getContainerQualifier(), event.getHostName(), event.getServerName()));
+        event.setResult(controllerInst.get().isServerStarted(event.getContainerQualifier(), event.getHostName(),
+                event.getServerName()));
     }
 }

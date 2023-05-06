@@ -48,7 +48,8 @@ public abstract class AbstractDomainManager implements DomainManager {
         checkState(false);
         final Set<ServerDescription> servers = new LinkedHashSet<>();
         // Get all the servers in the servers
-        final ModelNode op = Operations.createReadResourceOperation(Operations.createAddress(ClientConstants.HOST, "*", ClientConstants.SERVER_CONFIG));
+        final ModelNode op = Operations.createReadResourceOperation(
+                Operations.createAddress(ClientConstants.HOST, "*", ClientConstants.SERVER_CONFIG));
         final ModelNode results = runtimeExecuteForSuccess(op);
         for (ModelNode result : results.asList()) {
             final ModelNode serverConfig = Operations.readResult(result);
@@ -81,7 +82,8 @@ public abstract class AbstractDomainManager implements DomainManager {
         checkState(false);
         final Set<ServerDescription> servers = new LinkedHashSet<>();
         // Get all the servers in the servers
-        final ModelNode op = Operations.createReadResourceOperation(Operations.createAddress(ClientConstants.HOST, hostName, ClientConstants.SERVER_CONFIG));
+        final ModelNode op = Operations.createReadResourceOperation(
+                Operations.createAddress(ClientConstants.HOST, hostName, ClientConstants.SERVER_CONFIG));
         final ModelNode results = runtimeExecuteForSuccess(op);
         for (ModelNode result : results.asList()) {
             final ModelNode serverConfig = Operations.readResult(result);
@@ -125,7 +127,8 @@ public abstract class AbstractDomainManager implements DomainManager {
     @Override
     public void startServer(final String hostName, final String serverName) {
         checkState(true);
-        final ModelNode op = Operations.createOperation("start", Operations.createAddress(ClientConstants.HOST, hostName, ClientConstants.SERVER_CONFIG, serverName));
+        final ModelNode op = Operations.createOperation("start",
+                Operations.createAddress(ClientConstants.HOST, hostName, ClientConstants.SERVER_CONFIG, serverName));
         op.get("blocking").set(true);
         runtimeExecuteForSuccess(op);
     }
@@ -133,7 +136,8 @@ public abstract class AbstractDomainManager implements DomainManager {
     @Override
     public void stopServer(final String hostName, final String serverName) {
         checkState(true);
-        final ModelNode op = Operations.createOperation("stop", Operations.createAddress(ClientConstants.HOST, hostName, ClientConstants.SERVER_CONFIG, serverName));
+        final ModelNode op = Operations.createOperation("stop",
+                Operations.createAddress(ClientConstants.HOST, hostName, ClientConstants.SERVER_CONFIG, serverName));
         op.get("blocking").set(true);
         runtimeExecuteForSuccess(op);
     }
@@ -141,7 +145,8 @@ public abstract class AbstractDomainManager implements DomainManager {
     @Override
     public boolean isServerStarted(final String hostName, final String serverName) {
         checkState(true);
-        final ModelNode op = Operations.createReadAttributeOperation(Operations.createAddress(ClientConstants.HOST, hostName, ClientConstants.SERVER_CONFIG, serverName), "status");
+        final ModelNode op = Operations.createReadAttributeOperation(
+                Operations.createAddress(ClientConstants.HOST, hostName, ClientConstants.SERVER_CONFIG, serverName), "status");
         try {
             final ModelNode result = getModelControllerClient().execute(op);
             if (Operations.isSuccessfulOutcome(result)) {
@@ -156,7 +161,8 @@ public abstract class AbstractDomainManager implements DomainManager {
     @Override
     public void restartServer(final String hostName, final String serverName) {
         checkState(true);
-        final ModelNode op = Operations.createOperation("restart", Operations.createAddress(ClientConstants.HOST, hostName, ClientConstants.SERVER_CONFIG, serverName));
+        final ModelNode op = Operations.createOperation("restart",
+                Operations.createAddress(ClientConstants.HOST, hostName, ClientConstants.SERVER_CONFIG, serverName));
         op.get("blocking").set(true);
         runtimeExecuteForSuccess(op);
     }
@@ -164,13 +170,15 @@ public abstract class AbstractDomainManager implements DomainManager {
     @Override
     public void resumeServer(final String hostName, final String serverName) {
         checkState(true);
-        runtimeExecuteForSuccess(Operations.createOperation("resume", Operations.createAddress(ClientConstants.HOST, hostName, ClientConstants.SERVER_CONFIG, serverName)));
+        runtimeExecuteForSuccess(Operations.createOperation("resume",
+                Operations.createAddress(ClientConstants.HOST, hostName, ClientConstants.SERVER_CONFIG, serverName)));
     }
 
     @Override
     public void suspendServer(final String hostName, final String serverName, final int timeout) {
         checkState(true);
-        final ModelNode op = Operations.createOperation("suspend", Operations.createAddress(ClientConstants.HOST, hostName, ClientConstants.SERVER_CONFIG, serverName));
+        final ModelNode op = Operations.createOperation("suspend",
+                Operations.createAddress(ClientConstants.HOST, hostName, ClientConstants.SERVER_CONFIG, serverName));
         op.get("timeout").set(timeout);
         runtimeExecuteForSuccess(op);
     }
@@ -178,14 +186,16 @@ public abstract class AbstractDomainManager implements DomainManager {
     @Override
     public String getServerGroupName(final String hostName, final String serverName) {
         checkState(false);
-        final ModelNode result = runtimeExecuteForSuccess(Operations.createReadAttributeOperation(Operations.createAddress(ClientConstants.HOST, hostName, ClientConstants.SERVER_CONFIG, serverName), "group"));
+        final ModelNode result = runtimeExecuteForSuccess(Operations.createReadAttributeOperation(
+                Operations.createAddress(ClientConstants.HOST, hostName, ClientConstants.SERVER_CONFIG, serverName), "group"));
         return result.asString();
     }
 
     @Override
     public void reloadServers(final String name) {
         checkState(true);
-        final ModelNode op = Operations.createOperation("reload-servers", Operations.createAddress(ClientConstants.SERVER_GROUP, name));
+        final ModelNode op = Operations.createOperation("reload-servers",
+                Operations.createAddress(ClientConstants.SERVER_GROUP, name));
         op.get("blocking").set(true);
         runtimeExecuteForSuccess(op);
     }
@@ -193,7 +203,8 @@ public abstract class AbstractDomainManager implements DomainManager {
     @Override
     public void restartServers(final String name) {
         checkState(true);
-        final ModelNode op = Operations.createOperation("restart-servers", Operations.createAddress(ClientConstants.SERVER_GROUP, name));
+        final ModelNode op = Operations.createOperation("restart-servers",
+                Operations.createAddress(ClientConstants.SERVER_GROUP, name));
         op.get("blocking").set(true);
         runtimeExecuteForSuccess(op);
     }
@@ -201,13 +212,15 @@ public abstract class AbstractDomainManager implements DomainManager {
     @Override
     public void resumeServers(final String name) {
         checkState(true);
-        runtimeExecuteForSuccess(Operations.createOperation("resume-servers", Operations.createAddress(ClientConstants.SERVER_GROUP, name)));
+        runtimeExecuteForSuccess(
+                Operations.createOperation("resume-servers", Operations.createAddress(ClientConstants.SERVER_GROUP, name)));
     }
 
     @Override
     public void startServers(final String name) {
         checkState(true);
-        final ModelNode op = Operations.createOperation("start-servers", Operations.createAddress(ClientConstants.SERVER_GROUP, name));
+        final ModelNode op = Operations.createOperation("start-servers",
+                Operations.createAddress(ClientConstants.SERVER_GROUP, name));
         op.get("blocking").set(true);
         runtimeExecuteForSuccess(op);
     }
@@ -215,7 +228,8 @@ public abstract class AbstractDomainManager implements DomainManager {
     @Override
     public void stopServers(final String name) {
         checkState(true);
-        final ModelNode op = Operations.createOperation("stop-servers", Operations.createAddress(ClientConstants.SERVER_GROUP, name));
+        final ModelNode op = Operations.createOperation("stop-servers",
+                Operations.createAddress(ClientConstants.SERVER_GROUP, name));
         op.get("blocking").set(true);
         runtimeExecuteForSuccess(op);
     }
@@ -223,7 +237,8 @@ public abstract class AbstractDomainManager implements DomainManager {
     @Override
     public void suspendServers(final String name, final int timeout) {
         checkState(true);
-        final ModelNode op = Operations.createOperation("suspend-servers", Operations.createAddress(ClientConstants.SERVER_GROUP, name));
+        final ModelNode op = Operations.createOperation("suspend-servers",
+                Operations.createAddress(ClientConstants.SERVER_GROUP, name));
         op.get("timeout").set(timeout);
         runtimeExecuteForSuccess(op);
     }
@@ -240,7 +255,8 @@ public abstract class AbstractDomainManager implements DomainManager {
             throw new IllegalStateException("Container " + containerName + " has not been started.");
         }
         if (!lifecycleControlRequired && lifecycleControlAllowed) {
-            throw new IllegalStateException("The lifecycle of container " + containerName + " is controlled by Arquillian. Cannot execute lifecycle operations.");
+            throw new IllegalStateException("The lifecycle of container " + containerName
+                    + " is controlled by Arquillian. Cannot execute lifecycle operations.");
         }
     }
 

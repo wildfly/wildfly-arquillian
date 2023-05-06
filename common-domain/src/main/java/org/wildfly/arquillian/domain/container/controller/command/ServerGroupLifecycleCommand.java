@@ -28,11 +28,13 @@ public class ServerGroupLifecycleCommand extends AbstractCommand<Boolean> {
     private final String serverGroupName;
     private final int timeout;
 
-    public ServerGroupLifecycleCommand(final String containerQualifier, final Lifecycle lifecycle, final String serverGroupName) {
+    public ServerGroupLifecycleCommand(final String containerQualifier, final Lifecycle lifecycle,
+            final String serverGroupName) {
         this(containerQualifier, lifecycle, serverGroupName, -1);
     }
 
-    public ServerGroupLifecycleCommand(final String containerQualifier, final Lifecycle lifecycle, final String serverGroupName, final int timeout) {
+    public ServerGroupLifecycleCommand(final String containerQualifier, final Lifecycle lifecycle, final String serverGroupName,
+            final int timeout) {
         this.containerQualifier = containerQualifier;
         this.lifecycle = lifecycle;
         this.serverGroupName = serverGroupName;

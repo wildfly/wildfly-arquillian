@@ -103,7 +103,8 @@ public class ManagementClient {
      * @param configuration the arquillian.xml configuration
      * @param domainManager the domain manager
      */
-    protected ManagementClient(final ModelControllerClient client, final CommonDomainContainerConfiguration configuration, final DomainManager domainManager) {
+    protected ManagementClient(final ModelControllerClient client, final CommonDomainContainerConfiguration configuration,
+            final DomainManager domainManager) {
         if (client == null) {
             throw new IllegalArgumentException("Client must be specified");
         }
@@ -122,7 +123,7 @@ public class ManagementClient {
      * @param managementPort not used
      */
     public ManagementClient(final ModelControllerClient client, final String mgmtAddress, final int managementPort) {
-        this(client, new ContainerDomainManager("UNKNOWN", false, client,  (client != null)));
+        this(client, new ContainerDomainManager("UNKNOWN", false, client, (client != null)));
     }
 
     // -------------------------------------------------------------------------------------||
@@ -159,7 +160,7 @@ public class ManagementClient {
         for (String serverGroupName : rootNode.get(SERVER_GROUP).keys()) {
 
             ServerGroup group = new ServerGroup(serverGroupName);
-            if(containerNameMap.containsKey(group.getName())) {
+            if (containerNameMap.containsKey(group.getName())) {
                 group.setContainerName(containerNameMap.get(group.getName()));
             }
             domain.addServerGroup(group);
@@ -423,10 +424,9 @@ public class ManagementClient {
     private ModelNode readResource(ModelNode address, Integer recursiveDepth) throws Exception {
         final ModelNode operation = new ModelNode();
         operation.get(OP).set(READ_RESOURCE_OPERATION);
-        if(recursiveDepth == null) {
+        if (recursiveDepth == null) {
             operation.get(RECURSIVE).set(true);
-        }
-        else {
+        } else {
             // To make it compatible with WFLY-3705 and pre-WFLY-3705 behavior
             // "recursive" is not set
             operation.get(RECURSIVE_DEPTH).set(recursiveDepth);

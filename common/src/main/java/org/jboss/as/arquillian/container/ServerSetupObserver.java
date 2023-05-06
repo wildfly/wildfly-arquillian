@@ -47,7 +47,7 @@ import org.jboss.logging.Logger;
  * @author Stuart Douglas
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-@SuppressWarnings({"unused", "InstanceVariableMayNotBeInitialized"})
+@SuppressWarnings({ "unused", "InstanceVariableMayNotBeInitialized" })
 public class ServerSetupObserver {
 
     private static final Logger log = Logger.getLogger(ServerSetupObserver.class);
@@ -71,7 +71,8 @@ public class ServerSetupObserver {
     }
 
     /**
-     * Executed before deployments to lazily execute the {@link ServerSetupTask#setup(ManagementClient, String) ServerSetupTask}.
+     * Executed before deployments to lazily execute the {@link ServerSetupTask#setup(ManagementClient, String)
+     * ServerSetupTask}.
      * <p>
      * This is lazily loaded for manual mode tests. The server may not have been started at the
      * {@link org.jboss.arquillian.test.spi.event.suite.BeforeClass BeforeClass} event.
@@ -144,7 +145,8 @@ public class ServerSetupObserver {
      *
      * @throws Exception if an error occurs processing the event
      */
-    public synchronized void handleAfterUndeploy(@Observes AfterUnDeploy afterDeploy, final Container container) throws Exception {
+    public synchronized void handleAfterUndeploy(@Observes AfterUnDeploy afterDeploy, final Container container)
+            throws Exception {
         final String containerName = container.getName();
         final ServerSetupTaskHolder holder = setupTasks.get(containerName);
         if (holder == null) {
@@ -174,7 +176,8 @@ public class ServerSetupObserver {
             deployments = new HashSet<>();
         }
 
-        void setup(final ServerSetup setup, final String containerName) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+        void setup(final ServerSetup setup, final String containerName)
+                throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
             final Class<? extends ServerSetupTask>[] classes = setup.value();
             for (Class<? extends ServerSetupTask> clazz : classes) {
                 final Constructor<? extends ServerSetupTask> ctor = clazz.getDeclaredConstructor();

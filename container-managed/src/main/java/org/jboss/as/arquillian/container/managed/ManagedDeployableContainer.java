@@ -100,7 +100,8 @@ public final class ManagedDeployableContainer extends CommonManagedDeployableCon
         }
 
         if (config.getYamlConfiguration() != null) {
-            commandBuilder.setYamlFiles(findSupplementalConfigurationFiles(commandBuilder.getConfigurationDirectory(), config.getYamlConfiguration()));
+            commandBuilder.setYamlFiles(findSupplementalConfigurationFiles(commandBuilder.getConfigurationDirectory(),
+                    config.getYamlConfiguration()));
         }
 
         // Create a clean server base to run the container; ARQ-638
@@ -154,7 +155,8 @@ public final class ManagedDeployableContainer extends CommonManagedDeployableCon
      *
      * @param cleanServerBaseDirPath the clean server base directory
      */
-    private static void setupCleanServerDirectories(final StandaloneCommandBuilder commandBuilder, final String cleanServerBaseDirPath) throws IOException {
+    private static void setupCleanServerDirectories(final StandaloneCommandBuilder commandBuilder,
+            final String cleanServerBaseDirPath) throws IOException {
         final Path cleanBase;
         if (cleanServerBaseDirPath != null) {
             cleanBase = Paths.get(cleanServerBaseDirPath);

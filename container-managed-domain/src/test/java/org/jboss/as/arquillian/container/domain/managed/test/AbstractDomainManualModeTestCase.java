@@ -98,11 +98,13 @@ public abstract class AbstractDomainManualModeTestCase {
         final String hostName = client.getLocalHostName();
         final String serverName = "server-two";
         controller.stopServer(PRIMARY_CONTAINER, hostName, serverName);
-        Assert.assertFalse("server-two on host " + hostName + " should not be started", controller.isServerStarted(PRIMARY_CONTAINER, hostName, serverName));
+        Assert.assertFalse("server-two on host " + hostName + " should not be started",
+                controller.isServerStarted(PRIMARY_CONTAINER, hostName, serverName));
 
         // Attempt to start server-two
         controller.startServer(PRIMARY_CONTAINER, hostName, serverName);
-        Assert.assertTrue("server-two should not be started on host " + hostName + ", but was not", controller.isServerStarted(PRIMARY_CONTAINER, hostName, serverName));
+        Assert.assertTrue("server-two should not be started on host " + hostName + ", but was not",
+                controller.isServerStarted(PRIMARY_CONTAINER, hostName, serverName));
     }
 
     ModelNode executeForSuccess(final ModelNode op) throws IOException {
@@ -114,7 +116,8 @@ public abstract class AbstractDomainManualModeTestCase {
         if (Operations.isSuccessfulOutcome(result)) {
             return Operations.readResult(result);
         }
-        Assert.fail(String.format("Failed to execute operation: %s%n%s", op, Operations.getFailureDescription(result).asString()));
+        Assert.fail(
+                String.format("Failed to execute operation: %s%n%s", op, Operations.getFailureDescription(result).asString()));
         return new ModelNode();
     }
 
@@ -138,7 +141,8 @@ public abstract class AbstractDomainManualModeTestCase {
     }
 
     protected int getCurrentDeploymentCount(final String serverGroupName) throws IOException {
-        final ModelNode op = Operations.createOperation(ClientConstants.READ_CHILDREN_NAMES_OPERATION, Operations.createAddress(ClientConstants.SERVER_GROUP, serverGroupName));
+        final ModelNode op = Operations.createOperation(ClientConstants.READ_CHILDREN_NAMES_OPERATION,
+                Operations.createAddress(ClientConstants.SERVER_GROUP, serverGroupName));
         op.get(ClientConstants.CHILD_TYPE).set(ClientConstants.DEPLOYMENT);
         return executeForSuccess(op).asList().size();
     }

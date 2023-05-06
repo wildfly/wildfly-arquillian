@@ -241,8 +241,9 @@ public class CommonDomainContainerConfiguration implements ContainerConfiguratio
 
         for (String value : values) {
             String[] content = value.split("=");
-            if(content.length != 2) {
-                throw new IllegalArgumentException("Could not parse map data from '" + data +"'. Missing value or key in '" + value + "'");
+            if (content.length != 2) {
+                throw new IllegalArgumentException(
+                        "Could not parse map data from '" + data + "'. Missing value or key in '" + value + "'");
             }
             map.put(clean(content[0]), clean(content[1]));
         }

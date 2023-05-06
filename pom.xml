@@ -25,9 +25,9 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.jboss</groupId>
-        <artifactId>jboss-parent</artifactId>
-        <version>39</version>
+        <groupId>org.wildfly.tools</groupId>
+        <artifactId>wildfly-parent</artifactId>
+        <version>1.0.1.Final</version>
     </parent>
 
     <artifactId>wildfly-arquillian-parent</artifactId>
@@ -272,6 +272,15 @@
                         </configuration>
                     </execution>
                 </executions>
+            </plugin>
+            <!-- Enable auto-formatting of source files -->
+            <plugin>
+                <groupId>net.revelc.code.formatter</groupId>
+                <artifactId>formatter-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>net.revelc.code</groupId>
+                <artifactId>impsort-maven-plugin</artifactId>
             </plugin>
         </plugins>
     </build>
@@ -779,6 +788,40 @@
                 <galleon.feature.pack.artifactId>wildfly-preview-feature-pack</galleon.feature.pack.artifactId>
                 <galleon.feature.pack.location>wildfly-preview@maven(org.jboss.universe:community-universe)#${version.org.wildfly.full}</galleon.feature.pack.location>
             </properties>
+        </profile>
+        <profile>
+            <id>format-check</id>
+            <build>
+                <plugins>
+                    <!-- Validate formatting -->
+                    <plugin>
+                        <groupId>net.revelc.code.formatter</groupId>
+                        <artifactId>formatter-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>validate-format</id>
+                                <phase>validate</phase>
+                                <goals>
+                                    <goal>validate</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>net.revelc.code</groupId>
+                        <artifactId>impsort-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>check-import-sort</id>
+                                <phase>validate</phase>
+                                <goals>
+                                    <goal>check</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
         </profile>
     </profiles>
 

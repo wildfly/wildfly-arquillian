@@ -15,7 +15,6 @@
  */
 package org.jboss.as.arquillian.container.managed.archive;
 
-
 import jakarta.enterprise.context.ApplicationScoped;
 
 /**

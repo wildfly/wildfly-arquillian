@@ -42,4 +42,3 @@ public class InContainerDomainContainerControllerCreator {
         controller.set(injector.get().inject(new InContainerDomainContainerController()));
     }
 }
-

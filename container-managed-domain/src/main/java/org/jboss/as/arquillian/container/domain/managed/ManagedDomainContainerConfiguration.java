@@ -159,7 +159,7 @@ public class ManagedDomainContainerConfiguration extends CommonDomainContainerCo
 
     /**
      * @return stopTimeoutInSeconds number of seconds to wait for the container process to shutdown;
-     *                              defaults to 60
+     *             defaults to 60
      */
     public int getStopTimeoutInSeconds() {
         return stopTimeoutInSeconds;

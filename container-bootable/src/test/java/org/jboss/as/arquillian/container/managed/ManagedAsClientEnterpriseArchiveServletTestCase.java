@@ -44,7 +44,7 @@ public class ManagedAsClientEnterpriseArchiveServletTestCase {
 
     @Deployment(testable = false)
     public static EnterpriseArchive createDeployment() throws Exception {
-        WebArchive war = ShrinkWrap.create(WebArchive.class,  CONTEXT_NAME + ".war").addClass(HelloWorldServlet.class);
+        WebArchive war = ShrinkWrap.create(WebArchive.class, CONTEXT_NAME + ".war").addClass(HelloWorldServlet.class);
         return ShrinkWrap.create(EnterpriseArchive.class).addAsModule(war);
     }
 
@@ -60,7 +60,8 @@ public class ManagedAsClientEnterpriseArchiveServletTestCase {
 
     @Test
     public void testWebContext() {
-        Assert.assertTrue(String.format("Expected context to start with /%s, but found %s", CONTEXT_NAME, deploymentUrl.getPath()),
+        Assert.assertTrue(
+                String.format("Expected context to start with /%s, but found %s", CONTEXT_NAME, deploymentUrl.getPath()),
                 deploymentUrl.getPath().startsWith("/" + CONTEXT_NAME));
     }
 

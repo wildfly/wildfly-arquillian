@@ -15,6 +15,8 @@
  */
 package org.jboss.as.arquillian.service;
 
+import static org.jboss.as.arquillian.container.Authentication.getCallbackHandler;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
@@ -30,8 +32,6 @@ import org.jboss.as.arquillian.container.Authentication;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.ModelControllerClientConfiguration;
-
-import static org.jboss.as.arquillian.container.Authentication.getCallbackHandler;
 
 /**
  * resource provider that allows the ManagementClient to be injected inside the container.
@@ -103,7 +103,7 @@ public class InContainerManagementClientProvider implements ResourceProvider {
                     try {
                         in.close();
                     } catch (IOException e) {
-                        //ignore
+                        // ignore
                     }
                 }
             }

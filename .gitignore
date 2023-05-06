@@ -3,6 +3,7 @@
 # ignore Maven generated target folders
 ~
 target
+.cache
 # ignore eclipse files
 .project
 .classpath

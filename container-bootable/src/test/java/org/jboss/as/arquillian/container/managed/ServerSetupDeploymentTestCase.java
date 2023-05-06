@@ -52,7 +52,8 @@ public class ServerSetupDeploymentTestCase extends TestOperations {
             op.get("value").set(ServerSetupTestSuite.SYSTEM_PROPERTY_VALUE);
             final ModelNode result = managementClient.getControllerClient().execute(op);
             if (!Operations.isSuccessfulOutcome(result)) {
-                throw new RuntimeException("Failed to add system property: " + Operations.getFailureDescription(result).asString());
+                throw new RuntimeException(
+                        "Failed to add system property: " + Operations.getFailureDescription(result).asString());
             }
         }
 
@@ -62,7 +63,8 @@ public class ServerSetupDeploymentTestCase extends TestOperations {
             final ModelNode op = Operations.createRemoveOperation(address);
             final ModelNode result = managementClient.getControllerClient().execute(op);
             if (!Operations.isSuccessfulOutcome(result)) {
-                throw new RuntimeException("Failed to remove system property: " + Operations.getFailureDescription(result).asString());
+                throw new RuntimeException(
+                        "Failed to remove system property: " + Operations.getFailureDescription(result).asString());
             }
         }
     }
@@ -76,13 +78,11 @@ public class ServerSetupDeploymentTestCase extends TestOperations {
     @ArquillianResource
     protected ManagementClient client;
 
-
     @Deployment(name = DEPLOYMENT1)
     public static WebArchive createDeployment1() throws Exception {
         return ShrinkWrap.create(WebArchive.class, DEPLOYMENT1)
                 .addClass(HelloWorldServlet.class);
     }
-
 
     @Deployment(managed = false, name = DEPLOYMENT2)
     public static WebArchive createDeployment2() throws Exception {

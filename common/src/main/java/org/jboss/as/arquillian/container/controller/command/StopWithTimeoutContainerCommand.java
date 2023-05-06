@@ -18,7 +18,8 @@ package org.jboss.as.arquillian.container.controller.command;
 import org.jboss.arquillian.container.test.impl.client.deployment.command.AbstractCommand;
 
 /**
- * StopWithTimeoutContainerCommand coming from {@link org.jboss.as.arquillian.container.controller.InContainerWildFlyContainerController}.
+ * StopWithTimeoutContainerCommand coming from
+ * {@link org.jboss.as.arquillian.container.controller.InContainerWildFlyContainerController}.
  *
  * @author Radoslav Husar
  * @version Jan 2015

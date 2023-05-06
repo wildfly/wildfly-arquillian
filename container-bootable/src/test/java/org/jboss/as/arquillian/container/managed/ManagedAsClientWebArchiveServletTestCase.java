@@ -54,7 +54,7 @@ public class ManagedAsClientWebArchiveServletTestCase {
     @Test
     public void shouldBeAbleToInvokeServlet() throws Exception {
         Assert.assertNotNull(deploymentUrl);
-        Assert.assertTrue("deploymentUrl should end with " + CONTEXT_NAME + "/, but is " + deploymentUrl + 
+        Assert.assertTrue("deploymentUrl should end with " + CONTEXT_NAME + "/, but is " + deploymentUrl +
                 ", the context URL seems to be wrong",
                 deploymentUrl.toString().endsWith(CONTEXT_NAME + "/"));
         String result = getContent(new URL(deploymentUrl.toString() + HelloWorldServlet.URL_PATTERN.substring(1)));
@@ -63,7 +63,8 @@ public class ManagedAsClientWebArchiveServletTestCase {
 
     @Test
     public void testWebContext() {
-        Assert.assertTrue(String.format("Expected context to start with /%s but found %s", CONTEXT_NAME, deploymentUrl.getPath()),
+        Assert.assertTrue(
+                String.format("Expected context to start with /%s but found %s", CONTEXT_NAME, deploymentUrl.getPath()),
                 deploymentUrl.getPath().startsWith("/" + CONTEXT_NAME));
     }
 

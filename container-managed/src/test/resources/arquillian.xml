@@ -16,7 +16,7 @@
   -->
 
 <arquillian xmlns="http://jboss.org/schema/arquillian" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-            xsi:schemaLocation="http://jboss.org/schema/arquillian http://jboss.org/schema/arquillian/arquillian_1_0.xsd">
+    xsi:schemaLocation="http://jboss.org/schema/arquillian http://jboss.org/schema/arquillian/arquillian_1_0.xsd">
 
     <container qualifier="jboss" default="true">
         <configuration>
@@ -24,7 +24,7 @@
             <property name="jbossArguments">-P=src/test/resources/testfile.properties</property>
             <property name="javaVmArguments">${debug.vm.args} ${jvm.args}</property>
             <property name="serverConfig">${wildfly.standalone.config}</property>
-            
+
             <!--
                  Please leave this as false. It is a good, early catch for the reviewers to make
                  sure that they have not left a stale server running when merging pull requests

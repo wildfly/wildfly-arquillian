@@ -42,7 +42,8 @@ import org.wildfly.core.launcher.Launcher;
  * @since 3.0.0
  */
 @SuppressWarnings("MagicNumber")
-public abstract class CommonManagedDeployableContainer<T extends CommonManagedContainerConfiguration> extends CommonDeployableContainer<T> {
+public abstract class CommonManagedDeployableContainer<T extends CommonManagedContainerConfiguration>
+        extends CommonDeployableContainer<T> {
 
     private static final int PORT_RANGE_MIN = 1;
     private static final int PORT_RANGE_MAX = 65535;
@@ -83,7 +84,9 @@ public abstract class CommonManagedDeployableContainer<T extends CommonManagedCo
                 timeout -= (System.currentTimeMillis() - before);
                 if (!serverAvailable) {
                     if (processHasDied(process)) {
-                        final String msg = String.format("The java process starting the managed server exited unexpectedly with code [%d]", process.exitValue());
+                        final String msg = String.format(
+                                "The java process starting the managed server exited unexpectedly with code [%d]",
+                                process.exitValue());
                         throw new LifecycleException(msg);
                     }
                     Thread.sleep(sleep);
@@ -152,7 +155,8 @@ public abstract class CommonManagedDeployableContainer<T extends CommonManagedCo
                     }
 
                     // Log that we're waiting
-                    getLogger().warnf("Waiting on port %d to become available for %ds", port, (timeoutInSeconds - elapsedSeconds));
+                    getLogger().warnf("Waiting on port %d to become available for %ds", port,
+                            (timeoutInSeconds - elapsedSeconds));
                 }
             }
         }
@@ -179,7 +183,6 @@ public abstract class CommonManagedDeployableContainer<T extends CommonManagedCo
         return false;
     }
 
-
     @Override
     protected void stopInternal(final Integer timeout) throws LifecycleException {
         if (shutdownThread != null) {
@@ -199,7 +202,8 @@ public abstract class CommonManagedDeployableContainer<T extends CommonManagedCo
                         op.get("timeout").set(timeout);
                     }
                 } else {
-                    getLogger().error(String.format("Timeout is not supported for %s on the shutdown operation.", getContainerDescription()));
+                    getLogger().error(String.format("Timeout is not supported for %s on the shutdown operation.",
+                            getContainerDescription()));
                 }
 
                 // If the process is not alive there is no sense it invoking a shutdown operation.
@@ -222,7 +226,8 @@ public abstract class CommonManagedDeployableContainer<T extends CommonManagedCo
                 final int timeoutSeconds = getContainerConfiguration().getStartupTimeoutInSeconds();
                 if (!process.waitFor(timeoutSeconds, TimeUnit.SECONDS)) {
                     // Log a warning indicating the timeout happened
-                    logger.warnf("The container process did not exit within %d seconds. Forcibly destroying the process.", timeoutSeconds);
+                    logger.warnf("The container process did not exit within %d seconds. Forcibly destroying the process.",
+                            timeoutSeconds);
                     process.destroyForcibly();
                 }
             }
@@ -259,14 +264,14 @@ public abstract class CommonManagedDeployableContainer<T extends CommonManagedCo
         final int managementPort = config.getManagementPort();
         throw new LifecycleException(
                 String.format("The port %1$d is already in use. It means that either the server might be already running " +
-                                "or there is another process using port %1$d.%n" +
-                                "Managed containers do not support connecting to running server instances due to the " +
-                                "possible harmful effect of connecting to the wrong server.%n" +
-                                "Please stop server (or another process) before running, " +
-                                "change to another type of container (e.g. remote) or use jboss.socket.binding.port-offset variable " +
-                                "to change the default port.%n" +
-                                "To disable this check and allow Arquillian to connect to a running server, " +
-                                "set allowConnectingToRunningServer to true in the container configuration",
+                        "or there is another process using port %1$d.%n" +
+                        "Managed containers do not support connecting to running server instances due to the " +
+                        "possible harmful effect of connecting to the wrong server.%n" +
+                        "Please stop server (or another process) before running, " +
+                        "change to another type of container (e.g. remote) or use jboss.socket.binding.port-offset variable " +
+                        "to change the default port.%n" +
+                        "To disable this check and allow Arquillian to connect to a running server, " +
+                        "set allowConnectingToRunningServer to true in the container configuration",
                         managementPort));
     }
 

@@ -23,7 +23,7 @@ import org.jboss.as.arquillian.container.CommonManagedContainerConfiguration;
  * @author jdenise@redhat.com
  * @since 3.0.0
  */
-@SuppressWarnings({"InstanceVariableMayNotBeInitialized", "unused"})
+@SuppressWarnings({ "InstanceVariableMayNotBeInitialized", "unused" })
 public class BootableContainerConfiguration extends CommonManagedContainerConfiguration {
 
     private String jarFile;

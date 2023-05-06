@@ -26,6 +26,7 @@ import org.jboss.arquillian.test.api.ArquillianResource;
  * {@link OperatesOnDeploymentAwareProvider} implementation to
  * provide {@link ManagementClient} injection to {@link ArquillianResource}-
  * annotated fields.
+ *
  * @author <a href="mailto:alr@jboss.org">Andrew Lee Rubinger</a>
  */
 public class ManagementClientProvider extends AbstractTargetsContainerProvider {
@@ -35,6 +36,7 @@ public class ManagementClientProvider extends AbstractTargetsContainerProvider {
 
     /**
      * {@inheritDoc}
+     *
      * @see org.jboss.arquillian.test.spi.enricher.resource.ResourceProvider#canProvide(java.lang.Class)
      */
     @Override
@@ -44,7 +46,9 @@ public class ManagementClientProvider extends AbstractTargetsContainerProvider {
 
     /**
      * {@inheritDoc}
-     * @see org.jboss.arquillian.container.test.impl.enricher.resource.OperatesOnDeploymentAwareProvider#doLookup(org.jboss.arquillian.test.api.ArquillianResource, java.lang.annotation.Annotation[])
+     *
+     * @see org.jboss.arquillian.container.test.impl.enricher.resource.OperatesOnDeploymentAwareProvider#doLookup(org.jboss.arquillian.test.api.ArquillianResource,
+     *          java.lang.annotation.Annotation[])
      */
     @Override
     public Object doLookup(final ArquillianResource resource, final Annotation... qualifiers) {

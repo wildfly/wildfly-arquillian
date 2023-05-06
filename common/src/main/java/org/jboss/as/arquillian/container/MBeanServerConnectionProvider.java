@@ -19,6 +19,7 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+
 import javax.management.MBeanServerConnection;
 import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
@@ -51,7 +52,8 @@ public final class MBeanServerConnectionProvider implements Closeable {
 
     public MBeanServerConnection getConnection() {
         String host = hostAddr.getHostAddress();
-        String urlString = System.getProperty("jmx.service.url", "service:jmx:remote+http://" + NetworkUtils.formatPossibleIpv6Address(host) + ":" + port);
+        String urlString = System.getProperty("jmx.service.url",
+                "service:jmx:remote+http://" + NetworkUtils.formatPossibleIpv6Address(host) + ":" + port);
         try {
             if (jmxConnector == null) {
                 log.debug("Connecting JMXConnector to: " + urlString);
@@ -83,9 +85,10 @@ public final class MBeanServerConnectionProvider implements Closeable {
 
     @Override
     public void close() throws IOException {
-        if (jmxConnector != null) try {
-            jmxConnector.close();
-        } catch (Throwable ignore) {
-        }
+        if (jmxConnector != null)
+            try {
+                jmxConnector.close();
+            } catch (Throwable ignore) {
+            }
     }
 }

@@ -22,8 +22,9 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Supplier;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
+
 import javax.management.MBeanServer;
 
 import org.jboss.arquillian.container.test.spi.TestRunner;
@@ -67,7 +68,8 @@ public class ArquillianService implements Service {
     private volatile JMXTestRunner jmxTestRunner;
     private volatile LifecycleListener listener;
 
-    private ArquillianService(final Supplier<MBeanServer> mBeanServerSupplier, final Consumer<ArquillianService> arquillianServiceConsumer) {
+    private ArquillianService(final Supplier<MBeanServer> mBeanServerSupplier,
+            final Consumer<ArquillianService> arquillianServiceConsumer) {
         this.mBeanServerSupplier = mBeanServerSupplier;
         this.arquillianServiceConsumer = arquillianServiceConsumer;
     }
@@ -76,8 +78,7 @@ public class ArquillianService implements Service {
         ServiceBuilder<?> builder = serviceTarget.addService(ArquillianService.SERVICE_NAME);
         builder.setInstance(new ArquillianService(
                 builder.requires(MBeanServerService.SERVICE_NAME),
-                builder.provides(ArquillianService.SERVICE_NAME)
-        ));
+                builder.provides(ArquillianService.SERVICE_NAME)));
         builder.install();
     }
 
@@ -180,14 +181,15 @@ public class ArquillianService implements Service {
                     WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(tccl);
                 }
             } finally {
-                if(contextManager != null) {
+                if (contextManager != null) {
                     contextManager.teardown(properties);
                 }
             }
         }
 
         @Override
-        protected TestResult doRunTestMethod(TestRunner runner, Class<?> testClass, String methodName, Map<String, String> protocolProps) {
+        protected TestResult doRunTestMethod(TestRunner runner, Class<?> testClass, String methodName,
+                Map<String, String> protocolProps) {
             ClassLoader runWithClassLoader = ClassLoader.getSystemClassLoader();
             if (Boolean.parseBoolean(protocolProps.get(ExtendedJMXProtocolConfiguration.PROPERTY_ENABLE_TCCL))) {
                 ArquillianConfig config = getArquillianConfig(testClass.getName(), 30000L);
@@ -244,7 +246,8 @@ public class ArquillianService implements Service {
         @Override
         public void handleEvent(final ServiceController<?> controller, final LifecycleEvent event) {
             final ServiceName serviceName = controller.getName();
-            if (!JBOSS_DEPLOYMENT.isParentOf(serviceName)) return;
+            if (!JBOSS_DEPLOYMENT.isParentOf(serviceName))
+                return;
             final String simpleName = serviceName.getSimpleName();
 
             if (event == LifecycleEvent.DOWN && simpleName.equals(Phase.DEPENDENCIES.toString())) {
@@ -262,7 +265,8 @@ public class ArquillianService implements Service {
                 if (testClasses != null) {
                     String duName = ArquillianConfigBuilder.getName(depUnit);
                     ServiceName arqConfigSN = ServiceName.JBOSS.append("arquillian", "config", duName);
-                    ServiceBuilder<ArquillianConfig> builder = (ServiceBuilder<ArquillianConfig>) serviceTarget.addService(arqConfigSN);
+                    ServiceBuilder<ArquillianConfig> builder = (ServiceBuilder<ArquillianConfig>) serviceTarget
+                            .addService(arqConfigSN);
                     ArquillianConfig arqConfig = new ArquillianConfig(arqConfigSN, testClasses,
                             builder.requires(ArquillianService.SERVICE_NAME),
                             builder.requires(parentController.getName()));

@@ -40,7 +40,8 @@ public class DeploymentTestCase {
 
     @Test
     public void testSystemPropSet() throws Exception {
-        Assert.assertEquals(SystemPropertyServiceActivator.VALUE, System.getProperty(SystemPropertyServiceActivator.TEST_PROPERTY));
+        Assert.assertEquals(SystemPropertyServiceActivator.VALUE,
+                System.getProperty(SystemPropertyServiceActivator.TEST_PROPERTY));
     }
 
     @Test

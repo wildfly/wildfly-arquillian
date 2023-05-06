@@ -29,7 +29,7 @@ import org.jboss.arquillian.container.spi.client.deployment.Validate;
  * @author <a href="mailto:alr@jboss.org">Andrew Lee Rubinger</a>
  * @since 3.0.0
  */
-@SuppressWarnings({"unused", "MagicNumber", "InstanceVariableMayNotBeInitialized"})
+@SuppressWarnings({ "unused", "MagicNumber", "InstanceVariableMayNotBeInitialized" })
 public class CommonManagedContainerConfiguration extends CommonContainerConfiguration {
 
     /**
@@ -45,7 +45,8 @@ public class CommonManagedContainerConfiguration extends CommonContainerConfigur
 
     private boolean outputToConsole = true;
 
-    private boolean allowConnectingToRunningServer = Boolean.parseBoolean(System.getProperty("allowConnectingToRunningServer", "false"));
+    private boolean allowConnectingToRunningServer = Boolean
+            .parseBoolean(System.getProperty("allowConnectingToRunningServer", "false"));
 
     private Integer[] waitForPorts;
 

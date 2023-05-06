@@ -36,8 +36,7 @@ public class WildFlyContainerControllerArquillianDeploymentAppender extends Cach
                 .addPackages(
                         true,
                         "org.jboss.as.arquillian.api",
-                        "org.jboss.as.arquillian.container.controller"
-                )
+                        "org.jboss.as.arquillian.container.controller")
                 .addAsServiceProvider(RemoteLoadableExtension.class, WildFlyContainerControllerRemoteExtension.class);
     }
 }

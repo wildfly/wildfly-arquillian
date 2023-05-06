@@ -42,7 +42,7 @@ import org.wildfly.plugin.core.UndeployDescription;
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  * @since 17-Nov-2010
  */
-@SuppressWarnings({"WeakerAccess", "unused"})
+@SuppressWarnings({ "WeakerAccess", "unused" })
 public class ArchiveDeployer {
 
     private static final Logger log = Logger.getLogger(ArchiveDeployer.class);
@@ -126,13 +126,14 @@ public class ArchiveDeployer {
      *
      * @param runtimeName   the runtime name for the deployment
      * @param failOnMissing {@code true} if the undeploy should fail if the deployment was not found on the server,
-     *                      {@code false} if the deployment does not exist and the undeploy should be ignored
+     *                          {@code false} if the deployment does not exist and the undeploy should be ignored
      */
     @SuppressWarnings("SameParameterValue")
     public void undeploy(final String runtimeName, final boolean failOnMissing) {
         checkState();
         try {
-            final DeploymentResult result = deploymentManager.undeploy(UndeployDescription.of(runtimeName).setFailOnMissing(failOnMissing));
+            final DeploymentResult result = deploymentManager
+                    .undeploy(UndeployDescription.of(runtimeName).setFailOnMissing(failOnMissing));
             if (!result.successful()) {
                 log.warnf("Failed to undeploy %s: %s", runtimeName, result.getFailureMessage());
             }

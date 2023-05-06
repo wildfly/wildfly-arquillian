@@ -56,7 +56,7 @@ import org.wildfly.plugin.core.UndeployDescription;
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  * @since 17-Nov-2010
  */
-@SuppressWarnings({"WeakerAccess", "TypeMayBeWeakened", "DeprecatedIsStillUsed", "deprecation", "unused"})
+@SuppressWarnings({ "WeakerAccess", "TypeMayBeWeakened", "DeprecatedIsStillUsed", "deprecation", "unused" })
 public class ArchiveDeployer {
 
     private static final Logger log = Logger.getLogger(ArchiveDeployer.class);
@@ -73,7 +73,7 @@ public class ArchiveDeployer {
      *
      * @see #ArchiveDeployer(ManagementClient)
      * @deprecated the {@link DomainDeploymentManager} will no longer be used in future releases, use the
-     * {@link #ArchiveDeployer(ManagementClient)} constructor
+     *                 {@link #ArchiveDeployer(ManagementClient)} constructor
      */
     @Deprecated
     public ArchiveDeployer(DomainDeploymentManager deploymentManager) {
@@ -135,11 +135,13 @@ public class ArchiveDeployer {
             } else {
                 // Fallback behavior if constructed with a DomainDeploymentManager
                 try {
-                    InitialDeploymentSetBuilder builder = deploymentManagerDeprecated.newDeploymentPlan().withRollbackAcrossGroups();
+                    InitialDeploymentSetBuilder builder = deploymentManagerDeprecated.newDeploymentPlan()
+                            .withRollbackAcrossGroups();
                     final DeployDeploymentPlanBuilder deployBuilder = builder.add(archive.getName(), input).andDeploy();
                     ServerGroupDeploymentPlanBuilder serverGroupBuilder = null;
                     for (String target : serverGroups) {
-                        serverGroupBuilder = (serverGroupBuilder == null ? deployBuilder.toServerGroup(target) : serverGroupBuilder.toServerGroup(target));
+                        serverGroupBuilder = (serverGroupBuilder == null ? deployBuilder.toServerGroup(target)
+                                : serverGroupBuilder.toServerGroup(target));
                     }
                     @SuppressWarnings("ConstantConditions")
                     DeploymentPlan plan = serverGroupBuilder.build();
@@ -198,7 +200,8 @@ public class ArchiveDeployer {
                 UndeployDeploymentPlanBuilder undeployBuilder = builder.undeploy(runtimeName);
                 ServerGroupDeploymentPlanBuilder serverGroupBuilder = null;
                 for (String target : serverGroups) {
-                    serverGroupBuilder = (serverGroupBuilder == null ? undeployBuilder.toServerGroup(target) : serverGroupBuilder.toServerGroup(target));
+                    serverGroupBuilder = (serverGroupBuilder == null ? undeployBuilder.toServerGroup(target)
+                            : serverGroupBuilder.toServerGroup(target));
                 }
                 @SuppressWarnings("ConstantConditions")
                 DeploymentPlan plan = serverGroupBuilder.build();

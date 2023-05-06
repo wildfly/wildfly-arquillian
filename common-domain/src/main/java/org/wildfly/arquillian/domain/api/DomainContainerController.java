@@ -74,7 +74,8 @@ public interface DomainContainerController extends ContainerController {
      *
      * @param containerQualifier the name of the container
      * @param groupName          the name of the server group
-     * @param timeout            the timeout in seconds. A value of 0 returns immediately and a value of -1 will wait indefinitely
+     * @param timeout            the timeout in seconds. A value of 0 returns immediately and a value of -1 will wait
+     *                               indefinitely
      */
     void suspendServers(String containerQualifier, String groupName, int timeout);
 

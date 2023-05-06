@@ -51,9 +51,11 @@ public class ContainerResourceTestEnricher implements TestEnricher {
     @Inject
     private Instance<ManagementClient> managementClient;
 
-    /* (non-Javadoc)
-    * @see org.jboss.arquillian.spi.TestEnricher#enrich(java.lang.Object)
-    */
+    /*
+     * (non-Javadoc)
+     *
+     * @see org.jboss.arquillian.spi.TestEnricher#enrich(java.lang.Object)
+     */
     public void enrich(Object testCase) {
         for (Field field : SecurityActions.getFieldsWithAnnotation(testCase.getClass(), ContainerResource.class)) {
             Object value = null;
@@ -75,9 +77,11 @@ public class ContainerResourceTestEnricher implements TestEnricher {
         }
     }
 
-    /* (non-Javadoc)
-    * @see org.jboss.arquillian.spi.TestEnricher#resolve(java.lang.reflect.Method)
-    */
+    /*
+     * (non-Javadoc)
+     *
+     * @see org.jboss.arquillian.spi.TestEnricher#resolve(java.lang.reflect.Method)
+     */
     public Object[] resolve(Method method) {
         Object[] values = new Object[method.getParameterTypes().length];
         Class<?>[] parameterTypes = method.getParameterTypes();
@@ -103,7 +107,8 @@ public class ContainerResourceTestEnricher implements TestEnricher {
         final List<Container> containers = containerRegistry.get().getContainers();
         if (resource.value().isEmpty()) {
             if (containers.size() > 1) {
-                throw new RuntimeException("@ContainerResource did not specify a server and more than one server exists in the deployment");
+                throw new RuntimeException(
+                        "@ContainerResource did not specify a server and more than one server exists in the deployment");
             }
             container = containers.get(0);
         } else {

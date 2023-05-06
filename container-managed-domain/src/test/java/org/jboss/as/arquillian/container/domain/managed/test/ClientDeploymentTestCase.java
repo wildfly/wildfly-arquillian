@@ -58,7 +58,8 @@ public class ClientDeploymentTestCase {
     }
 
     @Test
-    public void parameterDeploymentTest(@ArquillianResource ManagementClient client, @ArquillianResource ArchiveDeployer deployer) throws Exception {
+    public void parameterDeploymentTest(@ArquillianResource ManagementClient client,
+            @ArquillianResource ArchiveDeployer deployer) throws Exception {
         Assert.assertNotNull("Expected the ArchiveDeployer to be injected", deployer);
         testDeploy(deployer, client);
     }
@@ -75,7 +76,8 @@ public class ClientDeploymentTestCase {
         }
         Assert.assertEquals(deployment.getName(), Operations.readResult(result).asString());
 
-        final ModelNode serverGroupAddress = Operations.createAddress("server-group", "main-server-group", "deployment", deployment.getName());
+        final ModelNode serverGroupAddress = Operations.createAddress("server-group", "main-server-group", "deployment",
+                deployment.getName());
         result = client.getControllerClient().execute(Operations.createReadAttributeOperation(serverGroupAddress, "enabled"));
         if (!Operations.isSuccessfulOutcome(result)) {
             Assert.fail(Operations.getFailureDescription(result).asString());

@@ -33,7 +33,7 @@ public abstract class AbstractContainerTestCase {
         MBeanServerConnection mbeanServer = getMBeanServer();
         ObjectName objectName = new ObjectName("jboss:name=test,type=config");
 
-        //FIXME should have some notification happening when the deployment has been installed for client
+        // FIXME should have some notification happening when the deployment has been installed for client
         waitForMbean(mbeanServer, objectName);
 
         mbeanServer.getAttribute(objectName, "IntervalSeconds");
@@ -43,7 +43,7 @@ public abstract class AbstractContainerTestCase {
     abstract MBeanServerConnection getMBeanServer() throws Exception;
 
     void waitForMbean(MBeanServerConnection mbeanServer, ObjectName name) throws Exception {
-        //FIXME remove this
+        // FIXME remove this
         long end = System.currentTimeMillis() + 3000;
         do {
             try {

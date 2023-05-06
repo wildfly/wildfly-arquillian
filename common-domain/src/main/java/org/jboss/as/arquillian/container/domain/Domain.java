@@ -152,7 +152,8 @@ public class Domain {
 
         public Server(String name, String host, String group, boolean autostart) {
             if (name == null || host == null) {
-                throw new IllegalArgumentException("Server name and host can not be null. name[" + name + "], host[" + host+ "]");
+                throw new IllegalArgumentException(
+                        "Server name and host can not be null. name[" + name + "], host[" + host + "]");
             }
             this.name = name;
             this.host = host;

@@ -123,7 +123,8 @@ public final class ManagedDeployableContainer extends CommonManagedDeployableCon
      *
      * @param cleanServerBaseDirPath the clean server base directory
      */
-    private static void setupCleanServerDirectories(final StandaloneCommandBuilder commandBuilder, final String cleanServerBaseDirPath) throws IOException {
+    private static void setupCleanServerDirectories(final StandaloneCommandBuilder commandBuilder,
+            final String cleanServerBaseDirPath) throws IOException {
         final Path cleanBase;
         if (cleanServerBaseDirPath != null) {
             cleanBase = Paths.get(cleanServerBaseDirPath);

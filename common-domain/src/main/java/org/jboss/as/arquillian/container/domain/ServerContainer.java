@@ -69,21 +69,25 @@ public class ServerContainer implements DeployableContainer<EmptyConfiguration> 
 
     @Override
     public ProtocolMetaData deploy(Archive<?> archive) throws DeploymentException {
-        throw new UnsupportedOperationException("Can not deploy to a single server in the domain, target server-group " + server.getGroup());
+        throw new UnsupportedOperationException(
+                "Can not deploy to a single server in the domain, target server-group " + server.getGroup());
     }
 
     @Override
     public void undeploy(Archive<?> archive) throws DeploymentException {
-        throw new UnsupportedOperationException("Can not undeploy from a single server in the domain, target server-group " + server.getGroup());
+        throw new UnsupportedOperationException(
+                "Can not undeploy from a single server in the domain, target server-group " + server.getGroup());
     }
 
     @Override
     public void deploy(Descriptor descriptor) throws DeploymentException {
-        throw new UnsupportedOperationException("Can not deploy to a single server in the domain, target server-group " + server.getGroup());
+        throw new UnsupportedOperationException(
+                "Can not deploy to a single server in the domain, target server-group " + server.getGroup());
     }
 
     @Override
     public void undeploy(Descriptor descriptor) throws DeploymentException {
-        throw new UnsupportedOperationException("Can not undeploy from a single server in the domain, target server-group " + server.getGroup());
+        throw new UnsupportedOperationException(
+                "Can not undeploy from a single server in the domain, target server-group " + server.getGroup());
     }
 }

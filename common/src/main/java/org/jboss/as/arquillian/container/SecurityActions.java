@@ -28,7 +28,7 @@ import java.util.List;
  */
 final class SecurityActions {
 
-    static List<Field> getFieldsWithAnnotation(final Class<?> source, final Class<? extends Annotation> annotationClass){
+    static List<Field> getFieldsWithAnnotation(final Class<?> source, final Class<? extends Annotation> annotationClass) {
         List<Field> declaredAccessibleFields = AccessController.doPrivileged(new PrivilegedAction<List<Field>>() {
             @Override
             public List<Field> run() {

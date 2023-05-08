@@ -39,7 +39,7 @@
     <name>WildFly: Arquillian</name>
 
     <properties>
-        <version.org.wildfly.core>18.1.1.Final</version.org.wildfly.core>
+        <version.org.wildfly.core>18.1.2.Final</version.org.wildfly.core>
         <version.org.wildfly.full>26.1.1.Final</version.org.wildfly.full>
         <version.junit>4.13.1</version.junit>
         <version.com.squareup.okhttp3.okhttp>4.9.1</version.com.squareup.okhttp3.okhttp>

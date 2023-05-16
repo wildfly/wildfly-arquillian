@@ -21,7 +21,7 @@
     <parent>
         <groupId>org.wildfly.arquillian</groupId>
         <artifactId>wildfly-arquillian-parent</artifactId>
-        <version>5.0.0.Final</version>
+        <version>5.0.1.Final-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 

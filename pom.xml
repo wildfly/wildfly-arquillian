@@ -33,7 +33,7 @@
     <artifactId>wildfly-arquillian-parent</artifactId>
 
     <groupId>org.wildfly.arquillian</groupId>
-    <version>5.0.0.Alpha7-SNAPSHOT</version>
+    <version>5.0.0.Final</version>
     <name>WildFly: Arquillian</name>
 
     <properties>

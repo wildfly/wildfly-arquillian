@@ -121,6 +121,32 @@
                 <groupId>org.jboss.galleon</groupId>
                 <artifactId>galleon-maven-plugin</artifactId>
             </plugin>
+            <!-- Create a test agent for the BootWithAgentTestCase -->
+            <plugin>
+                <artifactId>maven-jar-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>package-agent</id>
+                        <goals>
+                            <goal>test-jar</goal>
+                        </goals>
+                        <phase>process-test-classes</phase>
+                        <configuration>
+                            <skip>${skipTests}</skip>
+                            <finalName>logging-agent</finalName>
+                            <includes>
+                                <include>**/LoggingAgent.class</include>
+                            </includes>
+                            <archive>
+                                <manifestEntries>
+                                    <Premain-Class>org.jboss.as.arquillian.container.managed.agent.LoggingAgent</Premain-Class>
+                                </manifestEntries>
+                            </archive>
+                            <outputDirectory>${jboss.home}</outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <artifactId>maven-antrun-plugin</artifactId>
                 <executions>
@@ -157,6 +183,7 @@
                             <skip>false</skip>
                             <excludedGroups>org.jboss.as.arquillian.container.managed.manual.ManualMode</excludedGroups>
                             <excludes>
+                                <exclude>**/AddAgentTestCase.java</exclude>
                                 <exclude>**/ThreadContextClassloaderTest.java</exclude>
                                 <exclude>**/ManagedInContainerTestCase.java</exclude>
                             </excludes>
@@ -166,6 +193,24 @@
                             <environmentVariables>
                                 <JBOSS_HOME>${jboss.home}</JBOSS_HOME>
                             </environmentVariables>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>agent-tests</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>test</goal>
+                        </goals>
+                        <configuration>
+                            <skip>false</skip>
+                            <includes>
+                                <include>**/AddAgentTestCase.java</include>
+                            </includes>
+                            <systemPropertyVariables>
+                                <arquillian.xml>agent-arquillian.xml</arquillian.xml>
+                                <agent.path>${jboss.home}${file.separator}logging-agent-tests.jar</agent.path>
+                                <jboss.log.dir>${jboss.home}/standalone/log</jboss.log.dir>
+                            </systemPropertyVariables>
                         </configuration>
                     </execution>
                     <execution>

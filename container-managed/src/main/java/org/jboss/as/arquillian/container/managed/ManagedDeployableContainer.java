@@ -78,6 +78,11 @@ public final class ManagedDeployableContainer extends CommonManagedDeployableCon
             commandBuilder.setJavaOptions(ParameterUtils.splitParams(javaOpts));
         }
 
+        final String moduleOptions = config.getModuleOptions();
+        if (moduleOptions != null && !moduleOptions.trim().isEmpty()) {
+            commandBuilder.setModuleOptions(ParameterUtils.splitParams(moduleOptions));
+        }
+
         if (config.isEnableAssertions()) {
             commandBuilder.addJavaOption("-ea");
         }

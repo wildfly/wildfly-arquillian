@@ -30,6 +30,8 @@ public class ManagedContainerConfiguration extends DistributionContainerConfigur
 
     private String jbossArguments;
 
+    private String moduleOptions;
+
     private String serverConfig = System.getProperty("jboss.server.config.file.name");
 
     private String readOnlyServerConfig = System.getProperty("jboss.server.config.file.name.readonly");
@@ -69,6 +71,14 @@ public class ManagedContainerConfiguration extends DistributionContainerConfigur
 
     public void setJbossArguments(String jbossArguments) {
         this.jbossArguments = jbossArguments;
+    }
+
+    public String getModuleOptions() {
+        return moduleOptions;
+    }
+
+    public void setModuleOptions(String moduleOptions) {
+        this.moduleOptions = moduleOptions;
     }
 
     /**

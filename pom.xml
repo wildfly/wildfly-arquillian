@@ -53,7 +53,7 @@
         <!-- Required by Elytron dependencies -->
         <version.org.slf4j>1.7.36</version.org.slf4j>
         <version.org.wildfly.common.wildfly-common>1.6.0.Final</version.org.wildfly.common.wildfly-common>
-        <version.org.wildfly.plugins.wildfly-jar-maven-plugin>9.0.0.Final</version.org.wildfly.plugins.wildfly-jar-maven-plugin>
+        <version.org.wildfly.plugins.wildfly-jar-maven-plugin>10.0.0.Final</version.org.wildfly.plugins.wildfly-jar-maven-plugin>
         <version.org.wildfly.plugins.wildfly-maven-plugin>4.2.0.Final</version.org.wildfly.plugins.wildfly-maven-plugin>
         <version.org.wildfly.security.wildfly-elytron>2.1.0.Final</version.org.wildfly.security.wildfly-elytron>
 

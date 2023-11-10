@@ -45,7 +45,7 @@
         <version.com.squareup.okhttp3.okhttp>4.9.1</version.com.squareup.okhttp3.okhttp>
         <!-- The version used in OkHttp3, this is required because OkHttp3 has dependency and transitive dependency on this -->
         <version.org.jetbrains.kotlin.kotlin-stdlib>1.4.10</version.org.jetbrains.kotlin.kotlin-stdlib>
-        <version.org.junit>5.7.2</version.org.junit>
+        <version.org.junit>5.8.2.redhat-00003</version.org.junit>
         <version.org.jboss.arquillian.core>1.7.2.Final</version.org.jboss.arquillian.core>
         <version.org.jboss.galleon>4.2.9.Final</version.org.jboss.galleon>
         <version.org.jboss.jandex>2.4.3.Final</version.org.jboss.jandex>

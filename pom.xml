@@ -49,7 +49,7 @@
         <version.org.jboss.msc.jboss-msc>1.5.1.Final</version.org.jboss.msc.jboss-msc>
         <version.org.jboss.remoting.jboss-remoting>5.0.27.Final</version.org.jboss.remoting.jboss-remoting>
         <version.org.jboss.remotingjmx.remoting-jmx>3.0.4.Final</version.org.jboss.remotingjmx.remoting-jmx>
-        <version.org.jboss.xnio>3.8.9.Final</version.org.jboss.xnio>
+        <version.org.jboss.xnio>3.8.12.Final</version.org.jboss.xnio>
         <!-- Required by Elytron dependencies -->
         <version.org.slf4j>1.7.36</version.org.slf4j>
         <version.org.wildfly.common.wildfly-common>1.6.0.Final</version.org.wildfly.common.wildfly-common>

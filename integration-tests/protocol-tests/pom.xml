@@ -28,8 +28,8 @@
     <name>WildFly: Arquillian Protocol Integration Tests</name>
 
     <properties>
-        <version.jakarta.ws.rs-api>3.0.0</version.jakarta.ws.rs-api>
-        <version.org.jboss.resteasy>6.0.3.Final</version.org.jboss.resteasy>
+        <version.jakarta.ws.rs-api>3.1.0</version.jakarta.ws.rs-api>
+        <version.org.jboss.resteasy>6.2.6.Final</version.org.jboss.resteasy>
     </properties>
 
     <dependencies>

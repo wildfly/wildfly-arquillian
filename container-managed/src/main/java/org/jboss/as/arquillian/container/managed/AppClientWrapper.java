@@ -19,10 +19,8 @@ package org.jboss.as.arquillian.container.managed;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
-import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Vector;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -78,7 +76,7 @@ public class AppClientWrapper {
      * @return array of App Client output lines
      */
     public String[] readAll(final long timeout) {
-        Vector<String> lines = new Vector<String>();
+        ArrayList<String> lines = new ArrayList<String>();
         String line = null;
         do {
             try {
@@ -114,7 +112,6 @@ public class AppClientWrapper {
      */
     public void run() throws Exception {
         appClientProcess = Runtime.getRuntime().exec(getAppClientCommand());
-        new PrintWriter(appClientProcess.getOutputStream());
         outputReader = new BufferedReader(new InputStreamReader(appClientProcess.getInputStream(), StandardCharsets.UTF_8));
         errorReader = new BufferedReader(new InputStreamReader(appClientProcess.getErrorStream(), StandardCharsets.UTF_8));
 
@@ -146,7 +143,7 @@ public class AppClientWrapper {
             cmd.addAll(ParameterUtils.splitParams(config.getClientArguments()));
         }
 
-        System.out.println(cmd);
+        log.info("AppClient cmd: " + cmd);
         String[] cmdLine = new String[cmd.size()];
         cmd.toArray(cmdLine);
         return cmdLine;

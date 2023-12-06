@@ -29,16 +29,11 @@ import java.util.Collection;
 import java.util.regex.Pattern;
 
 import org.jboss.arquillian.container.spi.client.container.LifecycleException;
-import org.jboss.arquillian.core.api.InstanceProducer;
-import org.jboss.arquillian.core.api.annotation.ApplicationScoped;
-import org.jboss.arquillian.core.api.annotation.Inject;
 import org.jboss.as.arquillian.container.CommonManagedDeployableContainer;
 import org.jboss.as.arquillian.container.ParameterUtils;
 import org.jboss.logging.Logger;
 import org.wildfly.core.launcher.CommandBuilder;
 import org.wildfly.core.launcher.StandaloneCommandBuilder;
-
-import javax.naming.Context;
 
 /**
  * The managed deployable container.
@@ -142,7 +137,7 @@ public final class ManagedDeployableContainer extends CommonManagedDeployableCon
 
         // If there is an appClientEar specified, setup the appClient
         ManagedContainerConfiguration config = getContainerConfiguration();
-        if(config.getClientAppEar() != null) {
+        if (config.getClientAppEar() != null) {
             appClient = new AppClientWrapper(config, log);
             try {
                 // Launch the client container if the config says to
@@ -158,11 +153,12 @@ public final class ManagedDeployableContainer extends CommonManagedDeployableCon
             }
         }
     }
+
     @Override
     protected void stopInternal(Integer timeout) throws LifecycleException {
         super.stopInternal(timeout);
         try {
-            if(appClient != null) {
+            if (appClient != null) {
                 appClient.quit();
                 appClient = null;
             }

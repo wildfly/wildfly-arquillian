@@ -16,9 +16,6 @@
 
 package org.jboss.as.arquillian.container.managed;
 
-import org.jboss.as.arquillian.container.ParameterUtils;
-import org.jboss.logging.Logger;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
@@ -29,6 +26,9 @@ import java.util.Vector;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
+
+import org.jboss.as.arquillian.container.ParameterUtils;
+import org.jboss.logging.Logger;
 
 /**
  * Fork of the wildfly integration testsuite application client container runner
@@ -152,19 +152,24 @@ public class AppClientWrapper {
     }
 
     private void readClientOut() {
-        if(outputReader == null) return;;
+        if (outputReader == null)
+            return;
+
         readClientProcess(outputReader, false);
         synchronized (this) {
             outputReader = null;
         }
     }
+
     private void readClientErr() {
-        if(errorReader == null) return;;
+        if (errorReader == null)
+            return;
         readClientProcess(errorReader, true);
         synchronized (this) {
             errorReader = null;
         }
     }
+
     /**
      * Loop
      */

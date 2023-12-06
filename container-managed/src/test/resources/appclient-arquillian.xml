@@ -29,6 +29,22 @@
             <!-- -->
             <property name="clientAppEar">target/appClient.ear</property>
             <property name="clientArchiveName">client-annotation.jar</property>
+            <property name="clientArguments">testAppClientRunViaArq</property>
+            <property name="runClient">true</property>
+        </configuration>
+    </container>
+
+    <container qualifier="jboss-manual-client" default="false">
+        <configuration>
+            <property name="jbossHome">${jboss.home}</property>
+            <property name="jbossArguments">-P=src/test/resources/testfile.properties</property>
+            <property name="javaVmArguments">${debug.vm.args} ${jvm.args}</property>
+            <property name="serverConfig">${wildfly.standalone.config}</property>
+            <property name="allowConnectingToRunningServer">false</property>
+
+            <!-- -->
+            <property name="clientAppEar">target/appClient.ear</property>
+            <property name="clientArchiveName">client-annotation.jar</property>
             <property name="clientArguments">testAppClientRun</property>
             <property name="runClient">false</property>
         </configuration>

@@ -17,6 +17,7 @@ package org.jboss.as.arquillian.container.app;
 
 import jakarta.annotation.Resource;
 import jakarta.ejb.EJB;
+
 import org.jboss.logging.Logger;
 
 public class AppClientMain {
@@ -38,7 +39,7 @@ public class AppClientMain {
 
         try {
             String result = appClientSingletonRemote.clientCall(params[0]);
-            logger.info("AppClientMain.RESULT: "+result);
+            logger.info("AppClientMain.RESULT: " + result);
             logger.info("AppClientMain.SUCCESS");
         } catch (Exception e) {
             logger.error("AppClientMain.FAILED", e);

@@ -15,10 +15,10 @@
  */
 package org.jboss.as.arquillian.container.managed;
 
+import java.util.Map;
+
 import org.jboss.arquillian.container.spi.ConfigurationException;
 import org.jboss.as.arquillian.container.DistributionContainerConfiguration;
-
-import java.util.Map;
 
 /**
  * The managed container configuration
@@ -52,7 +52,6 @@ public class ManagedContainerConfiguration extends DistributionContainerConfigur
     private String clientArchiveName;
     private String appClientSh = "appclient.sh";
     private boolean runClient = true;
-
 
     private Map<String, String> clientEnv = System.getenv();
 
@@ -164,7 +163,6 @@ public class ManagedContainerConfiguration extends DistributionContainerConfigur
             this.yamlConfiguration = yamlConfiguration;
         }
     }
-
 
     public String getClientArguments() {
         return clientArguments;

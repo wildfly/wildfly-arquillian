@@ -16,6 +16,11 @@
 
 package org.jboss.as.arquillian.container.managed;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.jboss.arquillian.container.spi.Container;
 import org.jboss.arquillian.container.spi.ContainerRegistry;
 import org.jboss.arquillian.container.spi.client.container.DeployableContainer;
@@ -23,11 +28,6 @@ import org.jboss.arquillian.container.spi.context.ContainerContext;
 import org.jboss.arquillian.core.api.Instance;
 import org.jboss.arquillian.core.api.annotation.Inject;
 import org.jboss.arquillian.test.spi.TestEnricher;
-
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * A TestEnricher that supports the injection of the AppClientWrapper application client container runner
@@ -41,14 +41,15 @@ public class AppClientTestEnricher implements TestEnricher {
 
     /**
      * Support injection of the AppClientWrapper into a test instance
+     *
      * @param testCase - test instance
      */
     @Override
     public void enrich(Object testCase) {
         AppClientWrapper appClient = getAppClient();
-        if(appClient != null) {
+        if (appClient != null) {
             List<Field> appClientFields = getAppClientFields(testCase);
-            for(Field f : appClientFields) {
+            for (Field f : appClientFields) {
                 try {
                     f.set(testCase, appClient);
                 } catch (IllegalAccessException e) {
@@ -60,16 +61,17 @@ public class AppClientTestEnricher implements TestEnricher {
 
     /**
      * Support injection of the AppClientWrapper into a test method
+     *
      * @param method - test method
      * @return array of method parameter values with any AppClientWrapper type set to the active
-     * {@link ManagedDeployableContainer#getAppClient()}
+     *             {@link ManagedDeployableContainer#getAppClient()}
      */
     @Override
     public Object[] resolve(Method method) {
         Object[] values = new Object[method.getParameterTypes().length];
         Class<?>[] parameterTypes = method.getParameterTypes();
         for (int i = 0; i < parameterTypes.length; i++) {
-            if(parameterTypes[i].isAssignableFrom(AppClientWrapper.class)) {
+            if (parameterTypes[i].isAssignableFrom(AppClientWrapper.class)) {
                 values[i] = getAppClient();
             }
         }
@@ -78,13 +80,14 @@ public class AppClientTestEnricher implements TestEnricher {
 
     /**
      * Obtain the AppClientWrapper from the active ManagedDeployableContainer
+     *
      * @return active AppClientWrapper if one exists, null otherwise
      */
     private AppClientWrapper getAppClient() {
         String containerID = containerContext.get().getActiveId();
         Container container = containerRegistry.get().getContainer(containerID);
         DeployableContainer<?> deployableContainer = container.getDeployableContainer();
-        if(deployableContainer instanceof ManagedDeployableContainer) {
+        if (deployableContainer instanceof ManagedDeployableContainer) {
             ManagedDeployableContainer mdContainer = (ManagedDeployableContainer) deployableContainer;
             return mdContainer.getAppClient();
         }

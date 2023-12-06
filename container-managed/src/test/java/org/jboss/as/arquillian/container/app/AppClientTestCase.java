@@ -15,8 +15,11 @@
  */
 package org.jboss.as.arquillian.container.app;
 
+import java.io.File;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
+import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.container.managed.AppClientWrapper;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -28,14 +31,12 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.io.File;
-
 /**
  * Test deployment of an application client ear and application using the extended managed container.
  * This version automatically starts the application client container after starting the server and deploying
  * the test EAR.
  *
- * To run in an IDE, set the -Darquillian.xml=arqullian-appclient.xml property the test VM arguments
+ * To run in an IDE, set the -Darquillian.xml=appclient-arqullian.xml property the test VM arguments
  */
 @RunWith(Arquillian.class)
 public class AppClientTestCase {
@@ -43,7 +44,8 @@ public class AppClientTestCase {
     /**
      * Test an application client accessing an EJB in the managed server
      */
-    @Deployment(testable = false)
+    @TargetsContainer("jboss")
+    @Deployment(testable = false, name = "jboss")
     public static EnterpriseArchive createDeployment() throws Exception {
         final EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, "appClient" + ".ear");
 
@@ -70,6 +72,7 @@ public class AppClientTestCase {
 
     /**
      * Test using JBossModulesCommandBuilder
+     *
      * @throws Exception
      */
     @Test
@@ -78,17 +81,17 @@ public class AppClientTestCase {
         String[] output = appClient.readAll(1000);
         System.out.printf("AppClient readAll returned %d lines\n", output.length);
         boolean sawStart = false, sawEnd = false, sawResult = false, sawSuccess = false, sawFailed = false;
-        for(String line : output) {
+        for (String line : output) {
             System.out.println(line);
-            if(line.contains("AppClientMain.begin")) {
+            if (line.contains("AppClientMain.begin")) {
                 sawStart = true;
-            } else if(line.contains("AppClientMain.end")) {
+            } else if (line.contains("AppClientMain.end")) {
                 sawEnd = true;
-            } else if(line.contains("AppClientMain.FAILED")) {
+            } else if (line.contains("AppClientMain.FAILED")) {
                 sawFailed = true;
-            } else if(line.contains("AppClientMain.SUCCESS")) {
+            } else if (line.contains("AppClientMain.SUCCESS")) {
                 sawSuccess = true;
-            } else if(line.contains("AppClientMain.RESULT: clientCall(testAppClientRunViaArq)")) {
+            } else if (line.contains("AppClientMain.RESULT: clientCall(testAppClientRunViaArq)")) {
                 sawResult = true;
             }
         }

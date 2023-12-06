@@ -15,6 +15,7 @@
  */
 package org.jboss.as.arquillian.container.managed;
 
+import java.util.Locale;
 import java.util.Map;
 
 import org.jboss.arquillian.container.spi.ConfigurationException;
@@ -51,6 +52,7 @@ public class ManagedContainerConfiguration extends DistributionContainerConfigur
     private String clientAppEar;
     private String clientArchiveName;
     private String appClientSh = "appclient.sh";
+    private boolean appClientShSet;
     private boolean runClient = true;
 
     private Map<String, String> clientEnv = System.getenv();
@@ -201,6 +203,7 @@ public class ManagedContainerConfiguration extends DistributionContainerConfigur
     }
 
     public void setAppClientSh(String appClientSh) {
+        this.appClientShSet = true;
         this.appClientSh = appClientSh;
     }
 
@@ -212,4 +215,44 @@ public class ManagedContainerConfiguration extends DistributionContainerConfigur
         this.runClient = runClient;
     }
 
+    /**
+     * Get the appClientSh approriate for the current OS unless it was externally set
+     *
+     * @return appclient shell script default base on current OS
+     */
+    public String getAppClientShForOS() {
+        String clientSh = appClientSh;
+        if (appClientShSet) {
+            return clientSh;
+        }
+
+        OSType type = getOperatingSystemType();
+        switch (type) {
+            case Linux:
+            case MacOS:
+                clientSh = "appclient.sh";
+                break;
+            case Windows:
+                clientSh = "appclient.bat";
+                break;
+        }
+        return clientSh;
+    }
+
+    enum OSType {
+        Windows,
+        MacOS,
+        Linux
+    };
+
+    private static OSType getOperatingSystemType() {
+        OSType detectedOS = OSType.Linux;
+        String OS = System.getProperty("os.name", "generic").toLowerCase(Locale.ENGLISH);
+        if ((OS.indexOf("mac") >= 0) || (OS.indexOf("darwin") >= 0)) {
+            detectedOS = OSType.MacOS;
+        } else if (OS.indexOf("win") >= 0) {
+            detectedOS = OSType.Windows;
+        }
+        return detectedOS;
+    }
 }

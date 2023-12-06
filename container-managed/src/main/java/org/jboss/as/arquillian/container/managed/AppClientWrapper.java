@@ -138,7 +138,8 @@ public class AppClientWrapper {
 
         String archiveArg = String.format("%s#%s", archivePath, clientArchiveName);
 
-        String clientSh = String.format("%s/bin/%s", jbossHome, config.getAppClientSh());
+        String client = config.getAppClientShForOS();
+        String clientSh = String.format("%s%cbin%c%s", jbossHome, File.separatorChar, File.separatorChar, client);
         cmd.add(clientSh);
         cmd.add(archiveArg);
         if (config.getClientArguments() != null) {

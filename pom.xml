@@ -287,10 +287,8 @@
     </build>
     <modules>
         <module>common</module>
-        <module>container-application</module>
         <module>container-bootable</module>
         <module>container-embedded</module>
-        <module>container-embeddedejb</module>
         <module>container-managed</module>
         <module>container-remote</module>
         <module>protocol-jmx</module>

@@ -18,6 +18,8 @@ package org.jboss.as.arquillian.container.managed;
 import org.jboss.arquillian.container.spi.ConfigurationException;
 import org.jboss.as.arquillian.container.DistributionContainerConfiguration;
 
+import java.util.Map;
+
 /**
  * The managed container configuration
  *
@@ -44,6 +46,17 @@ public class ManagedContainerConfiguration extends DistributionContainerConfigur
 
     private String cleanServerBaseDir;
     private String yamlConfiguration;
+
+    // Application client container specific settings
+    private String clientAppEar;
+    private String clientArchiveName;
+    private String appClientSh = "appclient.sh";
+    private boolean runClient = true;
+
+
+    private Map<String, String> clientEnv = System.getenv();
+
+    private String clientArguments;
 
     public ManagedContainerConfiguration() {
     }
@@ -151,4 +164,54 @@ public class ManagedContainerConfiguration extends DistributionContainerConfigur
             this.yamlConfiguration = yamlConfiguration;
         }
     }
+
+
+    public String getClientArguments() {
+        return clientArguments;
+    }
+
+    public void setClientArguments(String clientArguments) {
+        this.clientArguments = clientArguments;
+    }
+
+    public String getClientAppEar() {
+        return clientAppEar;
+    }
+
+    public void setClientAppEar(String clientAppEar) {
+        this.clientAppEar = clientAppEar;
+    }
+
+    public String getClientArchiveName() {
+        return clientArchiveName;
+    }
+
+    public void setClientArchiveName(String clientArchiveName) {
+        this.clientArchiveName = clientArchiveName;
+    }
+
+    public Map<String, String> getClientEnv() {
+        return clientEnv;
+    }
+
+    public void setClientEnv(Map<String, String> clientEnv) {
+        this.clientEnv = clientEnv;
+    }
+
+    public String getAppClientSh() {
+        return appClientSh;
+    }
+
+    public void setAppClientSh(String appClientSh) {
+        this.appClientSh = appClientSh;
+    }
+
+    public boolean isRunClient() {
+        return runClient;
+    }
+
+    public void setRunClient(boolean runClient) {
+        this.runClient = runClient;
+    }
+
 }

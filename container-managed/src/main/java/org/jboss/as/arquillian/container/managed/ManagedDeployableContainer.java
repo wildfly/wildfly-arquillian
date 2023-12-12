@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.regex.Pattern;
 
+import org.jboss.arquillian.container.spi.client.container.LifecycleException;
 import org.jboss.as.arquillian.container.CommonManagedDeployableContainer;
 import org.jboss.as.arquillian.container.ParameterUtils;
 import org.jboss.logging.Logger;
@@ -50,15 +51,19 @@ public final class ManagedDeployableContainer extends CommonManagedDeployableCon
     static final String DATA_DIR = "data";
 
     private final Logger log = Logger.getLogger(ManagedDeployableContainer.class);
+    private AppClientWrapper appClient;
 
     @Override
     public Class<ManagedContainerConfiguration> getConfigurationClass() {
         return ManagedContainerConfiguration.class;
     }
 
+    public AppClientWrapper getAppClient() {
+        return appClient;
+    }
+
     @Override
-    @SuppressWarnings("FeatureEnvy")
-    protected CommandBuilder createCommandBuilder(final ManagedContainerConfiguration config) {
+    protected CommandBuilder createCommandBuilder(ManagedContainerConfiguration config) {
         final StandaloneCommandBuilder commandBuilder = StandaloneCommandBuilder.of(config.getJbossHome());
 
         String modulesPath = config.getModulePath();
@@ -124,6 +129,44 @@ public final class ManagedDeployableContainer extends CommonManagedDeployableCon
         // the module path has been defined as well.
         commandBuilder.addJavaOption("-Djboss.home.dir=" + commandBuilder.getWildFlyHome());
         return commandBuilder;
+    }
+
+    protected void startInternal() throws LifecycleException {
+        // Run the managed container startup
+        super.startInternal();
+
+        // If there is an appClientEar specified, setup the appClient
+        ManagedContainerConfiguration config = getContainerConfiguration();
+        if (config.getClientAppEar() != null) {
+            appClient = new AppClientWrapper(config, log);
+            try {
+                // Launch the client container if the config says to
+                if (getContainerConfiguration().isRunClient()) {
+                    appClient.run();
+                }
+            } catch (Exception e) {
+                if (e instanceof LifecycleException)
+                    throw (LifecycleException) e;
+                LifecycleException le = new LifecycleException(e.getMessage());
+                le.initCause(e);
+                throw le;
+            }
+        }
+    }
+
+    @Override
+    protected void stopInternal(Integer timeout) throws LifecycleException {
+        super.stopInternal(timeout);
+        try {
+            if (appClient != null) {
+                appClient.quit();
+                appClient = null;
+            }
+        } catch (Exception e) {
+            LifecycleException le = new LifecycleException(e.getMessage());
+            le.initCause(e);
+            throw le;
+        }
     }
 
     private Path[] findSupplementalConfigurationFiles(final Path serverConfigurationDirPath, final String yaml) {

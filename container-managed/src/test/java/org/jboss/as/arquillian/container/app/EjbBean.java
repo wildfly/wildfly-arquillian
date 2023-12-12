@@ -13,25 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jboss.as.arquillian.container.managed;
+package org.jboss.as.arquillian.container.app;
 
-import org.jboss.arquillian.container.spi.client.container.DeployableContainer;
-import org.jboss.arquillian.test.spi.TestEnricher;
-import org.jboss.as.arquillian.container.CommonContainerExtension;
+import jakarta.ejb.Remote;
+import jakarta.ejb.Stateless;
 
 /**
- * The extensions used by the managed container.
+ * Test EJB used for binding only
  *
  * @author <a href="mailto:alr@jboss.org">Andrew Lee Rubinger</a>
- * @author Thomas.Diesler@jboss.com
- * @since 02-Jun-2011
  */
-public class ManagedContainerExtension extends CommonContainerExtension {
-
+@Stateless
+@Remote(EjbBusiness.class)
+public class EjbBean implements EjbBusiness {
     @Override
-    public void register(ExtensionBuilder builder) {
-        super.register(builder);
-        builder.service(DeployableContainer.class, ManagedDeployableContainer.class);
-        builder.service(TestEnricher.class, AppClientTestEnricher.class);
+    public String clientCall(String args) {
+        return String.format("clientCall(%s)", args);
     }
 }

@@ -35,7 +35,7 @@ import org.jboss.arquillian.test.api.ArquillianResource;
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-abstract class AbstractTargetsContainerProvider extends OperatesOnDeploymentAwareProvider {
+public abstract class AbstractTargetsContainerProvider extends OperatesOnDeploymentAwareProvider {
     @Inject
     private Instance<ContainerContext> containerContext;
 

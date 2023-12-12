@@ -16,14 +16,14 @@
 package org.jboss.as.arquillian.container.app;
 
 import java.io.File;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
-
-import jakarta.inject.Inject;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.managed.AppClientWrapper;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -36,12 +36,14 @@ import org.junit.runner.RunWith;
 
 /**
  * Test deployment of an application client ear and application using the extended managed container.
- * This version only automatically starts the server and deploys the test EAR. The {@link #testAppClientRun(AppClientWrapper) }
- * method explictly starts the application client with the injected AppClientWrapper and then validates its
+ * This version only automatically starts the server and deploys the test EAR. The {@link #testAppClientRun()}
+ * (AppClientWrapper) }
+ * method explicitly starts the application client with the injected AppClientWrapper and then validates its
  * output.
- *
+ * <p>
  * To run in an IDE, set the -Darquillian.xml=appclient-arqullian.xml -Darqullian.launch=jboss-manual-client
  * properties the test VM arguments
+ * </p>
  */
 @RunWith(Arquillian.class)
 public class AppClient2TestCase {
@@ -52,9 +54,9 @@ public class AppClient2TestCase {
     @TargetsContainer("jboss-manual-client")
     @Deployment(testable = false, name = "jboss-manual-client")
     public static EnterpriseArchive createDeployment() throws Exception {
-        final EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, "appClient" + ".ear");
+        final EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, "appClient.ear");
 
-        JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, "myejb.jar")
+        final JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, "myejb.jar")
                 .addClasses(EjbBean.class, EjbBusiness.class);
         ear.addAsModule(ejbJar);
 
@@ -63,20 +65,15 @@ public class AppClient2TestCase {
         appClient.addAsManifestResource(new StringAsset("Main-Class: " + AppClientMain.class.getName() + "\n"), "MANIFEST.MF");
         ear.addAsModule(appClient);
 
-        File archiveOnDisk = new File("target" + File.separator + ear.getName());
-        if (archiveOnDisk.exists()) {
-            archiveOnDisk.delete();
-        }
+        final File archiveOnDisk = new File("target" + File.separator + ear.getName());
         final ZipExporter exporter = ear.as(ZipExporter.class);
-        exporter.exportTo(archiveOnDisk);
-        String archivePath = archiveOnDisk.getAbsolutePath();
-        System.out.printf("archivePath: %s\n", archivePath);
+        exporter.exportTo(archiveOnDisk, true);
 
         return ear;
     }
 
-    @Inject
-    AppClientWrapper appClient;
+    @ArquillianResource
+    private AppClientWrapper appClient;
 
     /**
      * Launch the EE Application client container using the same EAR to validate access to the deployed EJB
@@ -91,8 +88,8 @@ public class AppClient2TestCase {
         appClient.waitForExit(10, TimeUnit.SECONDS);
         System.out.println("AppClient exited");
 
-        String[] output = appClient.readAll(1000);
-        System.out.printf("AppClient readAll returned %d lines\n", output.length);
+        List<String> output = appClient.readAll(1000);
+        System.out.printf("AppClient readAll returned %d lines%n", output.size());
         boolean sawStart = false, sawEnd = false, sawResult = false, sawSuccess = false, sawFailed = false;
         for (String line : output) {
             System.out.println(line);
@@ -109,7 +106,7 @@ public class AppClient2TestCase {
             }
         }
         // Cleanup the app client
-        appClient.quit();
+        appClient.close();
 
         Assert.assertTrue("AppClientMain.begin was seen", sawStart);
         Assert.assertTrue("AppClientMain.end was seen", sawEnd);

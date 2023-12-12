@@ -29,6 +29,9 @@ import java.util.Collection;
 import java.util.regex.Pattern;
 
 import org.jboss.arquillian.container.spi.client.container.LifecycleException;
+import org.jboss.arquillian.container.spi.context.annotation.ContainerScoped;
+import org.jboss.arquillian.core.api.InstanceProducer;
+import org.jboss.arquillian.core.api.annotation.Inject;
 import org.jboss.as.arquillian.container.CommonManagedDeployableContainer;
 import org.jboss.as.arquillian.container.ParameterUtils;
 import org.jboss.logging.Logger;
@@ -51,15 +54,15 @@ public final class ManagedDeployableContainer extends CommonManagedDeployableCon
     static final String DATA_DIR = "data";
 
     private final Logger log = Logger.getLogger(ManagedDeployableContainer.class);
+
+    @Inject
+    @ContainerScoped
+    private InstanceProducer<AppClientWrapper> appClientWrapperProducer;
     private AppClientWrapper appClient;
 
     @Override
     public Class<ManagedContainerConfiguration> getConfigurationClass() {
         return ManagedContainerConfiguration.class;
-    }
-
-    public AppClientWrapper getAppClient() {
-        return appClient;
     }
 
     @Override
@@ -74,7 +77,7 @@ public final class ManagedDeployableContainer extends CommonManagedDeployableCon
         @SuppressWarnings("deprecation")
         String bundlesPath = config.getBundlePath();
         if (bundlesPath != null && !bundlesPath.isEmpty()) {
-            log.warn("Bundles path is deprecated and no longer used.");
+            getLogger().warn("Bundles path is deprecated and no longer used.");
         }
 
         final String javaOpts = config.getJavaVmArguments();
@@ -131,25 +134,28 @@ public final class ManagedDeployableContainer extends CommonManagedDeployableCon
         return commandBuilder;
     }
 
+    @Override
+    public void setup(final ManagedContainerConfiguration config) {
+        super.setup(config);
+        if (config.getClientAppEar() != null) {
+            appClient = new AppClientWrapper(config, getLogger());
+            appClientWrapperProducer.set(appClient);
+        }
+    }
+
     protected void startInternal() throws LifecycleException {
         // Run the managed container startup
         super.startInternal();
 
-        // If there is an appClientEar specified, setup the appClient
-        ManagedContainerConfiguration config = getContainerConfiguration();
-        if (config.getClientAppEar() != null) {
-            appClient = new AppClientWrapper(config, log);
+        // If there is an appClientEar specified, run the app client
+        if (appClient != null) {
             try {
                 // Launch the client container if the config says to
                 if (getContainerConfiguration().isRunClient()) {
                     appClient.run();
                 }
             } catch (Exception e) {
-                if (e instanceof LifecycleException)
-                    throw (LifecycleException) e;
-                LifecycleException le = new LifecycleException(e.getMessage());
-                le.initCause(e);
-                throw le;
+                throw new LifecycleException(e.getMessage(), e);
             }
         }
     }
@@ -159,13 +165,11 @@ public final class ManagedDeployableContainer extends CommonManagedDeployableCon
         super.stopInternal(timeout);
         try {
             if (appClient != null) {
-                appClient.quit();
+                appClient.close();
                 appClient = null;
             }
         } catch (Exception e) {
-            LifecycleException le = new LifecycleException(e.getMessage());
-            le.initCause(e);
-            throw le;
+            throw new LifecycleException(e.getMessage(), e);
         }
     }
 

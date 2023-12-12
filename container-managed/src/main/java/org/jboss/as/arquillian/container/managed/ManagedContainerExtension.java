@@ -16,7 +16,7 @@
 package org.jboss.as.arquillian.container.managed;
 
 import org.jboss.arquillian.container.spi.client.container.DeployableContainer;
-import org.jboss.arquillian.test.spi.TestEnricher;
+import org.jboss.arquillian.test.spi.enricher.resource.ResourceProvider;
 import org.jboss.as.arquillian.container.CommonContainerExtension;
 
 /**
@@ -32,6 +32,6 @@ public class ManagedContainerExtension extends CommonContainerExtension {
     public void register(ExtensionBuilder builder) {
         super.register(builder);
         builder.service(DeployableContainer.class, ManagedDeployableContainer.class);
-        builder.service(TestEnricher.class, AppClientTestEnricher.class);
+        builder.service(ResourceProvider.class, AppClientProvider.class);
     }
 }

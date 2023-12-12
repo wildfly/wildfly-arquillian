@@ -15,6 +15,8 @@
  */
 package org.jboss.as.arquillian.container.managed;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Locale;
 import java.util.Map;
 
@@ -51,8 +53,7 @@ public class ManagedContainerConfiguration extends DistributionContainerConfigur
     // Application client container specific settings
     private String clientAppEar;
     private String clientArchiveName;
-    private String appClientSh = "appclient.sh";
-    private boolean appClientShSet;
+    private String appClientCommand;
     private boolean runClient = true;
 
     private Map<String, String> clientEnv = System.getenv();
@@ -69,6 +70,18 @@ public class ManagedContainerConfiguration extends DistributionContainerConfigur
         if (serverConfig != null && readOnlyServerConfig != null) {
             throw new ConfigurationException(String.format("Cannot define both a serverConfig and a readOnlyServerConfig: " +
                     "serverConfig=%s - readOnlyServerConfig=%s", serverConfig, readOnlyServerConfig));
+        }
+        // Validate the server has been provisioned with the application client available if we're using the
+        // application client.
+        if (clientAppEar != null) {
+            if (getJbossHome() == null) {
+                throw new ConfigurationException("The jbossHome is required to be set if the clientAppEar is set.");
+            }
+            final String client = resolveAppClientCommand();
+            final Path clientExe = Path.of(getJbossHome(), "bin", client);
+            if (Files.notExists(clientExe)) {
+                throw new ConfigurationException("Could not find appclient executable " + clientExe);
+            }
         }
     }
 
@@ -198,13 +211,12 @@ public class ManagedContainerConfiguration extends DistributionContainerConfigur
         this.clientEnv = clientEnv;
     }
 
-    public String getAppClientSh() {
-        return appClientSh;
+    public String getAppClientCommand() {
+        return appClientCommand;
     }
 
-    public void setAppClientSh(String appClientSh) {
-        this.appClientShSet = true;
-        this.appClientSh = appClientSh;
+    public void setAppClientCommand(String appClientCommand) {
+        this.appClientCommand = appClientCommand;
     }
 
     public boolean isRunClient() {
@@ -216,43 +228,20 @@ public class ManagedContainerConfiguration extends DistributionContainerConfigur
     }
 
     /**
-     * Get the appClientSh approriate for the current OS unless it was externally set
+     * Resolves the application client command appropriate for the current OS unless it was explicitly set.
      *
-     * @return appclient shell script default base on current OS
+     * @return application client shell script, default based on current OS
      */
-    public String getAppClientShForOS() {
-        String clientSh = appClientSh;
-        if (appClientShSet) {
-            return clientSh;
+    public String resolveAppClientCommand() {
+        if (appClientCommand != null) {
+            return appClientCommand;
         }
 
-        OSType type = getOperatingSystemType();
-        switch (type) {
-            case Linux:
-            case MacOS:
-                clientSh = "appclient.sh";
-                break;
-            case Windows:
-                clientSh = "appclient.bat";
-                break;
-        }
-        return clientSh;
+        return isWindows() ? "appclient.bat" : "appclient.sh";
     }
 
-    enum OSType {
-        Windows,
-        MacOS,
-        Linux
-    };
-
-    private static OSType getOperatingSystemType() {
-        OSType detectedOS = OSType.Linux;
-        String OS = System.getProperty("os.name", "generic").toLowerCase(Locale.ENGLISH);
-        if ((OS.indexOf("mac") >= 0) || (OS.indexOf("darwin") >= 0)) {
-            detectedOS = OSType.MacOS;
-        } else if (OS.indexOf("win") >= 0) {
-            detectedOS = OSType.Windows;
-        }
-        return detectedOS;
+    private static boolean isWindows() {
+        final String os = System.getProperty("os.name", "generic").toLowerCase(Locale.ROOT);
+        return os.contains("windows");
     }
 }

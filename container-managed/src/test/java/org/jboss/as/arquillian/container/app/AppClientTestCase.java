@@ -16,11 +16,13 @@
 package org.jboss.as.arquillian.container.app;
 
 import java.io.File;
+import java.util.List;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.managed.AppClientWrapper;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -35,8 +37,9 @@ import org.junit.runner.RunWith;
  * Test deployment of an application client ear and application using the extended managed container.
  * This version automatically starts the application client container after starting the server and deploying
  * the test EAR.
- *
+ * <p>
  * To run in an IDE, set the -Darquillian.xml=appclient-arqullian.xml property the test VM arguments
+ * </p>
  */
 @RunWith(Arquillian.class)
 public class AppClientTestCase {
@@ -49,7 +52,7 @@ public class AppClientTestCase {
     public static EnterpriseArchive createDeployment() throws Exception {
         final EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, "appClient" + ".ear");
 
-        JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, "myejb.jar")
+        final JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, "myejb.jar")
                 .addClasses(EjbBean.class, EjbBusiness.class);
         ear.addAsModule(ejbJar);
 
@@ -58,28 +61,21 @@ public class AppClientTestCase {
         appClient.addAsManifestResource(new StringAsset("Main-Class: " + AppClientMain.class.getName() + "\n"), "MANIFEST.MF");
         ear.addAsModule(appClient);
 
-        File archiveOnDisk = new File("target" + File.separator + ear.getName());
-        if (archiveOnDisk.exists()) {
-            archiveOnDisk.delete();
-        }
+        final File archiveOnDisk = new File("target" + File.separator + ear.getName());
         final ZipExporter exporter = ear.as(ZipExporter.class);
-        exporter.exportTo(archiveOnDisk);
-        String archivePath = archiveOnDisk.getAbsolutePath();
-        System.out.printf("archivePath: %s\n", archivePath);
-
+        exporter.exportTo(archiveOnDisk, true);
         return ear;
     }
 
     /**
      * Test using JBossModulesCommandBuilder
      *
-     * @throws Exception
      */
     @Test
     @RunAsClient
-    public void testAppClientRunViaArq(AppClientWrapper appClient) throws Exception {
-        String[] output = appClient.readAll(1000);
-        System.out.printf("AppClient readAll returned %d lines\n", output.length);
+    public void testAppClientRunViaArq(@ArquillianResource AppClientWrapper appClient) {
+        final List<String> output = appClient.readAll(1000);
+        System.out.printf("AppClient readAll returned %d lines%n", output.size());
         boolean sawStart = false, sawEnd = false, sawResult = false, sawSuccess = false, sawFailed = false;
         for (String line : output) {
             System.out.println(line);

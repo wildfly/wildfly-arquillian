@@ -32,6 +32,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
@@ -249,11 +250,18 @@ public class ManagedDomainDeployableContainer extends CommonDomainDeployableCont
      *
      * @param cleanServerBaseDirPath the clean server base directory
      */
-    private static void setupCleanServerDirectories(final DomainCommandBuilder commandBuilder,
+    private void setupCleanServerDirectories(final DomainCommandBuilder commandBuilder,
             final String cleanServerBaseDirPath) throws IOException {
         final Path cleanBase;
         if (cleanServerBaseDirPath != null) {
             cleanBase = Paths.get(cleanServerBaseDirPath);
+            if (Files.exists(cleanBase)) {
+                if (!deleteDir(cleanBase)) {
+                    log.warning(String.format("Clean directory %s was not empty when copied. Previous data will be lost.",
+                            cleanBase));
+                }
+            }
+            Files.createDirectories(cleanBase);
         } else {
             cleanBase = Files.createTempDirectory(TEMP_CONTAINER_DIRECTORY);
         }
@@ -299,5 +307,27 @@ public class ManagedDomainDeployableContainer extends CommonDomainDeployableCont
                 return FileVisitResult.CONTINUE;
             }
         });
+    }
+
+    private static boolean deleteDir(final Path toDelete) throws IOException {
+        final AtomicBoolean empty = new AtomicBoolean(true);
+        Files.walkFileTree(toDelete, new SimpleFileVisitor<>() {
+            @Override
+            public FileVisitResult postVisitDirectory(final Path dir, final IOException exc) throws IOException {
+                Files.delete(dir);
+                if (!dir.equals(toDelete)) {
+                    empty.compareAndSet(true, false);
+                }
+                return FileVisitResult.CONTINUE;
+            }
+
+            @Override
+            public FileVisitResult visitFile(final Path file, final BasicFileAttributes attrs) throws IOException {
+                Files.delete(file);
+                empty.compareAndSet(true, false);
+                return FileVisitResult.CONTINUE;
+            }
+        });
+        return empty.get();
     }
 }

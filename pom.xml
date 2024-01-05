@@ -89,6 +89,7 @@
         <jvm.args>${default.jvm.args}</jvm.args>
         <debug.vm.args />
         <debug.port>8787</debug.port>
+        <test.debug.port>5005</test.debug.port>
 
         <!-- Release properties -->
         <version.release.plugin>3.0.0-M6</version.release.plugin>

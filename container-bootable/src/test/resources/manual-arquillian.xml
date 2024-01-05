@@ -38,5 +38,17 @@
                 <property name="javaVmArguments">${jvm.args}</property>
             </configuration>
         </container>
+        <!-- Debug testing configurations -->
+        <container qualifier="debug-config" mode="manual">
+            <configuration>
+                <property name="installDir">${install.dir}</property>
+                <property name="jarFile">${bootable.jar}</property>
+                <property name="allowConnectingToRunningServer">false</property>
+                <property name="javaVmArguments">${jvm.args}</property>
+                <property name="debug">true</property>
+                <property name="debugPort">${test.debug.port:5005}</property>
+                <property name="debugSuspend">false</property>
+            </configuration>
+        </container>
     </group>
 </arquillian>

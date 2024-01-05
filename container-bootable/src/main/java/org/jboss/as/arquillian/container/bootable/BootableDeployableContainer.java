@@ -77,6 +77,11 @@ public final class BootableDeployableContainer extends CommonManagedDeployableCo
             commandBuilder.addServerArguments(ParameterUtils.splitParams(jbossArguments));
         }
 
+        // Check if we should enable debug
+        if (config.isDebug()) {
+            commandBuilder.setDebug(config.isDebugSuspend(), config.getDebugPort());
+        }
+
         return commandBuilder;
     }
 

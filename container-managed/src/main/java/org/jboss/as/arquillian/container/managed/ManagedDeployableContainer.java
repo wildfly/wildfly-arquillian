@@ -126,6 +126,11 @@ public final class ManagedDeployableContainer extends CommonManagedDeployableCon
             }
         }
 
+        // Check if we should enable debug
+        if (config.isDebug()) {
+            commandBuilder.setDebug(config.isDebugSuspend(), config.getDebugPort());
+        }
+
         // Previous versions of arquillian set the jboss.home.dir property in the JVM properties.
         // Some tests may rely on this behavior, but could be considered to be removed as all the scripts add this
         // property after the modules path (-mp) has been defined. The command builder will set the property after

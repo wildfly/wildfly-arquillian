@@ -17,87 +17,92 @@
 package org.jboss.as.arquillian.container.managed.manual;
 
 import java.io.IOException;
+import java.util.Map;
 
 import org.jboss.arquillian.container.test.api.ContainerController;
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.arquillian.container.ArchiveDeployer;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.Operation;
 import org.jboss.as.controller.client.helpers.ClientConstants;
 import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-@Category(ManualMode.class)
 public abstract class AbstractManualModeTestCase {
     private static final ModelNode EMPTY_ADDRESS = new ModelNode().setEmptyList();
-    static final String PRIMARY_CONTAINER = "jboss";
-    static final String SECONDARY_CONTAINER = "wildfly";
 
     @ArquillianResource
     static ContainerController controller;
 
-    @ArquillianResource
-    @TargetsContainer(PRIMARY_CONTAINER)
-    ManagementClient primaryClient;
-
-    @ArquillianResource
-    @TargetsContainer(SECONDARY_CONTAINER)
-    ManagementClient secondaryClient;
-
     @Deployment(managed = false, name = "dep1")
     public static WebArchive createDeployment() {
         return ShrinkWrap.create(WebArchive.class)
-                // Required for JUnit when running in ARQ
-                .addClass(ManualMode.class);
+                .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
     }
 
     @After
     public void stop() throws Exception {
-        if (controller.isStarted(PRIMARY_CONTAINER)) {
-            controller.stop(PRIMARY_CONTAINER);
-        }
-        if (controller.isStarted(SECONDARY_CONTAINER)) {
-            controller.stop(SECONDARY_CONTAINER);
+        if (controller.isStarted(containerName())) {
+            controller.stop(containerName());
         }
     }
 
     @Test
-    public void testServerControl() throws Exception {
+    public void serverControl() {
+        final String containerName = containerName();
         // The primary container should already be started
-        controller.start(PRIMARY_CONTAINER);
-        Assert.assertTrue(String.format("The container \"%s\" should be started", PRIMARY_CONTAINER),
-                controller.isStarted(PRIMARY_CONTAINER));
-        controller.stop(PRIMARY_CONTAINER);
-        Assert.assertFalse(String.format("The container \"%s\" should be stopped", PRIMARY_CONTAINER),
-                controller.isStarted(PRIMARY_CONTAINER));
-
-        // Start and stop the secondary controller
-        controller.start(SECONDARY_CONTAINER);
-        Assert.assertTrue(String.format("The container \"%s\" should be started", SECONDARY_CONTAINER),
-                controller.isStarted(SECONDARY_CONTAINER));
-        controller.stop(SECONDARY_CONTAINER);
-        Assert.assertFalse(String.format("The container \"%s\" should be stopped", SECONDARY_CONTAINER),
-                controller.isStarted(SECONDARY_CONTAINER));
+        controller.start(containerName, createConfig("server-control"));
+        Assert.assertTrue(String.format("The container \"%s\" should be started", containerName),
+                controller.isStarted(containerName));
+        controller.stop(containerName);
+        Assert.assertFalse(String.format("The container \"%s\" should be stopped", containerName),
+                controller.isStarted(containerName));
     }
 
     @Test
-    public void testManagementClient() throws Exception {
-        controller.start(PRIMARY_CONTAINER);
-        executeForSuccess(primaryClient, Operations.createReadAttributeOperation(EMPTY_ADDRESS, "server-state"));
-        controller.stop(PRIMARY_CONTAINER);
-        controller.start(SECONDARY_CONTAINER);
-        executeForSuccess(secondaryClient, Operations.createReadAttributeOperation(EMPTY_ADDRESS, "server-state"));
-        controller.stop(SECONDARY_CONTAINER);
+    public void managementClient() throws Exception {
+        final String containerName = containerName();
+        controller.start(containerName, createConfig("management-client"));
+        executeForSuccess(client(), Operations.createReadAttributeOperation(EMPTY_ADDRESS, "server-state"));
+        controller.stop(containerName);
+    }
+
+    @Test
+    public void deploy() throws Exception {
+        final String containerName = containerName();
+        controller.start(containerName, createConfig("deploy"));
+        final int currentDeployments = getCurrentDeploymentCount(client());
+        // Deploy both deployments
+        try {
+            deployer().deploy(createDeployment());
+            // Read each result, we should have two results for the first op and one for the second
+            final int newDeployments = getCurrentDeploymentCount(client());
+            Assert.assertEquals("Expected 1 deployments found " + (newDeployments - currentDeployments) + " for container "
+                    + containerName, newDeployments, (1 + currentDeployments));
+        } finally {
+            deployer().undeploy("dep1");
+            controller.stop(containerName);
+        }
+    }
+
+    protected abstract String containerName();
+
+    protected abstract ManagementClient client();
+
+    protected abstract ArchiveDeployer deployer();
+
+    protected Map<String, String> createConfig(final String suffix) {
+        return Map.of();
     }
 
     static ModelNode executeForSuccess(final ManagementClient client, final ModelNode op) throws IOException {
@@ -110,7 +115,8 @@ public abstract class AbstractManualModeTestCase {
             return Operations.readResult(result);
         }
         Assert.fail(
-                String.format("Failed to execute operation: %s%n%s", op, Operations.getFailureDescription(result).asString()));
+                String.format("Failed to execute operation: %s%n%s", op, Operations.getFailureDescription(result)
+                        .asString()));
         return new ModelNode();
     }
 

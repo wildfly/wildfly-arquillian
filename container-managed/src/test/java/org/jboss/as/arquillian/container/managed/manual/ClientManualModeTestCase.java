@@ -16,17 +16,13 @@
 
 package org.jboss.as.arquillian.container.managed.manual;
 
-import java.io.IOException;
-
-import org.jboss.arquillian.container.spi.client.container.DeploymentException;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ArchiveDeployer;
 import org.jboss.as.arquillian.container.ManagementClient;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
 /**
@@ -36,39 +32,30 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
+@Category(ManualMode.class)
 public class ClientManualModeTestCase extends AbstractManualModeTestCase {
+    private static final String CONTAINER_NAME = "jboss";
 
     @ArquillianResource
-    @TargetsContainer(PRIMARY_CONTAINER)
-    private ArchiveDeployer primaryDeployer;
+    @TargetsContainer(CONTAINER_NAME)
+    private ManagementClient client;
 
     @ArquillianResource
-    @TargetsContainer(SECONDARY_CONTAINER)
-    private ArchiveDeployer secondaryDeployer;
+    @TargetsContainer(CONTAINER_NAME)
+    private ArchiveDeployer deployer;
 
-    @Test
-    public void testDeploy() throws Exception {
-        testDeploy(primaryDeployer, primaryClient, PRIMARY_CONTAINER);
-        testDeploy(secondaryDeployer, secondaryClient, SECONDARY_CONTAINER);
+    @Override
+    protected String containerName() {
+        return CONTAINER_NAME;
     }
 
-    private static void testDeploy(final ArchiveDeployer deployer, final ManagementClient client, final String containerName)
-            throws IOException, DeploymentException {
-        if (!controller.isStarted(containerName)) {
-            controller.start(containerName);
-        }
-        final int currentDeployments = getCurrentDeploymentCount(client);
-        // Deploy both deployments
-        try {
-            deployer.deploy(createDeployment());
-            // Read each result, we should have two results for the first op and one for the second
-            final int newDeployments = getCurrentDeploymentCount(client);
-            Assert.assertTrue(
-                    "Expected 1 deployments found " + (newDeployments - currentDeployments) + " for container " + containerName,
-                    newDeployments == (1 + currentDeployments));
-        } finally {
-            deployer.undeploy("dep1");
-            controller.stop(containerName);
-        }
+    @Override
+    protected ManagementClient client() {
+        return client;
+    }
+
+    @Override
+    protected ArchiveDeployer deployer() {
+        return deployer;
     }
 }

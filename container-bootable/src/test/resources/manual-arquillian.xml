@@ -27,17 +27,6 @@
                 <property name="javaVmArguments">${jvm.args}</property>
             </configuration>
         </container>
-        <container qualifier="wildfly" default="false" mode="manual">
-            <configuration>
-                <property name="installDir">${install.dir}</property>
-                <property name="jarFile">${bootable.jar}</property>
-                <property name="allowConnectingToRunningServer">false</property>
-                <!-- Change the management port to ensure only the correct client will work with the server -->
-                <property name="managementPort">9999</property>
-                <property name="jbossArguments">-Djboss.management.http.port=9999</property>
-                <property name="javaVmArguments">${jvm.args}</property>
-            </configuration>
-        </container>
         <!-- Debug testing configurations -->
         <container qualifier="debug-config" mode="manual">
             <configuration>

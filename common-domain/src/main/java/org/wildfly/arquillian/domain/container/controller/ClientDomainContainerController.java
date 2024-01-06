@@ -36,66 +36,66 @@ public class ClientDomainContainerController extends ClientContainerController i
 
     @Override
     public void reloadServers(final String containerQualifier, final String groupName) {
-        getDomainController(containerQualifier, true).reloadServers(groupName);
+        getDomainController(containerQualifier).reloadServers(groupName);
     }
 
     @Override
     public void restartServers(final String containerQualifier, final String groupName) {
-        getDomainController(containerQualifier, true).restartServers(groupName);
+        getDomainController(containerQualifier).restartServers(groupName);
     }
 
     @Override
     public void resumeServers(final String containerQualifier, final String groupName) {
-        getDomainController(containerQualifier, true).resumeServers(groupName);
+        getDomainController(containerQualifier).resumeServers(groupName);
     }
 
     @Override
     public void startServers(final String containerQualifier, final String groupName) {
-        getDomainController(containerQualifier, true).startServers(groupName);
+        getDomainController(containerQualifier).startServers(groupName);
     }
 
     @Override
     public void stopServers(final String containerQualifier, final String groupName) {
-        getDomainController(containerQualifier, true).stopServers(groupName);
+        getDomainController(containerQualifier).stopServers(groupName);
     }
 
     @Override
     public void suspendServers(final String containerQualifier, final String groupName, final int timeout) {
-        getDomainController(containerQualifier, true).suspendServers(groupName, timeout);
+        getDomainController(containerQualifier).suspendServers(groupName, timeout);
     }
 
     @Override
     public void startServer(final String containerQualifier, final String hostName, final String serverName) {
-        getDomainController(containerQualifier, true).startServer(hostName, serverName);
+        getDomainController(containerQualifier).startServer(hostName, serverName);
     }
 
     @Override
     public void stopServer(final String containerQualifier, final String hostName, final String serverName) {
-        getDomainController(containerQualifier, true).stopServer(hostName, serverName);
+        getDomainController(containerQualifier).stopServer(hostName, serverName);
     }
 
     @Override
     public boolean isServerStarted(final String containerQualifier, final String hostName, final String serverName) {
-        return getDomainController(containerQualifier, false).isServerStarted(hostName, serverName);
+        return getDomainController(containerQualifier).isServerStarted(hostName, serverName);
     }
 
     @Override
     public void restartServer(final String containerQualifier, final String hostName, final String serverName) {
-        getDomainController(containerQualifier, true).restartServer(hostName, serverName);
+        getDomainController(containerQualifier).restartServer(hostName, serverName);
     }
 
     @Override
     public void resumeServer(final String containerQualifier, final String hostName, final String serverName) {
-        getDomainController(containerQualifier, true).resumeServer(hostName, serverName);
+        getDomainController(containerQualifier).resumeServer(hostName, serverName);
     }
 
     @Override
     public void suspendServer(final String containerQualifier, final String hostName, final String serverName,
             final int timeout) {
-        getDomainController(containerQualifier, true).suspendServer(hostName, serverName, timeout);
+        getDomainController(containerQualifier).suspendServer(hostName, serverName, timeout);
     }
 
-    private DomainManager getDomainController(final String containerQualifier, boolean requiresControllable) {
+    private DomainManager getDomainController(final String containerQualifier) {
         final ContainerRegistry registry = containerRegistry.get();
         if (registry == null) {
             throw new IllegalArgumentException("No container registry in context");
@@ -103,10 +103,6 @@ public class ClientDomainContainerController extends ClientContainerController i
 
         if (!containerExists(registry.getContainers(), containerQualifier)) {
             throw new IllegalArgumentException("No container with the specified name exists");
-        }
-        if (requiresControllable && !isControllableContainer(registry.getContainers(), containerQualifier)) {
-            throw new IllegalArgumentException("Could not stop " + containerQualifier
-                    + " container. The container life cycle is controlled by Arquillian");
         }
 
         if (!isStarted(containerQualifier)) {
@@ -116,7 +112,7 @@ public class ClientDomainContainerController extends ClientContainerController i
         final Container container = registry.getContainer(containerQualifier);
         final DeployableContainer<?> deployableContainer = container.getDeployableContainer();
         if (deployableContainer instanceof CommonDomainDeployableContainer) {
-            return CommonDomainDeployableContainer.class.cast(deployableContainer).getDomainManager();
+            return ((CommonDomainDeployableContainer<?>) deployableContainer).getDomainManager();
         }
         throw new IllegalArgumentException(
                 String.format("The container defined with %s is not a domain controller", containerQualifier));

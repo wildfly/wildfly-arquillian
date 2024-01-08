@@ -22,6 +22,7 @@ import java.util.Map;
 import org.jboss.arquillian.container.test.api.ContainerController;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.arquillian.api.WildFlyContainerController;
 import org.jboss.as.arquillian.container.ArchiveDeployer;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.Operation;
@@ -30,6 +31,7 @@ import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.After;
 import org.junit.Assert;
@@ -44,9 +46,13 @@ public abstract class AbstractManualModeTestCase {
     @ArquillianResource
     static ContainerController controller;
 
-    @Deployment(managed = false, name = "dep1")
+    @Deployment(name = "dep1")
     public static WebArchive createDeployment() {
         return ShrinkWrap.create(WebArchive.class)
+                .addClasses(AbstractManualModeTestCase.class, ArchiveDeployer.class, WildFlyContainerController.class,
+                        ManagementClient.class)
+                .setManifest(new StringAsset("Manifest-Version: 1.0\n"
+                        + "Dependencies: org.jboss.as.controller-client,org.jboss.dmr\n"))
                 .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
     }
 

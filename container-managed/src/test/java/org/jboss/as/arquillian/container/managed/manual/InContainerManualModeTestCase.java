@@ -26,6 +26,7 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ArchiveDeployer;
 import org.jboss.as.arquillian.container.ManagementClient;
+import org.junit.Ignore;
 import org.junit.runner.RunWith;
 
 /**
@@ -41,13 +42,14 @@ public class InContainerManualModeTestCase extends AbstractManualModeTestCase {
     @TargetsContainer(CONTAINER_NAME)
     private ManagementClient client;
 
-    @ArquillianResource
-    @TargetsContainer(CONTAINER_NAME)
-    private ArchiveDeployer deployer;
-
     @Override
     protected Map<String, String> createConfig(final String suffix) {
-        return Map.of("cleanServerBaseDir", System.getProperty("jboss.home") + "-" + suffix);
+        return Map.of("cleanServerBaseDir", System.getProperty("java.io.tmpdir") + "/wildfly-" + suffix);
+    }
+
+    @Override
+    @Ignore("The ArchiveDeployer does not work because of missing dependencies. This should be resolved with WFARQ-148.")
+    public void deploy() throws Exception {
     }
 
     @Override
@@ -62,6 +64,6 @@ public class InContainerManualModeTestCase extends AbstractManualModeTestCase {
 
     @Override
     protected ArchiveDeployer deployer() {
-        return deployer;
+        return new ArchiveDeployer(client);
     }
 }

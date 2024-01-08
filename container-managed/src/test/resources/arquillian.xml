@@ -32,17 +32,5 @@
                 <property name="allowConnectingToRunningServer">false</property>
             </configuration>
         </container>
-        <container qualifier="wildfly" mode="manual">
-            <configuration>
-                <property name="jbossHome">${jboss.home}</property>
-                <property name="setupCleanServerBaseDir">true</property>
-                <property name="cleanServerBaseDir">target/wildfly-placeholder</property>
-                <property name="allowConnectingToRunningServer">false</property>
-                <!-- Change the management port to ensure only the correct client will work with the server -->
-                <property name="managementPort">10090</property>
-                <property name="javaVmArguments">${jvm.args} -Djboss.socket.binding.port-offset=100</property>
-                <property name="serverConfig">${wildfly.standalone.config}</property>
-            </configuration>
-        </container>
     </group>
 </arquillian>

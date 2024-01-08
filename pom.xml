@@ -85,7 +85,7 @@
 
         <!-- Surefire properties -->
         <maven.test.redirectTestOutputToFile>true</maven.test.redirectTestOutputToFile>
-        <default.jvm.args>-Dmaven.repo.local=${settings.localRepository}</default.jvm.args>
+        <default.jvm.args>-Dmaven.repo.local=${settings.localRepository} -Djava.io.tmpdir=${project.build.directory}</default.jvm.args>
         <jvm.args>${default.jvm.args}</jvm.args>
         <debug.vm.args />
         <debug.port>8787</debug.port>

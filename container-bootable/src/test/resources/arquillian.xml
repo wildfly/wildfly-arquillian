@@ -34,15 +34,5 @@
                 <property name="allowConnectingToRunningServer">false</property>
             </configuration>
         </container>
-        <container qualifier="wildfly" default="false" mode="manual">
-            <configuration>
-                <property name="installDir">${install.dir}</property>
-                <property name="jarFile">${bootable.jar}</property>
-                <property name="allowConnectingToRunningServer">false</property>
-                <!-- Change the management port to ensure only the correct client will work with the server -->
-                <property name="managementPort">10090</property>
-                <property name="javaVmArguments">${jvm.args} -Djboss.socket.binding.port-offset=100</property>
-            </configuration>
-        </container>
     </group>
 </arquillian>

@@ -171,6 +171,12 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
                     <skip>true</skip>
+                    <systemPropertyVariables>
+                        <jboss.home>${jboss.home}</jboss.home>
+                    </systemPropertyVariables>
+                    <environmentVariables>
+                        <JBOSS_HOME>${jboss.home}</JBOSS_HOME>
+                    </environmentVariables>
                 </configuration>
                 <executions>
                     <execution>
@@ -186,14 +192,9 @@
                                 <exclude>**/AddAgentTestCase.java</exclude>
                                 <exclude>**/ThreadContextClassloaderTest.java</exclude>
                                 <exclude>**/ManagedInContainerTestCase.java</exclude>
+                                <exclude>**/InContainerManualModeTestCase.java</exclude>
                                 <exclude>**/app/*.java</exclude>
                             </excludes>
-                            <systemPropertyVariables>
-                                <jboss.home>${jboss.home}</jboss.home>
-                            </systemPropertyVariables>
-                            <environmentVariables>
-                                <JBOSS_HOME>${jboss.home}</JBOSS_HOME>
-                            </environmentVariables>
                         </configuration>
                     </execution>
                     <execution>
@@ -225,11 +226,10 @@
                             <includes>
                                 <include>**/ThreadContextClassloaderTest.java</include>
                                 <include>**/ManagedInContainerTestCase.java</include>
+                                <include>**/InContainerManualModeTestCase.java</include>
                             </includes>
                             <systemPropertyVariables>
                                 <arquillian.xml>jmx-arquillian.xml</arquillian.xml>
-                                <install.dir>${jboss.home}</install.dir>
-                                <bootable.jar>target/test-wildfly.jar</bootable.jar>
                             </systemPropertyVariables>
                         </configuration>
                     </execution>

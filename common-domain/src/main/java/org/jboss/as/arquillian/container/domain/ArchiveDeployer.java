@@ -40,10 +40,10 @@ import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.wildfly.common.Assert;
-import org.wildfly.plugin.core.Deployment;
-import org.wildfly.plugin.core.DeploymentManager;
-import org.wildfly.plugin.core.DeploymentResult;
-import org.wildfly.plugin.core.UndeployDescription;
+import org.wildfly.plugin.tools.Deployment;
+import org.wildfly.plugin.tools.DeploymentManager;
+import org.wildfly.plugin.tools.DeploymentResult;
+import org.wildfly.plugin.tools.UndeployDescription;
 
 /**
  * Allows deployment operations to be executed on a running server.

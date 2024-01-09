@@ -18,15 +18,12 @@ package org.jboss.as.arquillian.container;
 
 import java.io.IOException;
 
-import org.jboss.as.controller.client.helpers.Operations;
-import org.jboss.dmr.ModelNode;
-import org.jboss.logging.Logger;
-
 /**
  * Information about the running container.
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
+@Deprecated(forRemoval = true)
 public interface ContainerDescription {
 
     /**
@@ -79,42 +76,8 @@ public interface ContainerDescription {
      * @throws IOException if an error occurs while executing the management operation
      */
     static ContainerDescription lookup(final ManagementClient client) throws IOException {
-        final ModelNode op = Operations.createReadResourceOperation(new ModelNode().setEmptyList());
-        final ModelNode result = client.getControllerClient().execute(op);
-        if (Operations.isSuccessfulOutcome(result)) {
-            final ModelNode model = Operations.readResult(result);
-            final String productName;
-            if (model.hasDefined("product-name")) {
-                productName = model.get("product-name").asString();
-            } else {
-                productName = "WildFly";
-            }
-
-            String productVersion = null;
-            if (model.hasDefined("product-version")) {
-                productVersion = model.get("product-version").asString();
-            }
-
-            String releaseCodename = null;
-            if (model.hasDefined("release-codename")) {
-                releaseCodename = model.get("release-codename").asString();
-            }
-
-            String releaseVersion = null;
-            if (model.hasDefined("release-version")) {
-                releaseVersion = model.get("release-version").asString();
-            }
-            final ModelVersion modelVersion = new ModelVersion(
-                    model.get("management-major-version").asInt(0),
-                    model.get("management-minor-version").asInt(0),
-                    model.get("management-micro-version").asInt(0));
-            return new StandardContainerDescription(productName, productVersion, releaseCodename, releaseVersion, modelVersion);
-        } else {
-            Logger.getLogger(ContainerDescription.class).errorf("Failed to read the root resource: ",
-                    Operations.getFailureDescription(result));
-        }
-
-        return StandardContainerDescription.NULL_DESCRIPTION;
+        return new StandardContainerDescription(
+                org.wildfly.plugin.tools.ContainerDescription.lookup(client.getControllerClient()));
     }
 
     /**

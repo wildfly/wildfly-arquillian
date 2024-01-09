@@ -62,7 +62,7 @@
         </dependency>
         <dependency>
             <groupId>org.wildfly.plugins</groupId>
-            <artifactId>wildfly-plugin-core</artifactId>
+            <artifactId>wildfly-plugin-tools</artifactId>
         </dependency>
 
         <!-- Test dependencies -->

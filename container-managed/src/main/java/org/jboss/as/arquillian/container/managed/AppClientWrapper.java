@@ -35,7 +35,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import org.jboss.as.arquillian.container.ParameterUtils;
 import org.jboss.logging.Logger;
-import org.wildfly.plugin.core.ServerHelper;
+import org.wildfly.plugin.tools.ServerHelper;
 
 /**
  * A wrapper for an application client process. Allows interacting with the application client process.

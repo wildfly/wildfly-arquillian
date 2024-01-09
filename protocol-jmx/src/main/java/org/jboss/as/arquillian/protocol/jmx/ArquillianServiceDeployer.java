@@ -30,7 +30,6 @@ import org.jboss.arquillian.container.spi.event.container.BeforeStop;
 import org.jboss.arquillian.core.api.Instance;
 import org.jboss.arquillian.core.api.annotation.Inject;
 import org.jboss.arquillian.core.api.annotation.Observes;
-import org.jboss.as.arquillian.container.ContainerDescription;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.arquillian.container.NetworkUtils;
 import org.jboss.as.arquillian.protocol.jmx.ExtendedJMXProtocol.ServiceArchiveHolder;
@@ -38,6 +37,7 @@ import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.asset.ByteArrayAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.wildfly.plugin.tools.ContainerDescription;
 
 /**
  * A deployer for the Arquillian JMXProtocol endpoint.
@@ -71,8 +71,8 @@ public class ArquillianServiceDeployer {
                 // As of WildFly Arquillian 3.0.0 a minimum of WildFly 13 or JBoss EAP 7.2 is required. This is due to the
                 // WFARQ-50 changes which use the new MSC service API's. The model version of this is 7.0.0 so it's best to
                 // test that as WildFly 13 is at 7.0.0 and EAP 7.2 is at 8.0.0. Also the product-version may be null.
-                final ContainerDescription containerDescription = ContainerDescription.lookup(client);
-                if (containerDescription.getModelVersion().getMajor() < 7) {
+                final ContainerDescription containerDescription = ContainerDescription.lookup(client.getControllerClient());
+                if (containerDescription.getModelVersion().major() < 7) {
                     String productName = containerDescription.getProductName();
                     if (productName == null) {
                         productName = "WildFly";

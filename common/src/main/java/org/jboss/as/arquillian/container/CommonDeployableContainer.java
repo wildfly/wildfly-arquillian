@@ -45,6 +45,7 @@ import org.jboss.dmr.Property;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.descriptor.api.Descriptor;
+import org.wildfly.plugin.tools.ContainerDescription;
 
 /**
  * A JBossAS deployable container
@@ -171,10 +172,35 @@ public abstract class CommonDeployableContainer<T extends CommonContainerConfigu
                 // The management client should be set when the container is started
                 if (client == null)
                     return null;
-                containerDescription = ContainerDescription.lookup(client);
+                containerDescription = ContainerDescription.lookup(client.getControllerClient());
             } catch (IOException e) {
                 Logger.getLogger(getClass()).warn("Failed to lookup the container description.", e);
-                containerDescription = StandardContainerDescription.NULL_DESCRIPTION;
+                containerDescription = new ContainerDescription() {
+                    @Override
+                    public String getProductName() {
+                        return "WildFly";
+                    }
+
+                    @Override
+                    public String getProductVersion() {
+                        return "";
+                    }
+
+                    @Override
+                    public String getReleaseVersion() {
+                        return "";
+                    }
+
+                    @Override
+                    public String getLaunchType() {
+                        return "UNKNOWN";
+                    }
+
+                    @Override
+                    public boolean isDomain() {
+                        return false;
+                    }
+                };
             }
         }
         return containerDescription;

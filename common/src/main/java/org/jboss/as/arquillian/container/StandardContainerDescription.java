@@ -22,44 +22,33 @@ package org.jboss.as.arquillian.container;
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 class StandardContainerDescription implements ContainerDescription {
-
-    static final StandardContainerDescription NULL_DESCRIPTION = new StandardContainerDescription("WildFly",
-            null, null, null, ModelVersion.DEFAULT);
-
-    private final String productName;
-    private final String productVersion;
-    private final String releaseCodename;
-    private final String releaseVersion;
+    private final org.wildfly.plugin.tools.ContainerDescription delegate;
     private final ModelVersion modelVersion;
 
-    StandardContainerDescription(final String productName, final String productVersion,
-            final String releaseCodename, final String releaseVersion,
-            final ModelVersion modelVersion) {
-        this.productName = productName;
-        this.productVersion = productVersion;
-        this.releaseCodename = releaseCodename;
-        this.releaseVersion = releaseVersion;
-        this.modelVersion = modelVersion;
+    StandardContainerDescription(final org.wildfly.plugin.tools.ContainerDescription delegate) {
+        this.delegate = delegate;
+        final var modelVersion = delegate.getModelVersion();
+        this.modelVersion = new ModelVersion(modelVersion.major(), modelVersion.minor(), modelVersion.micro());
     }
 
     @Override
     public String getProductName() {
-        return productName;
+        return delegate.getProductName();
     }
 
     @Override
     public String getProductVersion() {
-        return productVersion;
+        return delegate.getProductVersion();
     }
 
     @Override
     public String getReleaseCodename() {
-        return releaseCodename;
+        return "";
     }
 
     @Override
     public String getReleaseVersion() {
-        return releaseVersion;
+        return delegate.getReleaseVersion();
     }
 
     @Override
@@ -69,24 +58,6 @@ class StandardContainerDescription implements ContainerDescription {
 
     @Override
     public String toString() {
-        final StringBuilder result = new StringBuilder(64);
-        result.append(productName);
-        if (productVersion != null) {
-            result.append(' ').append(productVersion);
-            if (releaseCodename != null) {
-                result.append(' ').append('"').append(releaseCodename).append('"');
-            }
-            if (releaseVersion != null) {
-                result.append(" (WildFly Core ").append(releaseVersion).append(')');
-            }
-        } else {
-            if (releaseVersion != null) {
-                result.append(' ').append(releaseVersion);
-            }
-            if (releaseCodename != null) {
-                result.append(' ').append('"').append(releaseCodename).append('"');
-            }
-        }
-        return result.toString();
+        return delegate.toString();
     }
 }

@@ -9,6 +9,20 @@ updates:
     directory: "/"
     schedule:
       interval: "daily"
+    groups:
+      arquillian-group:
+        patterns:
+          - "org.jboss.arquillian*"
+      wildfly-group:
+        patterns:
+          - "org.jboss.marshalling:*"
+          - "org.jboss.msc:*"
+          - "org.jboss.remoting:*"
+          - "org.jboss.remotingjmx:*"
+          - "org.jboss.xnio:*"
+          - "org.wildfly.core:*"
+          - "org.wildfly.security:*"
+          - "org.wildfly:*"
     ignore:
       - dependency-name: 'jakarta.enterprise:jakarta.enterprise.cdi-api'
         update-types: ['version-update:semver-major', 'version-update:semver-minor']
@@ -18,7 +32,6 @@ updates:
         update-types: ['version-update:semver-major', 'version-update:semver-minor']
       - dependency-name: 'org.jboss:jboss-ejb-client'
         update-types: ['version-update:semver-major', 'version-update:semver-minor']
-        # We must stay on RESTEasy 6.0 for now as this is a Jakarta EE 9 requirement
       - dependency-name: 'org.jboss.resteasy:*'
         update-types: ['version-update:semver-major', 'version-update:semver-minor']
     open-pull-requests-limit: 10
@@ -27,6 +40,26 @@ updates:
     schedule:
       interval: "daily"
     target-branch: "4.x"
+    groups:
+      arquillian-group:
+        patterns:
+          - "org.jboss.arquillian*"
+        update-types:
+          - "minor"
+          - "patch"
+      wildfly-group:
+        patterns:
+          - "org.jboss.marshalling:*"
+          - "org.jboss.msc:*"
+          - "org.jboss.remoting:*"
+          - "org.jboss.remotingjmx:*"
+          - "org.jboss.xnio:*"
+          - "org.wildfly.core:*"
+          - "org.wildfly.security:*"
+          - "org.wildfly:*"
+        update-types:
+          - "minor"
+          - "patch"
     ignore:
       - dependency-name: 'jakarta.ejb:jakarta.ejb-api'
         update-types: ['version-update:semver-major', 'version-update:semver-minor']

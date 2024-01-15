@@ -29,7 +29,7 @@
 
     <properties>
         <version.jakarta.ws.rs-api>3.1.0</version.jakarta.ws.rs-api>
-        <version.org.jboss.resteasy>6.2.6.Final</version.org.jboss.resteasy>
+        <version.org.jboss.resteasy>6.2.7.Final</version.org.jboss.resteasy>
     </properties>
 
     <dependencies>

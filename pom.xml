@@ -37,7 +37,7 @@
     <name>WildFly: Arquillian</name>
 
     <properties>
-        <version.org.wildfly.core>22.0.2.Final</version.org.wildfly.core>
+        <version.org.wildfly.core>23.0.1.Final</version.org.wildfly.core>
         <version.org.wildfly.full>30.0.0.Final</version.org.wildfly.full>
         <version.junit>4.13.2</version.junit>
         <version.org.junit>5.9.1</version.org.junit>
@@ -57,7 +57,7 @@
         <version.org.wildfly.plugins.wildfly-jar-maven-plugin>10.0.0.Final</version.org.wildfly.plugins.wildfly-jar-maven-plugin>
         <version.org.wildfly.plugins.wildfly-maven-plugin>4.2.2.Final</version.org.wildfly.plugins.wildfly-maven-plugin>
         <version.org.wildfly.plugins.wildfly-plugin-tools>1.0.0.Beta2</version.org.wildfly.plugins.wildfly-plugin-tools>
-        <version.org.wildfly.security.wildfly-elytron>2.2.2.Final</version.org.wildfly.security.wildfly-elytron>
+        <version.org.wildfly.security.wildfly-elytron>2.2.3.Final</version.org.wildfly.security.wildfly-elytron>
 
         <!-- keep this in sync with version that is used in arquillian -->
         <version.org.jboss.shrinkwrap.descriptors>2.0.0</version.org.jboss.shrinkwrap.descriptors>

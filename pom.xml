@@ -56,7 +56,7 @@
         <version.org.wildfly.common.wildfly-common>1.7.0.Final</version.org.wildfly.common.wildfly-common>
         <version.org.wildfly.plugins.wildfly-jar-maven-plugin>10.0.0.Final</version.org.wildfly.plugins.wildfly-jar-maven-plugin>
         <version.org.wildfly.plugins.wildfly-maven-plugin>4.2.2.Final</version.org.wildfly.plugins.wildfly-maven-plugin>
-        <version.org.wildfly.plugins.wildfly-plugin-tools>1.0.0.Beta2</version.org.wildfly.plugins.wildfly-plugin-tools>
+        <version.org.wildfly.plugins.wildfly-plugin-tools>1.0.0.Beta3</version.org.wildfly.plugins.wildfly-plugin-tools>
         <version.org.wildfly.security.wildfly-elytron>2.2.3.Final</version.org.wildfly.security.wildfly-elytron>
 
         <!-- keep this in sync with version that is used in arquillian -->

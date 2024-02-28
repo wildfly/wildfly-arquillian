@@ -38,22 +38,6 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.jboss.remoting</groupId>
-            <artifactId>jboss-remoting</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.remotingjmx</groupId>
-            <artifactId>remoting-jmx</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.xnio</groupId>
-            <artifactId>xnio-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.xnio</groupId>
-            <artifactId>xnio-nio</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.wildfly.arquillian</groupId>
             <artifactId>wildfly-arquillian-common-domain</artifactId>
         </dependency>
@@ -88,8 +72,8 @@
     <build>
         <plugins>
              <plugin>
-                 <groupId>org.jboss.galleon</groupId>
-                 <artifactId>galleon-maven-plugin</artifactId>
+                 <groupId>org.wildfly.plugins</groupId>
+                 <artifactId>wildfly-maven-plugin</artifactId>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

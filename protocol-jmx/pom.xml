@@ -41,10 +41,6 @@
             <artifactId>wildfly-arquillian-common</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.wildfly.security</groupId>
-            <artifactId>wildfly-elytron</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.wildfly.arquillian</groupId>
             <artifactId>wildfly-arquillian-testenricher-msc</artifactId>
         </dependency>
@@ -57,8 +53,16 @@
             <artifactId>arquillian-protocol-jmx</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.jboss.remotingjmx</groupId>
+            <artifactId>remoting-jmx</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-jmx</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.core</groupId>
+            <artifactId>wildfly-server</artifactId>
         </dependency>
     </dependencies>
 </project>

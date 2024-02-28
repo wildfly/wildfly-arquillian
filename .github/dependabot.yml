@@ -15,11 +15,8 @@ updates:
           - "org.jboss.arquillian*"
       wildfly-group:
         patterns:
-          - "org.jboss.marshalling:*"
           - "org.jboss.msc:*"
-          - "org.jboss.remoting:*"
           - "org.jboss.remotingjmx:*"
-          - "org.jboss.xnio:*"
           - "org.wildfly.core:*"
           - "org.wildfly.security:*"
           - "org.wildfly:*"

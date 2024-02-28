@@ -35,32 +35,8 @@
             <artifactId>wildfly-arquillian-common</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.jboss.xnio</groupId>
-            <artifactId>xnio-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.xnio</groupId>
-            <artifactId>xnio-nio</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.jboss.logging</groupId>
             <artifactId>jboss-logging</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.marshalling</groupId>
-            <artifactId>jboss-marshalling</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.marshalling</groupId>
-            <artifactId>jboss-marshalling-river</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.remoting</groupId>
-            <artifactId>jboss-remoting</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.remotingjmx</groupId>
-            <artifactId>remoting-jmx</artifactId>
         </dependency>
         <dependency>
             <groupId>jakarta.inject</groupId>

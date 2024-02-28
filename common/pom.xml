@@ -60,6 +60,11 @@
             <groupId>org.wildfly.arquillian</groupId>
             <artifactId>wildfly-arquillian-testenricher-msc</artifactId>
         </dependency>
+        <!-- Required for the JMX MBeanServerConnection -->
+        <dependency>
+            <groupId>org.jboss.remotingjmx</groupId>
+            <artifactId>remoting-jmx</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-controller-client</artifactId>

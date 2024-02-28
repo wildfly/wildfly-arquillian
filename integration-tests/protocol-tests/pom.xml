@@ -27,11 +27,6 @@
     <artifactId>protocol-tests</artifactId>
     <name>WildFly: Arquillian Protocol Integration Tests</name>
 
-    <properties>
-        <version.jakarta.ws.rs-api>3.1.0</version.jakarta.ws.rs-api>
-        <version.org.jboss.resteasy>6.2.7.Final</version.org.jboss.resteasy>
-    </properties>
-
     <dependencies>
         <!-- Test Dependencies -->
         <dependency>
@@ -46,7 +41,6 @@
         <dependency>
             <groupId>jakarta.ws.rs</groupId>
             <artifactId>jakarta.ws.rs-api</artifactId>
-            <version>${version.jakarta.ws.rs-api}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -68,7 +62,6 @@
         <dependency>
             <groupId>org.jboss.resteasy</groupId>
             <artifactId>resteasy-client</artifactId>
-            <version>${version.org.jboss.resteasy}</version>
             <scope>test</scope>
             <exclusions>
                 <exclusion>

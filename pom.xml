@@ -41,7 +41,7 @@
         <version.org.wildfly.full>30.0.0.Final</version.org.wildfly.full>
         <version.io.smallrye.jandex>3.1.6</version.io.smallrye.jandex>
         <version.junit>4.13.2</version.junit>
-        <version.org.junit>5.9.1</version.org.junit>
+        <version.org.junit>5.10.2</version.org.junit>
         <version.org.jboss.arquillian.core>1.8.0.Final</version.org.jboss.arquillian.core>
         <version.org.jboss.arquillian.jakarta>1.8.0.Final</version.org.jboss.arquillian.jakarta>
         <version.org.jboss.galleon>5.2.2.Final</version.org.jboss.galleon>
@@ -68,6 +68,10 @@
         <version.jakarta.inject>2.0.1</version.jakarta.inject>
         <version.jakarta.servlet>5.0.0</version.jakarta.servlet>
         <version.org.wildfly.checkstyle-config>1.0.8.Final</version.org.wildfly.checkstyle-config>
+
+        <!-- Jakarta and implementation dependencies -->
+        <version.jakarta.ws.rs-api>3.1.0</version.jakarta.ws.rs-api>
+        <version.org.jboss.resteasy>6.2.7.Final</version.org.jboss.resteasy>
 
         <!-- Galleon -->
         <galleon.fork.embedded>true</galleon.fork.embedded>
@@ -299,6 +303,7 @@
         <module>common-domain</module>
         <module>container-remote-domain</module>
         <module>container-managed-domain</module>
+        <module>junit-api</module>
         <module>integration-tests</module>
     </modules>
 
@@ -310,6 +315,13 @@
                 <groupId>org.junit</groupId>
                 <artifactId>junit-bom</artifactId>
                 <version>${version.org.junit}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.resteasy</groupId>
+                <artifactId>resteasy-bom</artifactId>
+                <version>${version.org.jboss.resteasy}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -343,6 +355,12 @@
                 <groupId>jakarta.servlet</groupId>
                 <artifactId>jakarta.servlet-api</artifactId>
                 <version>${version.jakarta.servlet}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>jakarta.ws.rs</groupId>
+                <artifactId>jakarta.ws.rs-api</artifactId>
+                <version>${version.jakarta.ws.rs-api}</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
@@ -432,6 +450,11 @@
             <dependency>
                 <groupId>org.jboss.arquillian.junit5</groupId>
                 <artifactId>arquillian-junit5-container</artifactId>
+                <version>${version.org.jboss.arquillian.core}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.arquillian.junit5</groupId>
+                <artifactId>arquillian-junit5-core</artifactId>
                 <version>${version.org.jboss.arquillian.core}</version>
             </dependency>
             <dependency>

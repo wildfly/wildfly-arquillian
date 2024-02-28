@@ -7,9 +7,35 @@ on:
   push:
     branches-ignore:
       - 'dependabot/**'
+    paths-ignore:
+      - '.mvn'
+      - '.gitignore'
+      - '.gitleaks.toml'
+      - 'CODE_OF_CONDUCT.md'
+      - 'CODEOWNERS'
+      - 'CONTRIBUTING.adoc'
+      - 'dco.txt'
+      - 'LICENSE.txt'
+      - 'mvnw'
+      - 'mvnw.cmd'
+      - '**/README.adoc'
+      - 'SECURITY.md'
   pull_request:
     branches:
       - '**'
+    paths-ignore:
+      - '.mvn'
+      - '.gitignore'
+      - '.gitleaks.toml'
+      - 'CODE_OF_CONDUCT.md'
+      - 'CODEOWNERS'
+      - 'CONTRIBUTING.adoc'
+      - 'dco.txt'
+      - 'LICENSE.txt'
+      - 'mvnw'
+      - 'mvnw.cmd'
+      - '**/README.adoc'
+      - 'SECURITY.md'
 
 # Only run the latest job
 concurrency:

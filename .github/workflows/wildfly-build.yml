@@ -6,6 +6,19 @@ on:
   push:
     branches:
       - 'main'
+    paths-ignore:
+      - '.mvn'
+      - '.gitignore'
+      - '.gitleaks.toml'
+      - 'CODE_OF_CONDUCT.md'
+      - 'CODEOWNERS'
+      - 'CONTRIBUTING.adoc'
+      - 'dco.txt'
+      - 'LICENSE.txt'
+      - 'mvnw'
+      - 'mvnw.cmd'
+      - '**/README.adoc'
+      - 'SECURITY.md'
   schedule:
     - cron: '0 0 * * *' # Every day at 00:00 UTC
 

@@ -1,0 +1,48 @@
+= WildFly Arquillian JUnit 5 Utilities
+
+This library includes some utility for running Arquillian tests on WildFly with JUnit 5.
+
+== Annotations
+
+=== `@WildFlyArquillian`
+
+The `@WildFlyArquillian` annotation is a simple shorthand annotation for `@ExtendsWith(ArquillianExtension.class)`.
+
+=== `@RequiresModule`
+
+The `@RequiresModule` annotation can be used on a class or test method and will disable a test if the required module
+is not found. There is also an option to define minimum version of a module required for the test to be enabled.
+
+.Example
+[source,java]
+----
+import org.junit.jupiter.api.Test;import org.wildfly.arquillian.junit.annotations.RequiresModule;@WildFlyArquillian
+@RequiresModule("org.jboss.as.ejb3")
+public class Ejb3Test {
+
+    @Inject
+    private TestEjb ejb;
+
+    @Test
+    public void testEjb() {
+        Assertions.assertNotNull(ejb);
+    }
+
+    @Test
+    @RequiresModule(value = "org.jboss.as.ejb3", minVersion = "32.0.0.Beta1",
+        issueRef = "https://issues.redhat.com/browse/WFLY-1", reason = "This test only works on WildFly 32 or higher")
+    public void ejbNewFeature() {
+
+    }
+}
+----
+
+The `minVersion`, `issueRef` and `reason` are all optional. The `value`, which is the module name, is required. The
+`issueRef` and `reason` are used for the reason text when the test is disabled.
+
+=== `@JBossHome`
+
+The `@JBossHome` annotation is a simple helper annotation for injecting a `java.lang.String`, `java.nio.file.Path` or
+`java.io.File` parameter with the JBoss Home directory. First the `jboss.home` system property is checked. If not found,
+the `JBOSS_HOME` environment variable is checked. Finally, the `jboss.home.dir` is checked. If neither are set a
+`org.junit.jupiter.api.extension.ParameterResolutionException` is thrown.

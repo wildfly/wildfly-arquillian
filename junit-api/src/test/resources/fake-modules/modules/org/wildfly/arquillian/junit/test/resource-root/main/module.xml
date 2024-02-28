@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module name="org.wildfly.arquillian.junit.test.artifact" xmlns="urn:jboss:module:1.9">
+
+    <resources>
+        <resource-root path="test-2.0.0.Final.jar" />
+    </resources>
+
+    <dependencies>
+        <module name="java.logging" />
+    </dependencies>
+</module>

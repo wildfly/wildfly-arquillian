@@ -44,7 +44,6 @@
         <version.org.junit>5.10.2</version.org.junit>
         <version.org.jboss.arquillian.core>1.8.0.Final</version.org.jboss.arquillian.core>
         <version.org.jboss.arquillian.jakarta>1.8.0.Final</version.org.jboss.arquillian.jakarta>
-        <version.org.jboss.galleon>5.2.2.Final</version.org.jboss.galleon>
         <version.org.jboss.logging.jboss-logging>3.5.3.Final</version.org.jboss.logging.jboss-logging>
         <version.org.jboss.msc.jboss-msc>1.5.3.Final</version.org.jboss.msc.jboss-msc>
         <version.org.jboss.remotingjmx.remoting-jmx>3.1.0.Final</version.org.jboss.remotingjmx.remoting-jmx>
@@ -71,8 +70,6 @@
 
         <!-- Galleon -->
         <galleon.fork.embedded>true</galleon.fork.embedded>
-        <galleon.log.time>true</galleon.log.time>
-        <galleon.offline>false</galleon.offline>
         <jboss.home>${project.build.directory}${file.separator}wildfly</jboss.home>
         <galleon.feature.pack.artifactId>wildfly-ee-galleon-pack</galleon.feature.pack.artifactId>
         <galleon.feature.pack.location>wildfly@maven(org.jboss.universe:community-universe)#${version.org.wildfly.full}</galleon.feature.pack.location>
@@ -82,7 +79,6 @@
 
         <maven.test.skip>false</maven.test.skip>
         <skipTests>${maven.test.skip}</skipTests>
-        <galleon.skip>${skipTests}</galleon.skip>
 
         <!-- Surefire properties -->
         <maven.test.redirectTestOutputToFile>true</maven.test.redirectTestOutputToFile>
@@ -179,27 +175,21 @@
                 </plugin>
 
                 <plugin>
-                    <groupId>org.jboss.galleon</groupId>
-                    <artifactId>galleon-maven-plugin</artifactId>
-                    <version>${version.org.jboss.galleon}</version>
+                    <groupId>org.wildfly.plugins</groupId>
+                    <artifactId>wildfly-maven-plugin</artifactId>
+                    <version>${version.org.wildfly.plugins.wildfly-maven-plugin}</version>
+                    <configuration>
+                        <skip>${skipTests}</skip>
+                    </configuration>
                     <executions>
                         <execution>
-                            <id>server-provisioning</id>
+                            <id>provision-server</id>
                             <goals>
                                 <goal>provision</goal>
                             </goals>
+                            <phase>process-test-classes</phase>
                             <configuration>
-                                <install-dir>${jboss.home}</install-dir>
-                                <skip>${galleon.skip}</skip>
-                                <record-state>false</record-state>
-                                <log-time>${galleon.log.time}</log-time>
-                                <offline>${galleon.offline}</offline>
-                                <plugin-options>
-                                    <!-- TODO (jrp) re-enable when WildFly is Jakarta EE 9 -->
-                                    <!-- <jboss-maven-dist/> -->
-                                    <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
-                                    <optional-packages>passive+</optional-packages>`
-                                </plugin-options>
+                                <provisioning-dir>${jboss.home}</provisioning-dir>
                                 <feature-packs>
                                     <feature-pack>
                                         <groupId>org.wildfly</groupId>
@@ -211,17 +201,14 @@
                                         </excluded-packages>
                                     </feature-pack>
                                 </feature-packs>
+                                <galleon-options>
+                                    <jboss-maven-dist/>
+                                    <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
+                                    <optional-packages>passive+</optional-packages>
+                                </galleon-options>
                             </configuration>
                         </execution>
                     </executions>
-                </plugin>
-                <plugin>
-                    <groupId>org.wildfly.plugins</groupId>
-                    <artifactId>wildfly-maven-plugin</artifactId>
-                    <version>${version.org.wildfly.plugins.wildfly-maven-plugin}</version>
-                    <configuration>
-                        <skip>${skipTests}</skip>
-                    </configuration>
                 </plugin>
             </plugins>
         </pluginManagement>

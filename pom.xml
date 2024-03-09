@@ -54,6 +54,7 @@
         <version.org.jboss.msc.jboss-msc>1.4.13.Final</version.org.jboss.msc.jboss-msc>
         <version.org.jboss.remoting.jboss-remoting>5.0.24.Final</version.org.jboss.remoting.jboss-remoting>
         <version.org.jboss.remotingjmx.remoting-jmx>3.0.4.Final</version.org.jboss.remotingjmx.remoting-jmx>
+        <version.org.jboss.spec.javax.annotation.jboss-annotations-api_1.3_spec>2.0.1.Final</version.org.jboss.spec.javax.annotation.jboss-annotations-api_1.3_spec>
         <version.org.jboss.xnio>3.8.12.Final</version.org.jboss.xnio>
         <!-- Required by Elytron dependencies -->
         <version.org.slf4j>1.7.32</version.org.slf4j>
@@ -570,6 +571,12 @@
                         <artifactId>wildfly-elytron</artifactId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.spec.javax.annotation</groupId>
+                <artifactId>jboss-annotations-api_1.3_spec</artifactId>
+                <version>${version.org.jboss.spec.javax.annotation.jboss-annotations-api_1.3_spec}</version>
             </dependency>
 
             <dependency>

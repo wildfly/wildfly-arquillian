@@ -93,10 +93,15 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- needed only for InjectJndiContextTestCase#shouldInjectJndiContext-->
+        <!-- Needed for tests that use EE types in test fixtures-->
         <dependency>
             <groupId>org.jboss</groupId>
             <artifactId>jboss-ejb-client</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.spec.javax.annotation</groupId>
+            <artifactId>jboss-annotations-api_1.3_spec</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -158,11 +163,20 @@
                         </goals>
                         <configuration>
                             <skip>false</skip>
+                            <!-- We want to run the not-enabled-by-default *TestSuite.java files,
+                                 so enumerate the expected test class patterns. -->
+                            <includes>
+                                <include>**/*Test.java</include>
+                                <include>**/*TestCase.java</include>
+                                <include>**/*TestSuite.java</include>
+                            </includes>
                             <excludedGroups>org.jboss.as.arquillian.container.managed.manual.ManualMode</excludedGroups>
                             <excludes>
                                 <exclude>**/AddAgentTestCase.java</exclude>
                                 <exclude>**/ThreadContextClassloaderTest.java</exclude>
                                 <exclude>**/ManagedInContainerTestCase.java</exclude>
+                                <!-- These run as part of test suites -->
+                                <exclude>**/ServerSetup*TestCase.java</exclude>
                             </excludes>
                             <systemPropertyVariables>
                                 <jboss.home>${jboss.home}</jboss.home>

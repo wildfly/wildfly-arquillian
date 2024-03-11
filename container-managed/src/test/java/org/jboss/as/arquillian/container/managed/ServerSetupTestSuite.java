@@ -27,6 +27,8 @@ import org.junit.runners.Suite;
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
         ServerSetupDeploymentTestCase.class,
+        ServerSetupAssumptionViolationTestCase.class,
+        ServerSetupUnmanagedAssumptionViolationTestCase.class,
         ServerSetupAfterClassTestCase.class
 })
 public class ServerSetupTestSuite {

@@ -66,7 +66,7 @@
 
         <!-- Jakarta and implementation dependencies -->
         <version.jakarta.ws.rs-api>3.1.0</version.jakarta.ws.rs-api>
-        <version.org.jboss.resteasy>6.2.7.Final</version.org.jboss.resteasy>
+        <version.org.jboss.resteasy>6.2.8.Final</version.org.jboss.resteasy>
 
         <!-- Galleon -->
         <galleon.fork.embedded>true</galleon.fork.embedded>

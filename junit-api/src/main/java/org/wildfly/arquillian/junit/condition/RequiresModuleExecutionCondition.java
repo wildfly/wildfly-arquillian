@@ -185,7 +185,7 @@ public class RequiresModuleExecutionCondition implements ExecutionCondition {
         if (foundVersion == null) {
             return false;
         }
-        return VersionComparator.compareVersion(foundVersion, minVersion) >= 0;
+        return foundVersion.equals(minVersion) || VersionComparator.compareVersion(true, foundVersion, minVersion) >= 0;
     }
 
     private static String formatReason(final RequiresModule requiresModule, final String fmt, final Object... args) {

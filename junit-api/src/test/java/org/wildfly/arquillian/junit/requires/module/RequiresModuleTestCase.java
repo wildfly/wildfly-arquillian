@@ -19,6 +19,7 @@
 
 package org.wildfly.arquillian.junit.requires.module;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.jar.Attributes;
@@ -44,17 +45,8 @@ public class RequiresModuleTestCase {
 
     @BeforeAll
     public static void setup(@JBossHome final Path jbossHome) throws Exception {
-        // Create the JAR with a manifest only
-        final Path jarPath = jbossHome.resolve(
-                Path.of("modules", "org", "wildfly", "arquillian", "junit", "test", "resource-root", "main",
-                        "test-2.0.0.Final.jar"));
-        final Manifest manifest = new Manifest();
-        manifest.getMainAttributes().put(Attributes.Name.MANIFEST_VERSION, "1.0");
-        manifest.getMainAttributes().put(Attributes.Name.IMPLEMENTATION_VERSION, "2.0.0.Final");
-        try (JarOutputStream out = new JarOutputStream(Files.newOutputStream(jarPath), manifest)) {
-            // Simply flush to write the manifest
-            out.flush();
-        }
+        createJar("resource-root", jbossHome, "2.0.0.Final");
+        createJar("snapshot", jbossHome, "1.0.0.Beta2-SNAPSHOT");
     }
 
     @Test
@@ -141,5 +133,42 @@ public class RequiresModuleTestCase {
                         String.format(
                                 "Module org.wildfly.arquillian.junit.test.resource-root.invalid not found in %s. Disabling test.",
                                 jbossHome.resolve("modules")))));
+    }
+
+    @Test
+    public void snapshotPassedVersion() {
+        final var testEvents = EngineTestKit.engine("junit-jupiter")
+                .selectors(DiscoverySelectors.selectMethod(RequireSnapshot.class, "passingVersion"))
+                .execute()
+                .testEvents();
+
+        testEvents.assertStatistics((stats) -> stats.succeeded(1L));
+    }
+
+    @Test
+    public void snapshotSkippedVersion() {
+        final var testEvents = EngineTestKit.engine("junit-jupiter")
+                .selectors(DiscoverySelectors.selectMethod(RequireSnapshot.class, "skippedVersion"))
+                .execute()
+                .testEvents();
+
+        testEvents.assertStatistics((stats) -> stats.skipped(1L));
+        testEvents.assertThatEvents().haveExactly(1, EventConditions.event(
+                EventConditions.skippedWithReason(
+                        "Found version 1.0.0.Beta2-SNAPSHOT and required a minimum of version 1.0.0.Beta3. Disabling test.")));
+    }
+
+    private static void createJar(final String moduleName, final Path jbossHome, final String version) throws IOException {
+        // Create the JAR with a manifest only
+        final Path jarPath = jbossHome.resolve(
+                Path.of("modules", "org", "wildfly", "arquillian", "junit", "test", moduleName, "main",
+                        String.format("test-%s.jar", version)));
+        final Manifest manifest = new Manifest();
+        manifest.getMainAttributes().put(Attributes.Name.MANIFEST_VERSION, "1.0");
+        manifest.getMainAttributes().put(Attributes.Name.IMPLEMENTATION_VERSION, version);
+        try (JarOutputStream out = new JarOutputStream(Files.newOutputStream(jarPath), manifest)) {
+            // Simply flush to write the manifest
+            out.flush();
+        }
     }
 }

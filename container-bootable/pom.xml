@@ -132,9 +132,18 @@
                         </goals>
                         <configuration>
                             <skip>false</skip>
+                            <!-- We want to run the not-enabled-by-default *TestSuite.java files,
+                                 so enumerate the expected test class patterns. -->
+                            <includes>
+                                <include>**/*Test.java</include>
+                                <include>**/*TestCase.java</include>
+                                <include>**/*TestSuite.java</include>
+                            </includes>
                             <excludedGroups>org.jboss.as.arquillian.container.managed.manual.ManualMode</excludedGroups>
                             <excludes>
                                 <exclude>**/ThreadContextClassloaderTest.java</exclude>
+                                <!-- These run as part of test suites -->
+                                <exclude>**/ServerSetup*TestCase.java</exclude>
                             </excludes>
                             <systemPropertyVariables>
                                 <install.dir>${jboss.home}</install.dir>

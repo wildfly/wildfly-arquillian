@@ -104,14 +104,12 @@ public class ServerSetupObserver {
 
         final ManagementClient client = managementClient.get();
         final ServerSetupTaskHolder holder = new ServerSetupTaskHolder(client);
-        holder.deployments.add(event.getDeployment());
-        setupTasks.put(containerName, holder);
-        holder.setup(setup, containerName);
+        executeSetup(holder, setup, containerName, event.getDeployment());
     }
 
     /**
      * Executed after the test class has completed. This ensures that any
-     * {@linkplain ServerSetupTask#tearDown(ManagementClient, String) tear down tasks} have been executed if all
+     * {@linkplain ServerSetupTask#tearDown(ManagementClient, String) tear down tasks} have been executed if
      * all deployments have been undeployed.
      *
      * @param afterClass the lifecycle event
@@ -165,7 +163,76 @@ public class ServerSetupObserver {
         }
     }
 
+    private void executeSetup(final ServerSetupTaskHolder holder, ServerSetup setup, String containerName,
+            DeploymentDescription deployment)
+            throws InvocationTargetException, NoSuchMethodException, IllegalAccessException, InstantiationException {
+
+        holder.deployments.add(deployment);
+        setupTasks.put(containerName, holder);
+
+        try {
+            holder.setup(setup, containerName);
+        } catch (FailedAssumptionException fae) {
+            // We're going to throw on the underlying problem. But since that is going to
+            // propagate to surefire and prevent further processing of the currently executing
+            // test class, first we need to do cleanup work that's normally triggered by
+            // handleAfterUndeploy and afterTestClass calls that won't be happening.
+
+            Object failedSetup = null;
+            try {
+                // Run tearDown on any task that already successfully completed setup
+
+                // The last setup is the one that just failed. We skip calling tearDown on it
+                // by popping it off the holder's setupTasks queue.
+                // As noted in the ServerSetupTask.setup javadoc, implementations that
+                // throw assumption failure exceptions should do so before making any changes
+                // that would normally be reversed in a call to tearDown
+                failedSetup = holder.setupTasks.pollLast();
+
+                // Tell the holder to do the normal tearDown
+                holder.tearDown(containerName);
+            } catch (RuntimeException logged) { // just to be safe
+                String className = failedSetup != null ? failedSetup.getClass().getName()
+                        : ServerSetupTask.class.getSimpleName();
+                log.errorf(logged, "Failed tearing down ServerSetupTasks after a failed assumption in %s.setup()", className);
+            } finally {
+                // Clean out our own state changes we made before calling holder.setup.
+                // Otherwise, later classes that use the same container may fail.
+                holder.deployments.remove(deployment);
+                if (holder.deployments.isEmpty()) {
+                    setupTasks.remove(containerName);
+                }
+            }
+
+            throw fae.underlyingException;
+        }
+
+    }
+
     private static class ServerSetupTaskHolder {
+
+        // Use reflection to access the various 'assumption' failure classes
+        // to avoid compile dependencies on JUnit 4 and 5
+        private static final Class<?> ASSUMPTION_VIOLATED_EXCEPTION = loadAssumptionFailureClass(
+                "org.junit.AssumptionViolatedException");
+
+        // TODO Support this after adding tests of org.opentest4j.TestAbortedException handling
+        // private static final Class<?> TEST_ABORTED_EXCEPTION = loadAssumptionFailureClass(
+        // "org.opentest4j.TestAbortedException");
+
+        @SuppressWarnings("SameParameterValue")
+        private static Class<?> loadAssumptionFailureClass(String classname) {
+            Class<?> result = null;
+            try {
+                result = ServerSetupObserver.class.getClassLoader().loadClass(classname);
+            } catch (ClassNotFoundException cnfe) {
+                log.debugf("%s is not available", classname);
+            } catch (Throwable t) {
+                log.warnf(t, "Failed to load %s", classname);
+            }
+            return result;
+        }
+
         private final ManagementClient client;
         private final Deque<ServerSetupTask> setupTasks;
         private final Set<DeploymentDescription> deployments;
@@ -177,7 +244,8 @@ public class ServerSetupObserver {
         }
 
         void setup(final ServerSetup setup, final String containerName)
-                throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+                throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException,
+                FailedAssumptionException {
             final Class<? extends ServerSetupTask>[] classes = setup.value();
             for (Class<? extends ServerSetupTask> clazz : classes) {
                 final Constructor<? extends ServerSetupTask> ctor = clazz.getDeclaredConstructor();
@@ -187,6 +255,9 @@ public class ServerSetupObserver {
                 try {
                     task.setup(client, containerName);
                 } catch (Throwable e) {
+                    // If this is one of the 'assumption failed' exceptions used in JUnit 4 or 5, throw it on
+                    rethrowFailedAssumptions(e, containerName);
+                    // Some other failure -- log it
                     log.errorf(e, "Setup failed during setup. Offending class '%s'", task);
                 }
             }
@@ -202,6 +273,10 @@ public class ServerSetupObserver {
                     try {
                         task.tearDown(client, containerName);
                     } catch (Throwable e) {
+                        // Unlike with setup, here we don't propagate assumption failures.
+                        // Whatever was meant to be turned off by an assumption failure in setup has
+                        // already been turned off; here we want to ensure all tear down work proceeds.
+
                         log.errorf(e, "Setup task failed during tear down. Offending class '%s'", task);
                     }
                 }
@@ -216,6 +291,27 @@ public class ServerSetupObserver {
                     ", deployments" +
                     deployments +
                     "]";
+        }
+
+        private void rethrowFailedAssumptions(final Throwable t, final String containerName) throws FailedAssumptionException {
+            rethrowFailedAssumption(t, ASSUMPTION_VIOLATED_EXCEPTION);
+            // TODO Support this after adding tests of org.opentest4j.TestAbortedException handling
+            // rethrowFailedAssumption(t, TEST_ABORTED_EXCEPTION);
+        }
+
+        @SuppressWarnings("SameParameterValue")
+        private void rethrowFailedAssumption(Throwable t, Class<?> failureType) throws FailedAssumptionException {
+            if (failureType != null && t.getClass().isAssignableFrom(failureType)) {
+                throw new FailedAssumptionException(t);
+            }
+        }
+    }
+
+    private static class FailedAssumptionException extends Exception {
+        private final RuntimeException underlyingException;
+
+        private FailedAssumptionException(Object underlying) {
+            this.underlyingException = (RuntimeException) underlying;
         }
     }
 }

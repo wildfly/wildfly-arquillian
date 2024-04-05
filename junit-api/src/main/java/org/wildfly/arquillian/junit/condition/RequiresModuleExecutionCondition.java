@@ -68,14 +68,23 @@ public class RequiresModuleExecutionCondition implements ExecutionCondition {
 
         try {
             // Get the module XML file.
-            final Optional<Path> moduleXmlFile = findModuleXml(moduleDir, moduleToPath(requiresModule.value()));
-            if (moduleXmlFile.isPresent()) {
+            final Optional<ModuleDefinition> moduleDefinition = findModuleXml(moduleDir, moduleToPath(requiresModule.value()));
+            if (moduleDefinition.isPresent()) {
                 if (requiresModule.minVersion().isBlank()) {
-                    return ConditionEvaluationResult
-                            .enabled(formatReason(requiresModule, "Module %s found in %s. Enabling test.",
-                                    requiresModule.value(), moduleXmlFile.get()));
+                    final var def = moduleDefinition.get();
+                    if (requiresModule.value().equals(def.name)) {
+                        return ConditionEvaluationResult
+                                .enabled(formatReason(requiresModule, "Module %s found in %s. Enabling test.",
+                                        requiresModule.value(), def.path));
+                    } else {
+                        return ConditionEvaluationResult
+                                .disabled(
+                                        formatReason(requiresModule, "Module %s not found in %s. Disabling test.",
+                                                requiresModule.value(),
+                                                moduleDir));
+                    }
                 }
-                return checkVersion(requiresModule, moduleXmlFile.get());
+                return checkVersion(requiresModule, moduleDefinition.get());
             }
         } catch (IOException e) {
             return ConditionEvaluationResult
@@ -88,36 +97,33 @@ public class RequiresModuleExecutionCondition implements ExecutionCondition {
                                 moduleDir));
     }
 
-    private ConditionEvaluationResult checkVersion(final RequiresModule requiresModule, final Path moduleXmlFile) {
-        try {
-            // Resolve the version from the module.xml file
-            final String version = version(moduleXmlFile);
-            // Likely indicates the version could not be resolved.
-            if (version.isBlank()) {
-                return ConditionEvaluationResult
-                        .enabled(String.format("Could not determine version of module %s", moduleXmlFile));
-            }
-            if (isAtLeastVersion(requiresModule.minVersion(), version)) {
-                return ConditionEvaluationResult
-                        .enabled(String.format("Found version %s and required a minimum of version %s. Enabling tests.",
-                                version, requiresModule.minVersion()));
-            }
+    private ConditionEvaluationResult checkVersion(final RequiresModule requiresModule,
+            final ModuleDefinition moduleDefinition) {
+        // Resolve the version from the module.xml file
+        final String version = moduleDefinition.version;
+        // Likely indicates the version could not be resolved.
+        if (version.isBlank()) {
             return ConditionEvaluationResult
-                    .disabled(formatReason(requiresModule,
-                            "Found version %s and required a minimum of version %s. Disabling test.", version,
-                            requiresModule.minVersion()));
-        } catch (IOException e) {
-            return ConditionEvaluationResult
-                    .enabled(String.format("Could not determine the version for module %s. Enabling by default. Reason: %s",
-                            requiresModule.value(), e.getMessage()));
+                    .enabled(String.format("Could not determine version of module %s", moduleDefinition.path));
         }
+        if (isAtLeastVersion(requiresModule.minVersion(), version)) {
+            return ConditionEvaluationResult
+                    .enabled(String.format("Found version %s and required a minimum of version %s. Enabling tests.",
+                            version, requiresModule.minVersion()));
+        }
+        return ConditionEvaluationResult
+                .disabled(formatReason(requiresModule,
+                        "Found version %s and required a minimum of version %s. Disabling test.", version,
+                        requiresModule.minVersion()));
     }
 
     private static String moduleToPath(final String moduleName) {
         return String.join(File.separator, moduleName.split("\\."));
     }
 
-    private static String version(final Path moduleXmlFile) throws IOException {
+    private static ModuleDefinition parse(final Path moduleXmlFile) throws IOException {
+        String name = "";
+        String version = "";
         try (InputStream in = Files.newInputStream(moduleXmlFile)) {
 
             final DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
@@ -125,6 +131,8 @@ public class RequiresModuleExecutionCondition implements ExecutionCondition {
 
             final DocumentBuilder builder = factory.newDocumentBuilder();
             final org.w3c.dom.Document document = builder.parse(in);
+            final var moduleNode = document.getDocumentElement();
+            name = moduleNode.getAttributes().getNamedItem("name").getTextContent();
             final var resources = document.getElementsByTagName("resources");
             if (resources.getLength() > 0) {
                 // Use only the first resources, which there should only be one of
@@ -134,10 +142,10 @@ public class RequiresModuleExecutionCondition implements ExecutionCondition {
                     final var node = nodes.item(i);
                     if (node.getNodeName().equals("artifact")) {
                         // Use the Maven GAV where the third entry should be the version
-                        final var name = node.getAttributes().getNamedItem("name").getTextContent();
-                        final var gav = name.split(":");
+                        final var artifactName = node.getAttributes().getNamedItem("name").getTextContent();
+                        final var gav = artifactName.split(":");
                         if (gav.length > 2) {
-                            return sanitizeVersion(gav[2]);
+                            version = sanitizeVersion(gav[2]);
                         }
                         break;
                     } else if (node.getNodeName().equals("resource-root")) {
@@ -145,7 +153,7 @@ public class RequiresModuleExecutionCondition implements ExecutionCondition {
                         final Path parent = moduleXmlFile.getParent();
                         final Path jar = parent == null ? Path.of(path) : parent.resolve(path);
                         try (JarFile jarFile = new JarFile(jar.toFile())) {
-                            return extractVersionFromManifest(jarFile);
+                            version = extractVersionFromManifest(jarFile);
                         }
                     }
                 }
@@ -153,7 +161,7 @@ public class RequiresModuleExecutionCondition implements ExecutionCondition {
         } catch (ParserConfigurationException | SAXException e) {
             throw new IOException("Failed to parse module XML file " + moduleXmlFile, e);
         }
-        return "";
+        return new ModuleDefinition(moduleXmlFile, name, version);
     }
 
     private static String extractVersionFromManifest(final JarFile jarFile) throws IOException {
@@ -174,11 +182,15 @@ public class RequiresModuleExecutionCondition implements ExecutionCondition {
         return version;
     }
 
-    private static Optional<Path> findModuleXml(final Path dir, final String pathName) throws IOException {
+    private static Optional<ModuleDefinition> findModuleXml(final Path dir, final String pathName) throws IOException {
         try (Stream<Path> files = Files.walk(dir)) {
-            return files.filter((f) -> f.toString().contains(pathName)
+            final Optional<Path> moduleXml = files.filter((f) -> f.toString().contains(pathName)
                     && f.getFileName().toString().equals("module.xml")).findFirst();
+            if (moduleXml.isPresent()) {
+                return Optional.of(parse(moduleXml.get()));
+            }
         }
+        return Optional.empty();
     }
 
     private static boolean isAtLeastVersion(final String minVersion, final String foundVersion) {
@@ -209,5 +221,17 @@ public class RequiresModuleExecutionCondition implements ExecutionCondition {
             return null;
         }
         return Path.of(jbossHome, "modules");
+    }
+
+    private static class ModuleDefinition {
+        final Path path;
+        final String name;
+        final String version;
+
+        private ModuleDefinition(final Path path, final String name, final String version) {
+            this.path = path;
+            this.name = name;
+            this.version = version;
+        }
     }
 }

@@ -64,6 +64,11 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>org.junit.platform</groupId>
+            <artifactId>junit-platform-testkit</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.wildfly.arquillian</groupId>
             <artifactId>wildfly-arquillian-container-managed</artifactId>
             <scope>test</scope>
@@ -94,7 +99,7 @@
                             <goal>test</goal>
                         </goals>
                         <configuration>
-                            <groups>!OverrideWebUri</groups>
+                            <excludedGroups>OverrideWebUri,engine-test-kit</excludedGroups>
                         </configuration>
                     </execution>
                     <execution>
@@ -107,6 +112,15 @@
                             <systemPropertyVariables>
                                 <arquillian.xml>override-web-uri-arquillian.xml</arquillian.xml>
                             </systemPropertyVariables>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>engine-test-kit</id>
+                        <goals>
+                            <goal>test</goal>
+                        </goals>
+                        <configuration>
+                            <groups>engine-test-kit</groups>
                         </configuration>
                     </execution>
                 </executions>

@@ -26,7 +26,7 @@ import org.junit.runner.RunWith;
 @ServerSetup({
         ServerSetupUnmanagedAssumptionViolationTestCase.BeforeSetup.class,
         ServerSetupUnmanagedAssumptionViolationTestCase.AssumptionViolatedSetup.class,
-        ServerSetupUnmanagedAssumptionViolationTestCase.BeforeSetup.class
+        ServerSetupUnmanagedAssumptionViolationTestCase.AfterSetup.class
 })
 public class ServerSetupUnmanagedAssumptionViolationTestCase extends ServerSetupAssumptionTestBase {
 

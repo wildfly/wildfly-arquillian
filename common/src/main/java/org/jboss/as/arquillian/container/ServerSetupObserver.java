@@ -216,9 +216,11 @@ public class ServerSetupObserver {
         private static final Class<?> ASSUMPTION_VIOLATED_EXCEPTION = loadAssumptionFailureClass(
                 "org.junit.AssumptionViolatedException");
 
-        // TODO Support this after adding tests of org.opentest4j.TestAbortedException handling
-        // private static final Class<?> TEST_ABORTED_EXCEPTION = loadAssumptionFailureClass(
-        // "org.opentest4j.TestAbortedException");
+        private static final Class<?> TEST_ABORTED_EXCEPTION = loadAssumptionFailureClass(
+                "org.opentest4j.TestAbortedException");
+
+        private static final Class<?> TESTNG_SKIPPED_EXCEPTION = loadAssumptionFailureClass(
+                "org.testng.SkipException");
 
         @SuppressWarnings("SameParameterValue")
         private static Class<?> loadAssumptionFailureClass(String classname) {
@@ -295,8 +297,8 @@ public class ServerSetupObserver {
 
         private void rethrowFailedAssumptions(final Throwable t, final String containerName) throws FailedAssumptionException {
             rethrowFailedAssumption(t, ASSUMPTION_VIOLATED_EXCEPTION);
-            // TODO Support this after adding tests of org.opentest4j.TestAbortedException handling
-            // rethrowFailedAssumption(t, TEST_ABORTED_EXCEPTION);
+            rethrowFailedAssumption(t, TEST_ABORTED_EXCEPTION);
+            rethrowFailedAssumption(t, TESTNG_SKIPPED_EXCEPTION);
         }
 
         @SuppressWarnings("SameParameterValue")

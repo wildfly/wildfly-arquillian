@@ -594,6 +594,11 @@
             </dependency>
             <dependency>
                 <groupId>org.wildfly.arquillian</groupId>
+                <artifactId>wildfly-arquillian-junit-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.wildfly.arquillian</groupId>
                 <artifactId>wildfly-arquillian-protocol-jmx</artifactId>
                 <version>${project.version}</version>
             </dependency>

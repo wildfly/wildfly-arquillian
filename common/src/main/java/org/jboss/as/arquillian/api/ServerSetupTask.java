@@ -39,20 +39,25 @@ public interface ServerSetupTask {
      * to the given container.
      * <p>
      * <strong>Note on exception handling:</strong> If an implementation of this method
-     * throws {@code org.junit.AssumptionViolatedException}, the implementation can assume
-     * the following:
+     * throws any exception, the implementation can assume the following:
      * <ol>
      * <li>Any subsequent {@code ServerSetupTask}s {@link ServerSetup associated with test class}
      * <strong>will not</strong> be executed.</li>
      * <li>The deployment event that triggered the call to this method will be skipped.</li>
      * <li>The {@link #tearDown(ManagementClient, String) tearDown} method of the instance
      * that threw the exception <strong>will not</strong> be invoked. Therefore, implementations
-     * that throw {@code AssumptionViolatedException} should do so before altering any
+     * that throw {@code AssumptionViolatedException}, or any other exception, should do so before altering any
      * system state.</li>
      * <li>The {@link #tearDown(ManagementClient, String) tearDown} method for any
      * previously executed {@code ServerSetupTask}s {@link ServerSetup associated with test class}
      * <strong>will</strong> be invoked.</li>
      * </ol>
+     * <p>
+     * If any other exception is thrown, the {@link #tearDown(ManagementClient, String)} will be executed, including
+     * this implementations {@code tearDown()}, re-throwing the original exception. The original exception will have
+     * any other exceptions thrown in the {@code tearDown()} methods add as
+     * {@linkplain Throwable#addSuppressed(Throwable) suppressed} messages.
+     * </p>
      *
      * @param managementClient management client to use to interact with the container
      * @param containerId      id of the container to which the deployment will be deployed

@@ -17,7 +17,6 @@
 package org.jboss.as.arquillian.container;
 
 import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayDeque;
 import java.util.Collection;
@@ -121,8 +120,7 @@ public class ServerSetupObserver {
         }
 
         final ManagementClient client = managementClient.get();
-        final ServerSetupTaskHolder holder = new ServerSetupTaskHolder(client, container, containerContext.get(), serviceLoader,
-                enrichmentEvent);
+        final ServerSetupTaskHolder holder = new ServerSetupTaskHolder(client, container.getName());
         executeSetup(holder, setup, containerName, event.getDeployment());
     }
 
@@ -184,14 +182,15 @@ public class ServerSetupObserver {
 
     private void executeSetup(final ServerSetupTaskHolder holder, ServerSetup setup, String containerName,
             DeploymentDescription deployment)
-            throws InvocationTargetException, NoSuchMethodException, IllegalAccessException, InstantiationException {
+            throws Exception {
 
         holder.deployments.add(deployment);
         setupTasks.put(containerName, holder);
 
         try {
             holder.setup(setup, containerName);
-        } catch (FailedAssumptionException fae) {
+        } catch (Throwable t) {
+            final Throwable toThrow = t;
             // We're going to throw on the underlying problem. But since that is going to
             // propagate to surefire and prevent further processing of the currently executing
             // test class, first we need to do cleanup work that's normally triggered by
@@ -210,10 +209,13 @@ public class ServerSetupObserver {
 
                 // Tell the holder to do the normal tearDown
                 holder.tearDown(containerName);
-            } catch (RuntimeException logged) { // just to be safe
+            } catch (Exception logged) { // just to be safe
                 String className = failedSetup != null ? failedSetup.getClass().getName()
                         : ServerSetupTask.class.getSimpleName();
-                log.errorf(logged, "Failed tearing down ServerSetupTasks after a failed assumption in %s.setup()", className);
+                final String message = String
+                        .format("Failed tearing down ServerSetupTasks after a failed assumption in %s.setup()", className);
+                toThrow.addSuppressed(new RuntimeException(message, logged));
+                log.errorf(logged, message);
             } finally {
                 // Clean out our own state changes we made before calling holder.setup.
                 // Otherwise, later classes that use the same container may fail.
@@ -222,77 +224,40 @@ public class ServerSetupObserver {
                     setupTasks.remove(containerName);
                 }
             }
-
-            throw fae.underlyingException;
+            if (toThrow instanceof Exception) {
+                throw (Exception) toThrow;
+            }
+            if (toThrow instanceof Error) {
+                throw (Error) toThrow;
+            }
+            // Throw the error as an assertion error to abort the testing
+            throw new AssertionError("Failed to invoke a ServerSetupTask.", toThrow);
         }
-
     }
 
-    private static class ServerSetupTaskHolder {
-
-        // Use reflection to access the various 'assumption' failure classes
-        // to avoid compile dependencies on JUnit 4 and 5
-        private static final Class<?> ASSUMPTION_VIOLATED_EXCEPTION = loadAssumptionFailureClass(
-                "org.junit.AssumptionViolatedException");
-
-        private static final Class<?> TEST_ABORTED_EXCEPTION = loadAssumptionFailureClass(
-                "org.opentest4j.TestAbortedException");
-
-        private static final Class<?> TESTNG_SKIPPED_EXCEPTION = loadAssumptionFailureClass(
-                "org.testng.SkipException");
-
-        @SuppressWarnings("SameParameterValue")
-        private static Class<?> loadAssumptionFailureClass(String classname) {
-            Class<?> result = null;
-            try {
-                result = ServerSetupObserver.class.getClassLoader().loadClass(classname);
-            } catch (ClassNotFoundException cnfe) {
-                log.debugf("%s is not available", classname);
-            } catch (Throwable t) {
-                log.warnf(t, "Failed to load %s", classname);
-            }
-            return result;
-        }
+    private class ServerSetupTaskHolder {
 
         private final ManagementClient client;
         private final Deque<ServerSetupTask> setupTasks;
         private final Set<DeploymentDescription> deployments;
-        private final Container container;
-        private final ContainerContext containerContext;
-        private final Instance<ServiceLoader> serviceLoader;
-        private final Event<EnrichmentEvent> enrichmentEvent;
+        private final String containerName;;
 
-        private ServerSetupTaskHolder(final ManagementClient client, final Container container,
-                                      final ContainerContext containerContext,
-                                      final Instance<ServiceLoader> serviceLoader,
-                                      final Event<EnrichmentEvent> enrichmentEvent) {
+        private ServerSetupTaskHolder(final ManagementClient client, final String containerName) {
             this.client = client;
             setupTasks = new ArrayDeque<>();
             deployments = new HashSet<>();
-            this.container = container;
-            this.containerContext = containerContext;
-            this.serviceLoader = serviceLoader;
-            this.enrichmentEvent = enrichmentEvent;
+            this.containerName = containerName;
         }
 
-        void setup(final ServerSetup setup, final String containerName)
-                throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException,
-                FailedAssumptionException {
+        void setup(final ServerSetup setup, final String containerName) throws Throwable {
             final Class<? extends ServerSetupTask>[] classes = setup.value();
             for (Class<? extends ServerSetupTask> clazz : classes) {
                 final Constructor<? extends ServerSetupTask> ctor = clazz.getDeclaredConstructor();
                 ctor.setAccessible(true);
                 final ServerSetupTask task = ctor.newInstance();
-                try {
-                    enrich(task, clazz.getMethod("setup", ManagementClient.class, String.class));
-                    setupTasks.add(task);
-                    task.setup(client, containerName);
-                } catch (Throwable e) {
-                    // If this is one of the 'assumption failed' exceptions used in JUnit 4 or 5, throw it on
-                    rethrowFailedAssumptions(e, containerName);
-                    // Some other failure -- log it
-                    log.errorf(e, "Setup failed during setup. Offending class '%s'", task);
-                }
+                enrich(task, clazz.getMethod("setup", ManagementClient.class, String.class));
+                setupTasks.add(task);
+                task.setup(client, containerName);
             }
         }
 
@@ -327,22 +292,9 @@ public class ServerSetupObserver {
                     "]";
         }
 
-        private void rethrowFailedAssumptions(final Throwable t, final String containerName) throws FailedAssumptionException {
-            rethrowFailedAssumption(t, ASSUMPTION_VIOLATED_EXCEPTION);
-            rethrowFailedAssumption(t, TEST_ABORTED_EXCEPTION);
-            rethrowFailedAssumption(t, TESTNG_SKIPPED_EXCEPTION);
-        }
-
-        @SuppressWarnings("SameParameterValue")
-        private void rethrowFailedAssumption(Throwable t, Class<?> failureType) throws FailedAssumptionException {
-            if (failureType != null && failureType.isAssignableFrom(t.getClass())) {
-                throw new FailedAssumptionException(t);
-            }
-        }
-
         private void enrich(final ServerSetupTask task, final Method method) {
             try {
-                containerContext.activate(container.getName());
+                containerContext.get().activate(containerName);
                 enrichmentEvent.fire(new BeforeEnrichment(task, method));
                 Collection<TestEnricher> testEnrichers = serviceLoader.get().all(TestEnricher.class);
                 for (TestEnricher enricher : testEnrichers) {
@@ -350,16 +302,8 @@ public class ServerSetupObserver {
                 }
                 enrichmentEvent.fire(new AfterEnrichment(task, method));
             } finally {
-                containerContext.deactivate();
+                containerContext.get().deactivate();
             }
-        }
-    }
-
-    private static class FailedAssumptionException extends Exception {
-        private final RuntimeException underlyingException;
-
-        private FailedAssumptionException(Object underlying) {
-            this.underlyingException = (RuntimeException) underlying;
         }
     }
 }

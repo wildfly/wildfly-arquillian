@@ -18,7 +18,9 @@ package org.jboss.as.arquillian.container;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayDeque;
+import java.util.Collection;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -28,12 +30,19 @@ import java.util.Set;
 
 import org.jboss.arquillian.container.spi.Container;
 import org.jboss.arquillian.container.spi.client.deployment.DeploymentDescription;
+import org.jboss.arquillian.container.spi.context.ContainerContext;
 import org.jboss.arquillian.container.spi.event.container.AfterUnDeploy;
 import org.jboss.arquillian.container.spi.event.container.BeforeDeploy;
+import org.jboss.arquillian.core.api.Event;
 import org.jboss.arquillian.core.api.Instance;
 import org.jboss.arquillian.core.api.annotation.Inject;
 import org.jboss.arquillian.core.api.annotation.Observes;
+import org.jboss.arquillian.core.spi.ServiceLoader;
+import org.jboss.arquillian.test.spi.TestEnricher;
 import org.jboss.arquillian.test.spi.context.ClassContext;
+import org.jboss.arquillian.test.spi.event.enrichment.AfterEnrichment;
+import org.jboss.arquillian.test.spi.event.enrichment.BeforeEnrichment;
+import org.jboss.arquillian.test.spi.event.enrichment.EnrichmentEvent;
 import org.jboss.arquillian.test.spi.event.suite.AfterClass;
 import org.jboss.arquillian.test.spi.event.suite.BeforeClass;
 import org.jboss.as.arquillian.api.ServerSetup;
@@ -53,10 +62,19 @@ public class ServerSetupObserver {
     private static final Logger log = Logger.getLogger(ServerSetupObserver.class);
 
     @Inject
+    private Instance<ContainerContext> containerContext;
+
+    @Inject
     private Instance<ManagementClient> managementClient;
 
     @Inject
     private Instance<ClassContext> classContextInstance;
+
+    @Inject
+    private Instance<ServiceLoader> serviceLoader;
+
+    @Inject
+    private Event<EnrichmentEvent> enrichmentEvent;
 
     private final Map<String, ServerSetupTaskHolder> setupTasks = new HashMap<>();
     private boolean afterClassRun = false;
@@ -103,7 +121,8 @@ public class ServerSetupObserver {
         }
 
         final ManagementClient client = managementClient.get();
-        final ServerSetupTaskHolder holder = new ServerSetupTaskHolder(client);
+        final ServerSetupTaskHolder holder = new ServerSetupTaskHolder(client, container, containerContext.get(), serviceLoader,
+                enrichmentEvent);
         executeSetup(holder, setup, containerName, event.getDeployment());
     }
 
@@ -238,11 +257,22 @@ public class ServerSetupObserver {
         private final ManagementClient client;
         private final Deque<ServerSetupTask> setupTasks;
         private final Set<DeploymentDescription> deployments;
+        private final Container container;
+        private final ContainerContext containerContext;
+        private final Instance<ServiceLoader> serviceLoader;
+        private final Event<EnrichmentEvent> enrichmentEvent;
 
-        private ServerSetupTaskHolder(final ManagementClient client) {
+        private ServerSetupTaskHolder(final ManagementClient client, final Container container,
+                                      final ContainerContext containerContext,
+                                      final Instance<ServiceLoader> serviceLoader,
+                                      final Event<EnrichmentEvent> enrichmentEvent) {
             this.client = client;
             setupTasks = new ArrayDeque<>();
             deployments = new HashSet<>();
+            this.container = container;
+            this.containerContext = containerContext;
+            this.serviceLoader = serviceLoader;
+            this.enrichmentEvent = enrichmentEvent;
         }
 
         void setup(final ServerSetup setup, final String containerName)
@@ -253,8 +283,9 @@ public class ServerSetupObserver {
                 final Constructor<? extends ServerSetupTask> ctor = clazz.getDeclaredConstructor();
                 ctor.setAccessible(true);
                 final ServerSetupTask task = ctor.newInstance();
-                setupTasks.add(task);
                 try {
+                    enrich(task, clazz.getMethod("setup", ManagementClient.class, String.class));
+                    setupTasks.add(task);
                     task.setup(client, containerName);
                 } catch (Throwable e) {
                     // If this is one of the 'assumption failed' exceptions used in JUnit 4 or 5, throw it on
@@ -273,6 +304,7 @@ public class ServerSetupObserver {
                 ServerSetupTask task;
                 while ((task = setupTasks.pollLast()) != null) {
                     try {
+                        enrich(task, task.getClass().getMethod("tearDown", ManagementClient.class, String.class));
                         task.tearDown(client, containerName);
                     } catch (Throwable e) {
                         // Unlike with setup, here we don't propagate assumption failures.
@@ -303,8 +335,22 @@ public class ServerSetupObserver {
 
         @SuppressWarnings("SameParameterValue")
         private void rethrowFailedAssumption(Throwable t, Class<?> failureType) throws FailedAssumptionException {
-            if (failureType != null && t.getClass().isAssignableFrom(failureType)) {
+            if (failureType != null && failureType.isAssignableFrom(t.getClass())) {
                 throw new FailedAssumptionException(t);
+            }
+        }
+
+        private void enrich(final ServerSetupTask task, final Method method) {
+            try {
+                containerContext.activate(container.getName());
+                enrichmentEvent.fire(new BeforeEnrichment(task, method));
+                Collection<TestEnricher> testEnrichers = serviceLoader.get().all(TestEnricher.class);
+                for (TestEnricher enricher : testEnrichers) {
+                    enricher.enrich(task);
+                }
+                enrichmentEvent.fire(new AfterEnrichment(task, method));
+            } finally {
+                containerContext.deactivate();
             }
         }
     }

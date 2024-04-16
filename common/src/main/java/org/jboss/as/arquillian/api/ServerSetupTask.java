@@ -16,7 +16,14 @@
 
 package org.jboss.as.arquillian.api;
 
+import java.io.IOException;
+import java.util.function.Function;
+
 import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.controller.client.Operation;
+import org.jboss.as.controller.client.helpers.Operations;
+import org.jboss.dmr.ModelNode;
+import org.wildfly.plugin.tools.OperationExecutionException;
 
 /**
  *
@@ -24,6 +31,7 @@ import org.jboss.as.arquillian.container.ManagementClient;
  *
  * @author Stuart Douglas
  */
+@SuppressWarnings("unused")
 public interface ServerSetupTask {
 
     /**
@@ -61,4 +69,78 @@ public interface ServerSetupTask {
      * @throws Exception if a failure occurs
      */
     void tearDown(ManagementClient managementClient, String containerId) throws Exception;
+
+    /**
+     * Executes an operation failing with a {@code RuntimeException} if the operation was not successful.
+     *
+     * @param client the client used to communicate with the server
+     * @param op     the operation to execute
+     *
+     * @return the result from the operation
+     *
+     * @throws OperationExecutionException if the operation failed
+     * @throws IOException                 if an error occurs communicating with the server
+     */
+    default ModelNode executeOperation(final ManagementClient client, final ModelNode op) throws IOException {
+        return executeOperation(client, op, (result) -> String.format("Failed to execute operation '%s': %s", op
+                .asString(),
+                Operations.getFailureDescription(result).asString()));
+    }
+
+    /**
+     * Executes an operation failing with a {@code RuntimeException} if the operation was not successful.
+     *
+     * @param client       the client used to communicate with the server
+     * @param op           the operation to execute
+     * @param errorMessage a function which accepts the result as the argument and returns an error message for an
+     *                         unsuccessful operation
+     *
+     * @return the result from the operation
+     *
+     * @throws OperationExecutionException if the operation failed
+     * @throws IOException                 if an error occurs communicating with the server
+     */
+    default ModelNode executeOperation(final ManagementClient client, final ModelNode op,
+            final Function<ModelNode, String> errorMessage) throws IOException {
+        return executeOperation(client, Operation.Factory.create(op), errorMessage);
+    }
+
+    /**
+     * Executes an operation failing with a {@code RuntimeException} if the operation was not successful.
+     *
+     * @param client the client used to communicate with the server
+     * @param op     the operation to execute
+     *
+     * @return the result from the operation
+     *
+     * @throws OperationExecutionException if the operation failed
+     * @throws IOException                 if an error occurs communicating with the server
+     */
+    default ModelNode executeOperation(final ManagementClient client, final Operation op) throws IOException {
+        return executeOperation(client, op, (result) -> String.format("Failed to execute operation '%s': %s", op.getOperation()
+                .asString(),
+                Operations.getFailureDescription(result).asString()));
+    }
+
+    /**
+     * Executes an operation failing with a {@code RuntimeException} if the operation was not successful.
+     *
+     * @param client       the client used to communicate with the server
+     * @param op           the operation to execute
+     * @param errorMessage a function which accepts the result as the argument and returns an error message for an
+     *                         unsuccessful operation
+     *
+     * @return the result from the operation
+     *
+     * @throws OperationExecutionException if the operation failed
+     * @throws IOException                 if an error occurs communicating with the server
+     */
+    default ModelNode executeOperation(final ManagementClient client, final Operation op,
+            final Function<ModelNode, String> errorMessage) throws IOException {
+        final ModelNode result = client.getControllerClient().execute(op);
+        if (!Operations.isSuccessfulOutcome(result)) {
+            throw new OperationExecutionException(op, result);
+        }
+        return Operations.readResult(result);
+    }
 }

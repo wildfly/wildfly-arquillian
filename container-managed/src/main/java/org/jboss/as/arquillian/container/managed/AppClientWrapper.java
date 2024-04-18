@@ -35,7 +35,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import org.jboss.as.arquillian.container.ParameterUtils;
 import org.jboss.logging.Logger;
-import org.wildfly.plugin.tools.ServerHelper;
+import org.wildfly.plugin.tools.server.ServerManager;
 
 /**
  * A wrapper for an application client process. Allows interacting with the application client process.
@@ -189,7 +189,7 @@ public class AppClientWrapper implements AutoCloseable {
         final String jbossHome = config.getJbossHome();
         if (jbossHome == null)
             throw new IllegalArgumentException("jbossHome config property is not set.");
-        if (!ServerHelper.isValidHomeDirectory(jbossHome))
+        if (!ServerManager.isValidHomeDirectory(jbossHome))
             throw new IllegalArgumentException("Server directory from config jbossHome doesn't exist: " + jbossHome);
 
         final String archiveArg = String.format("%s#%s", archivePath, clientArchiveName);

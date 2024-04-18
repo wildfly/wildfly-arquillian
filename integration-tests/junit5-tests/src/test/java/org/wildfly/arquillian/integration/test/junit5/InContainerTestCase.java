@@ -45,7 +45,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
  */
 @ExtendWith(ArquillianExtension.class)
 @ServerSetup(InContainerTestCase.SystemPropertyServerSetupTask.class)
-public class InContainerTestCase {
+public class InContainerTestCase implements InContainerTestAssertion {
 
     private static final Map<String, String> PROPERTIES = new HashMap<>();
 
@@ -61,7 +61,7 @@ public class InContainerTestCase {
     @Deployment
     public static JavaArchive create() {
         return ShrinkWrap.create(JavaArchive.class)
-                .addClass(Greeter.class)
+                .addClasses(Greeter.class, InContainerTestAssertion.class)
                 .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
     }
 

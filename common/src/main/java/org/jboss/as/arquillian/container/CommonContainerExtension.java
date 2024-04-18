@@ -39,6 +39,10 @@ public class CommonContainerExtension implements LoadableExtension {
         builder.service(DeploymentExceptionTransformer.class, ExceptionTransformer.class);
         builder.service(ResourceProvider.class, ArchiveDeployerProvider.class);
         builder.service(ResourceProvider.class, ManagementClientProvider.class);
+        // Set up the providers for client injection of a ServerManager. We will not support injection for in-container
+        // tests. The main reason for this is we likely shouldn't be managing a servers lifecycle from a deployment. In
+        // some cases it may not even work.
+        builder.service(ResourceProvider.class, ServerManagerProvider.class);
         builder.service(TestEnricher.class, ContainerResourceTestEnricher.class);
         builder.service(AuxiliaryArchiveAppender.class, CommonContainerArchiveAppender.class);
 

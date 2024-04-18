@@ -34,6 +34,7 @@ import org.jboss.arquillian.core.api.Instance;
 import org.jboss.arquillian.core.api.annotation.Inject;
 import org.jboss.arquillian.test.spi.TestEnricher;
 import org.jboss.as.arquillian.api.ContainerResource;
+import org.wildfly.plugin.tools.server.ServerManager;
 
 /**
  * Test enricher that allows for injection of remote JNDI context into @RunAsClient test cases.
@@ -50,6 +51,9 @@ public class ContainerResourceTestEnricher implements TestEnricher {
 
     @Inject
     private Instance<ManagementClient> managementClient;
+
+    @Inject
+    private Instance<ServerManager> serverManager;
 
     /*
      * (non-Javadoc)
@@ -123,6 +127,8 @@ public class ContainerResourceTestEnricher implements TestEnricher {
                 return lookupContext(type, resource, qualifiers);
             } else if (ManagementClient.class.isAssignableFrom(type)) {
                 return managementClient.get();
+            } else if (ServerManager.class.isAssignableFrom(type)) {
+                return serverManager.get();
             } else {
                 throw new RuntimeException("@ContainerResource an unknown type " + resource.value());
 
@@ -176,9 +182,5 @@ public class ContainerResourceTestEnricher implements TestEnricher {
             }
         }
         return filtered.toArray(new Annotation[0]);
-    }
-
-    private interface ContainerResourceProvider {
-        Object lookup(Class<?> type, ContainerResource resource, Annotation... qualifiers);
     }
 }

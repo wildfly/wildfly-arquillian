@@ -17,7 +17,6 @@ package org.jboss.as.arquillian.container;
 
 import static org.wildfly.core.launcher.ProcessHelper.addShutdownHook;
 import static org.wildfly.core.launcher.ProcessHelper.destroyProcess;
-import static org.wildfly.core.launcher.ProcessHelper.processHasDied;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -33,6 +32,8 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.wildfly.core.launcher.CommandBuilder;
 import org.wildfly.core.launcher.Launcher;
+import org.wildfly.plugin.tools.server.ServerManager;
+import org.wildfly.plugin.tools.server.StandaloneManager;
 
 /**
  * A deployable container that manages a {@linkplain Process process}.
@@ -57,6 +58,13 @@ public abstract class CommonManagedDeployableContainer<T extends CommonManagedCo
         final T config = getContainerConfiguration();
         if (isServerRunning(config)) {
             if (config.isAllowConnectingToRunningServer()) {
+                // Set up the server manager attempting to discover the process for monitoring purposes. We need the
+                // server manager regardless of whether we are in charge of the lifecycle or not.
+                final StandaloneManager serverManager = ServerManager.builder()
+                        .client(getManagementClient().getControllerClient())
+                        .process(ServerManager.findProcess().orElse(null))
+                        .standalone();
+                serverManagerProducer.set(new ArquillianServerManager(serverManager));
                 return;
             } else {
                 failDueToRunning(config);
@@ -73,33 +81,19 @@ public abstract class CommonManagedDeployableContainer<T extends CommonManagedCo
             final Process process = Launcher.of(commandBuilder).setRedirectErrorStream(true).launch();
             new Thread(new ConsoleConsumer(process, config.isOutputToConsole())).start();
             shutdownThread = addShutdownHook(process);
+            final StandaloneManager serverManager = ServerManager.builder()
+                    .client(getManagementClient().getControllerClient())
+                    .process(process)
+                    .standalone();
 
             long startupTimeout = config.getStartupTimeoutInSeconds();
-            long timeout = startupTimeout * 1000;
-            boolean serverAvailable = false;
-            long sleep = 1000;
-            while (timeout > 0 && !serverAvailable) {
-                long before = System.currentTimeMillis();
-                serverAvailable = getManagementClient().isServerInRunningState();
-                timeout -= (System.currentTimeMillis() - before);
-                if (!serverAvailable) {
-                    if (processHasDied(process)) {
-                        final String msg = String.format(
-                                "The java process starting the managed server exited unexpectedly with code [%d]",
-                                process.exitValue());
-                        throw new LifecycleException(msg);
-                    }
-                    Thread.sleep(sleep);
-                    timeout -= sleep;
-                    sleep = Math.max(sleep / 2, 100);
-                }
-            }
-            if (!serverAvailable) {
+            if (!serverManager.waitFor(startupTimeout, TimeUnit.SECONDS)) {
                 destroyProcess(process);
                 throw new TimeoutException(String.format("Managed server was not started within [%d] s", startupTimeout));
             }
             timeoutSupported = isOperationAttributeSupported("shutdown", "timeout");
             this.process = process;
+            serverManagerProducer.set(new ArquillianServerManager(serverManager));
 
         } catch (LifecycleException e) {
             throw e;

@@ -35,6 +35,10 @@
             <artifactId>wildfly-arquillian-common</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.wildfly.plugins</groupId>
+            <artifactId>wildfly-plugin-tools</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.jboss.logging</groupId>
             <artifactId>jboss-logging</artifactId>
         </dependency>

@@ -20,6 +20,7 @@ import java.io.InputStream;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.Future;
 
@@ -39,7 +40,6 @@ import org.jboss.as.controller.client.helpers.domain.UndeployDeploymentPlanBuild
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
-import org.wildfly.common.Assert;
 import org.wildfly.plugin.tools.Deployment;
 import org.wildfly.plugin.tools.DeploymentManager;
 import org.wildfly.plugin.tools.DeploymentResult;
@@ -56,7 +56,7 @@ import org.wildfly.plugin.tools.UndeployDescription;
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  * @since 17-Nov-2010
  */
-@SuppressWarnings({ "WeakerAccess", "TypeMayBeWeakened", "DeprecatedIsStillUsed", "deprecation", "unused" })
+@SuppressWarnings({ "WeakerAccess", "TypeMayBeWeakened", "DeprecatedIsStillUsed", "unused" })
 public class ArchiveDeployer {
 
     private static final Logger log = Logger.getLogger(ArchiveDeployer.class);
@@ -77,8 +77,7 @@ public class ArchiveDeployer {
      */
     @Deprecated
     public ArchiveDeployer(DomainDeploymentManager deploymentManager) {
-        Assert.checkNotNullParam("deploymentManager", deploymentManager);
-        this.deploymentManagerDeprecated = deploymentManager;
+        this.deploymentManagerDeprecated = Objects.requireNonNull(deploymentManager, "The deploymentManager cannot be null");
         this.deploymentManager = null;
     }
 
@@ -88,7 +87,7 @@ public class ArchiveDeployer {
      * @param client the client used to communicate with the server
      */
     public ArchiveDeployer(final ManagementClient client) {
-        Assert.checkNotNullParam("client", client);
+        Objects.requireNonNull(client, "The client cannot be null");
         deploymentManagerDeprecated = null;
         this.deploymentManager = DeploymentManager.Factory.create(client.getControllerClient());
     }

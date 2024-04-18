@@ -22,6 +22,7 @@ package org.jboss.as.arquillian.container;
 import org.jboss.arquillian.container.test.spi.client.deployment.AuxiliaryArchiveAppender;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
+import org.jboss.as.arquillian.setup.ConfigureLoggingSetupTask;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -42,6 +43,8 @@ public class CommonContainerArchiveAppender implements AuxiliaryArchiveAppender 
                 // shouldn't really be used for in-container tests.
                 .addClasses(ServerSetupTask.class, ServerSetup.class)
                 .addClasses(ManagementClient.class)
+                // Add the setup task implementations
+                .addPackage(ConfigureLoggingSetupTask.class.getPackage())
                 // Adds wildfly-plugin-tools, this exception itself is explicitly needed
                 .addPackages(true, OperationExecutionException.class.getPackage())
                 .setManifest(new StringAsset("Manifest-Version: 1.0\n"

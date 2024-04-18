@@ -49,12 +49,12 @@
         <version.org.jboss.remotingjmx.remoting-jmx>3.1.0.Final</version.org.jboss.remotingjmx.remoting-jmx>
         <!-- Required by Elytron dependencies -->
         <version.org.slf4j>1.7.36</version.org.slf4j>
-        <version.org.wildfly.common.wildfly-common>1.7.0.Final</version.org.wildfly.common.wildfly-common>
         <version.org.wildfly.plugins.wildfly-jar-maven-plugin>11.0.0.Beta2</version.org.wildfly.plugins.wildfly-jar-maven-plugin>
         <version.org.wildfly.plugins.wildfly-maven-plugin>5.0.0.Final</version.org.wildfly.plugins.wildfly-maven-plugin>
-        <version.org.wildfly.plugins.wildfly-plugin-tools>1.0.0.Beta4</version.org.wildfly.plugins.wildfly-plugin-tools>
+        <version.org.wildfly.plugins.wildfly-plugin-tools>1.1.0.Final</version.org.wildfly.plugins.wildfly-plugin-tools>
 
         <!-- keep this in sync with version that is used in arquillian -->
+        <version.org.jboss.shrinkwrap>1.2.6</version.org.jboss.shrinkwrap>
         <version.org.jboss.shrinkwrap.descriptors>2.0.0</version.org.jboss.shrinkwrap.descriptors>
         <version.org.jboss.ejb-client>4.0.54.Final</version.org.jboss.ejb-client>
         <version.org.testng>7.7.0</version.org.testng>
@@ -278,6 +278,7 @@
         </plugins>
     </build>
     <modules>
+        <module>wildfly-testing-tools</module>
         <module>common</module>
         <module>container-bootable</module>
         <module>container-embedded</module>
@@ -308,6 +309,13 @@
                 <groupId>org.jboss.resteasy</groupId>
                 <artifactId>resteasy-bom</artifactId>
                 <version>${version.org.jboss.resteasy}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.shrinkwrap</groupId>
+                <artifactId>shrinkwrap-bom</artifactId>
+                <version>${version.org.jboss.shrinkwrap}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -554,6 +562,11 @@
 
             <dependency>
                 <groupId>org.wildfly.arquillian</groupId>
+                <artifactId>wildfly-testing-tools</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.wildfly.arquillian</groupId>
                 <artifactId>wildfly-arquillian-common</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -606,11 +619,6 @@
                 <groupId>org.wildfly.arquillian</groupId>
                 <artifactId>wildfly-arquillian-testenricher-msc</artifactId>
                 <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.wildfly.common</groupId>
-                <artifactId>wildfly-common</artifactId>
-                <version>${version.org.wildfly.common.wildfly-common}</version>
             </dependency>
             <dependency>
                 <groupId>org.wildfly.core</groupId>

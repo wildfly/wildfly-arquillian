@@ -44,6 +44,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -83,7 +84,6 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
 import org.jboss.logging.Logger;
-import org.wildfly.common.Assert;
 
 /**
  * A helper class to join management related operations, like extract sub system ip/port (web/jmx)
@@ -131,10 +131,7 @@ public class ManagementClient implements Closeable {
 
     public ManagementClient(ModelControllerClient client, final String mgmtAddress, final int managementPort,
             final String protocol) {
-        if (client == null) {
-            throw new IllegalArgumentException("Client must be specified");
-        }
-        this.client = client;
+        this.client = Objects.requireNonNull(client, "Client must not be null");
         this.mgmtAddress = mgmtAddress;
         this.mgmtPort = managementPort;
         this.mgmtProtocol = protocol;
@@ -142,11 +139,7 @@ public class ManagementClient implements Closeable {
     }
 
     public ManagementClient(ModelControllerClient client, final CommonContainerConfiguration config) {
-        if (client == null) {
-            throw new IllegalArgumentException("Client must be specified");
-        }
-        Assert.checkNotNullParam("config", config);
-        this.client = client;
+        this.client = Objects.requireNonNull(client, "Client must not be null");
         this.mgmtAddress = config.getManagementAddress();
         this.mgmtPort = config.getManagementPort();
         this.mgmtProtocol = config.getManagementProtocol();

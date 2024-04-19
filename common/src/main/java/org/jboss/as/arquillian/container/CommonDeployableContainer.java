@@ -46,6 +46,8 @@ import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.descriptor.api.Descriptor;
 import org.wildfly.plugin.tools.ContainerDescription;
+import org.wildfly.plugin.tools.server.ServerManager;
+import org.wildfly.plugin.tools.server.StandaloneManager;
 
 /**
  * A JBossAS deployable container
@@ -71,6 +73,11 @@ public abstract class CommonDeployableContainer<T extends CommonContainerConfigu
     @Inject
     @ApplicationScoped
     private InstanceProducer<Context> jndiContext;
+
+    @Inject
+    @ContainerScoped
+    // Protected scope so the CommonManagedDeployableContainer can set it as well
+    protected InstanceProducer<ServerManager> serverManagerProducer;
 
     private final StandaloneDelegateProvider mccProvider = new StandaloneDelegateProvider();
     private ManagementClient managementClient = null;
@@ -121,6 +128,18 @@ public abstract class CommonDeployableContainer<T extends CommonContainerConfigu
             clientConfigBuilder.setHandler(getCallbackHandler());
         }
         mccProvider.setDelegate(ModelControllerClient.Factory.create(clientConfigBuilder.build()));
+
+        // If we are not a CommonManagedDeployableContainer we still need the ServerManager
+        if (!(this instanceof CommonManagedDeployableContainer)) {
+            // Set up the server manager attempting to discover the process for monitoring purposes. We need the
+            // server manager regardless of whether we are in charge of the lifecycle or not.
+            final StandaloneManager serverManager = ServerManager.builder()
+                    .client(getManagementClient().getControllerClient())
+                    // Note this won't work on Windows, but should work on other platforms
+                    .process(ServerManager.findProcess().orElse(null))
+                    .standalone();
+            serverManagerProducer.set(new ArquillianServerManager(serverManager));
+        }
 
         try {
             final Properties jndiProps = new Properties();

@@ -66,10 +66,6 @@
             <artifactId>remoting-jmx</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.wildfly.arquillian</groupId>
-            <artifactId>wildfly-testing-tools</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-controller-client</artifactId>
         </dependency>

@@ -1,7 +1,7 @@
 /*
  * JBoss, Home of Professional Open Source.
  *
- * Copyright 2024 Red Hat, Inc., and individual contributors
+ * Copyright 2022 Red Hat, Inc., and individual contributors
  * as indicated by the @author tags.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,44 +17,59 @@
  * limitations under the License.
  */
 
-package org.wildfly.arquillian.integration.test.junit5.server.setup;
+package org.jboss.as.arquillian.setup;
 
 import java.util.Map;
 
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.helpers.Operations;
+import org.jboss.as.controller.client.helpers.Operations.CompositeOperationBuilder;
 import org.jboss.dmr.ModelNode;
 
 /**
+ * A setup task for Arquillian tests which set system properties in WildFly and remove them when the test is complete.
+ *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-public class SystemPropertyServerSetupTask implements ServerSetupTask {
-    public final Map<String, String> properties;
+public abstract class SystemPropertyServerSetupTask implements ServerSetupTask {
 
-    public SystemPropertyServerSetupTask(final Map<String, String> properties) {
-        this.properties = Map.copyOf(properties);
+    private final Map<String, String> properties;
+
+    /**
+     * Creates a new setup task which defines the provided properties.
+     *
+     * @param properties the properties to add
+     */
+    protected SystemPropertyServerSetupTask(final Map<String, String> properties) {
+        this.properties = properties;
     }
 
     @Override
     public void setup(final ManagementClient managementClient, final String containerId) throws Exception {
-        final Operations.CompositeOperationBuilder builder = Operations.CompositeOperationBuilder.create();
-        for (var entry : properties.entrySet()) {
+        final CompositeOperationBuilder builder = CompositeOperationBuilder.create();
+        for (Map.Entry<String, String> entry : properties.entrySet()) {
             final ModelNode address = Operations.createAddress("system-property", entry.getKey());
             final ModelNode op = Operations.createAddOperation(address);
             op.get("value").set(entry.getValue());
             builder.addStep(op);
         }
-        executeOperation(managementClient, builder.build());
+        executeOperation(managementClient, builder.build(),
+                (result) -> String.format("Failed to add system properties %s%n%s", properties,
+                        Operations.getFailureDescription(result)
+                                .asString()));
     }
 
     @Override
     public void tearDown(final ManagementClient managementClient, final String containerId) throws Exception {
-        final Operations.CompositeOperationBuilder builder = Operations.CompositeOperationBuilder.create();
-        for (var entry : properties.entrySet()) {
+        final CompositeOperationBuilder builder = CompositeOperationBuilder.create();
+        for (Map.Entry<String, String> entry : properties.entrySet()) {
             final ModelNode address = Operations.createAddress("system-property", entry.getKey());
             builder.addStep(Operations.createRemoveOperation(address));
         }
-        executeOperation(managementClient, builder.build());
+        executeOperation(managementClient, builder.build(),
+                (result) -> String.format("Failed to remove system properties %s%n%s", properties,
+                        Operations.getFailureDescription(result)
+                                .asString()));
     }
 }

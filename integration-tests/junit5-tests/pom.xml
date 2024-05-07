@@ -104,7 +104,7 @@
                             <goal>test</goal>
                         </goals>
                         <configuration>
-                            <excludedGroups>OverrideWebUri,engine-test-kit</excludedGroups>
+                            <excludedGroups>OverrideWebUri,engine-test-kit,cleanup-test</excludedGroups>
                         </configuration>
                     </execution>
                     <execution>
@@ -126,6 +126,19 @@
                         </goals>
                         <configuration>
                             <groups>engine-test-kit</groups>
+                        </configuration>
+                    </execution>
+                    <!-- Note this must always be defined as the last execution. Tests in this group must be run in
+                         their own JVM and must execute after all other tests.
+                     -->
+                    <execution>
+                        <id>cleanup-tests</id>
+                        <goals>
+                            <goal>test</goal>
+                        </goals>
+                        <configuration>
+                            <groups>cleanup-test</groups>
+                            <reuseForks>false</reuseForks>
                         </configuration>
                     </execution>
                 </executions>

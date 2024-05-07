@@ -52,4 +52,18 @@
         </dependency>
     </dependencies>
 
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <systemPropertyVariables>
+                        <module.path>/opt/wildfly/modules${path.separator}${project.build.directory}/modules${path.separator}${project.build.directory}/unused</module.path>
+                        <org.wildfly.testing.tools.modules.immutable.paths>/opt/wildfly/modules</org.wildfly.testing.tools.modules.immutable.paths>
+                    </systemPropertyVariables>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
 </project>

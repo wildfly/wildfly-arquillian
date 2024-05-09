@@ -49,7 +49,7 @@
         <version.org.jboss.remotingjmx.remoting-jmx>3.1.0.Final</version.org.jboss.remotingjmx.remoting-jmx>
         <!-- Required by Elytron dependencies -->
         <version.org.slf4j>1.7.36</version.org.slf4j>
-        <version.org.wildfly.plugins.wildfly-jar-maven-plugin>11.0.0.Final</version.org.wildfly.plugins.wildfly-jar-maven-plugin>
+        <version.org.wildfly.plugins.wildfly-jar-maven-plugin>11.0.1.Final</version.org.wildfly.plugins.wildfly-jar-maven-plugin>
         <version.org.wildfly.plugins.wildfly-maven-plugin>5.0.0.Final</version.org.wildfly.plugins.wildfly-maven-plugin>
         <version.org.wildfly.plugins.wildfly-plugin-tools>1.1.0.Final</version.org.wildfly.plugins.wildfly-plugin-tools>
 

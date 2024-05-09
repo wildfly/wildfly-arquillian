@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-package org.wildfly.testing.tools.deployments;
+package org.wildfly.testing.tools.xml;
 
 import java.util.Iterator;
 import java.util.stream.Stream;
@@ -30,7 +30,7 @@ import javax.xml.stream.XMLStreamWriter;
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-class IndentingXmlWriter implements XMLStreamWriter, XMLStreamConstants {
+class IndentingXmlWriter implements CloseableXMLStreamWriter, XMLStreamConstants {
 
     private static final String SPACES = "    ";
 

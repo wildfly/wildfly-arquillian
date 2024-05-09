@@ -23,7 +23,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FilePermission;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -36,7 +35,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
@@ -44,6 +42,7 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.asset.ByteArrayAsset;
 import org.jboss.shrinkwrap.api.container.WebContainer;
+import org.wildfly.testing.tools.xml.CloseableXMLStreamWriter;
 
 /**
  * A utility to generate various deployment descriptors.
@@ -94,10 +93,9 @@ public class DeploymentDescriptors {
      * @return a {@code jboss-deployment-structure.xml} in a byte array
      */
     public static byte[] createJBossDeploymentStructure(final Set<String> addedModules, final Set<String> excludedModules) {
-        XMLStreamWriter writer = null;
-        try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
-            writer = createWriter(out);
-
+        try (
+                ByteArrayOutputStream out = new ByteArrayOutputStream();
+                CloseableXMLStreamWriter writer = CloseableXMLStreamWriter.of(out);) {
             writer.writeStartDocument("utf-8", "1.0");
             writer.writeStartElement("jboss-deployment-structure");
 
@@ -130,13 +128,6 @@ public class DeploymentDescriptors {
             return out.toByteArray();
         } catch (IOException | XMLStreamException e) {
             throw new RuntimeException("Failed to create the jboss-deployment-structure.xml file.", e);
-        } finally {
-            if (writer != null)
-                try {
-                    writer.close();
-                } catch (Exception ignore) {
-
-                }
         }
     }
 
@@ -181,10 +172,9 @@ public class DeploymentDescriptors {
      * @return a {@code jboss-web.xml}
      */
     public static byte[] createJBossWebXml(final Map<String, String> elements) {
-        XMLStreamWriter writer = null;
-        try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
-            writer = createWriter(out);
-
+        try (
+                ByteArrayOutputStream out = new ByteArrayOutputStream();
+                CloseableXMLStreamWriter writer = CloseableXMLStreamWriter.of(out);) {
             writer.writeStartDocument("utf-8", "1.0");
             writer.writeStartElement("jboss-web");
 
@@ -200,13 +190,6 @@ public class DeploymentDescriptors {
             return out.toByteArray();
         } catch (IOException | XMLStreamException e) {
             throw new RuntimeException("Failed to create the jboss-deployment-structure.xml file.", e);
-        } finally {
-            if (writer != null)
-                try {
-                    writer.close();
-                } catch (Exception ignore) {
-
-                }
         }
     }
 
@@ -266,9 +249,9 @@ public class DeploymentDescriptors {
      */
     public static byte[] createPermissionsXml(final Iterable<? extends Permission> permissions,
             final Permission... additionalPermissions) {
-        XMLStreamWriter writer = null;
-        try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
-            writer = createWriter(out);
+        try (
+                ByteArrayOutputStream out = new ByteArrayOutputStream();
+                CloseableXMLStreamWriter writer = CloseableXMLStreamWriter.of(out);) {
 
             writer.writeStartDocument("utf-8", "1.0");
             writer.writeStartElement("permissions");
@@ -284,13 +267,6 @@ public class DeploymentDescriptors {
             return out.toByteArray();
         } catch (IOException | XMLStreamException e) {
             throw new RuntimeException("Failed to create the permissions.xml file.", e);
-        } finally {
-            if (writer != null)
-                try {
-                    writer.close();
-                } catch (Exception ignore) {
-
-                }
         }
     }
 
@@ -369,10 +345,5 @@ public class DeploymentDescriptors {
             }
             writer.writeEndElement();
         }
-    }
-
-    private static XMLStreamWriter createWriter(final OutputStream out) throws XMLStreamException {
-        final XMLOutputFactory factory = XMLOutputFactory.newInstance();
-        return new IndentingXmlWriter(factory.createXMLStreamWriter(out, "utf-8"));
     }
 }

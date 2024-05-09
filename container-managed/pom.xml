@@ -35,6 +35,10 @@
             <artifactId>wildfly-arquillian-common</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.wildfly.arquillian</groupId>
+            <artifactId>wildfly-testing-tools</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.wildfly.plugins</groupId>
             <artifactId>wildfly-plugin-tools</artifactId>
         </dependency>
@@ -45,6 +49,10 @@
         <dependency>
             <groupId>jakarta.inject</groupId>
             <artifactId>jakarta.inject-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.remotingjmx</groupId>
+            <artifactId>remoting-jmx</artifactId>
         </dependency>
         <dependency>
             <groupId>org.wildfly.core</groupId>

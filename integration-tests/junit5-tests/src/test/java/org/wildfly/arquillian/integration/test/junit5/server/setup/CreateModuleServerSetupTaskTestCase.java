@@ -51,6 +51,7 @@ import org.junit.platform.testkit.engine.EventConditions;
 import org.wildfly.arquillian.junit.annotations.WildFlyArquillian;
 import org.wildfly.testing.tools.deployments.DeploymentDescriptors;
 import org.wildfly.testing.tools.modules.ModuleBuilder;
+import org.wildfly.testing.tools.modules.ModuleDescription;
 import org.wildfly.testing.tools.modules.Modules;
 
 /**
@@ -61,7 +62,8 @@ import org.wildfly.testing.tools.modules.Modules;
 @WildFlyArquillian
 @RunAsClient
 public class CreateModuleServerSetupTaskTestCase {
-    static final String MODULE_NAME = "org.wildfly.arquillian.test";
+    private static final String MODULE_NAME = "org.wildfly.arquillian.test";
+    private static final String MODULE_NAME_ALIAS = "org.wildfly.arquillian.test.alias";
     /**
      * A marker file to indicate this test has been executed
      */
@@ -111,6 +113,12 @@ public class CreateModuleServerSetupTaskTestCase {
                 .resolve("main");
         Assertions.assertFalse(Files.exists(moduleDir), () -> String
                 .format("Expected module %s to be deleted but is still present on file system: %s", MODULE_NAME, moduleDir));
+        // Ensure the module no longer exists on the file system
+        final var moduleAliasDir = Modules.discoverModulePath().resolve(MODULE_NAME_ALIAS.replace('.', File.separatorChar))
+                .resolve("main");
+        Assertions.assertFalse(Files.exists(moduleAliasDir), () -> String
+                .format("Expected module %s to be deleted but is still present on file system: %s", MODULE_NAME_ALIAS,
+                        moduleAliasDir));
     }
 
     private static void checkModule(final ManagementClient client, final boolean exists)
@@ -142,11 +150,12 @@ public class CreateModuleServerSetupTaskTestCase {
     public static class TestModuleServerSetupTask extends CreateModuleServerSetupTask {
 
         @Override
-        protected List<ModuleBuilder> moduleBuilders() {
-            return List.of(
+        protected Set<ModuleDescription> moduleDescriptions() {
+            return Set.of(
                     ModuleBuilder.of(MODULE_NAME)
                             .addClass(Greeter.class)
-                            .addDependencies("org.jboss.as.server"));
+                            .addDependencies("org.jboss.as.server").build(),
+                    ModuleDescription.createAlias(MODULE_NAME_ALIAS, MODULE_NAME));
         }
     }
 
@@ -162,7 +171,7 @@ public class CreateModuleServerSetupTaskTestCase {
             return ShrinkWrap.create(WebArchive.class, "inner-module-setup-task-test.war")
                     .addClass(TestModuleServerSetupTask.class)
                     .addAsWebInfResource(DeploymentDescriptors.createJBossDeploymentStructureAsset(
-                            Set.of("org.wildfly.arquillian.test"), Set.of()), "jboss-deployment-structure.xml")
+                            Set.of(MODULE_NAME_ALIAS), Set.of()), "jboss-deployment-structure.xml")
                     .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
         }
 

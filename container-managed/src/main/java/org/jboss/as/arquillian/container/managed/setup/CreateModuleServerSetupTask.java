@@ -20,10 +20,10 @@
 package org.jboss.as.arquillian.container.managed.setup;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentSkipListMap;
+import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.stream.Collectors;
 
 import javax.management.InstanceNotFoundException;
 import javax.management.MBeanException;
@@ -39,7 +39,7 @@ import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.logging.Logger;
 import org.wildfly.plugin.tools.server.ServerManager;
-import org.wildfly.testing.tools.modules.ModuleBuilder;
+import org.wildfly.testing.tools.modules.ModuleDescription;
 
 /**
  * A setup task which creates a module and deletes it when {@linkplain #tearDown(ManagementClient, String) torn down}.
@@ -49,19 +49,18 @@ import org.wildfly.testing.tools.modules.ModuleBuilder;
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
+@SuppressWarnings({ "unused", "RedundantThrows" })
 public abstract class CreateModuleServerSetupTask implements ServerSetupTask {
     private static final Logger LOGGER = Logger.getLogger(CreateModuleServerSetupTask.class);
-    private final Map<String, Runnable> modules = new ConcurrentSkipListMap<>();
+    private final Set<ModuleDescription> modules = new ConcurrentSkipListSet<>();
 
     @ArquillianResource
     private ServerManager serverManager;
 
     @Override
     public final void setup(final ManagementClient managementClient, final String containerId) throws Exception {
-        for (var builder : moduleBuilders()) {
-            modules.put(builder.name(), builder.build());
-        }
-        doSetup(managementClient, containerId);
+        modules.addAll(moduleDescriptions());
+        doSetup(managementClient, containerId, Set.copyOf(modules));
         serverManager.reloadIfRequired();
     }
 
@@ -69,10 +68,12 @@ public abstract class CreateModuleServerSetupTask implements ServerSetupTask {
     public final void tearDown(final ManagementClient managementClient, final String containerId) throws Exception {
         try {
             try (JMXConnector connector = createJmxConnector(managementClient)) {
-                unloadModule(connector.getMBeanServerConnection(), modules.keySet());
+                unloadModule(connector.getMBeanServerConnection(), modules.stream()
+                        .map(ModuleDescription::name)
+                        .collect(Collectors.toSet()));
             }
-            for (Runnable module : modules.values()) {
-                module.run();
+            for (ModuleDescription module : modules) {
+                module.close();
             }
         } finally {
             doTearDown(managementClient, containerId);
@@ -86,11 +87,13 @@ public abstract class CreateModuleServerSetupTask implements ServerSetupTask {
      *
      * @param managementClient management client to use to interact with the container
      * @param containerId      id of the container to which the deployment will be deployed
+     * @param modules          the build modules for this setup
      *
      * @throws Exception if a failure occurs
      * @see #setup(ManagementClient, String)
      */
-    protected void doSetup(final ManagementClient managementClient, final String containerId) throws Exception {
+    protected void doSetup(final ManagementClient managementClient, final String containerId,
+            final Set<ModuleDescription> modules) throws Exception {
     }
 
     /**
@@ -109,9 +112,9 @@ public abstract class CreateModuleServerSetupTask implements ServerSetupTask {
     /**
      * The modules that should be created prior to a deployment.
      *
-     * @return a list of modules to create
+     * @return a set of modules to create
      */
-    protected abstract List<ModuleBuilder> moduleBuilders();
+    protected abstract Set<ModuleDescription> moduleDescriptions();
 
     private static void unloadModule(final MBeanServerConnection connection, final Set<String> moduleNames)
             throws MalformedObjectNameException, IOException, ReflectionException, InstanceNotFoundException, MBeanException {

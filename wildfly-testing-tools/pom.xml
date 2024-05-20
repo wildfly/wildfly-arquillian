@@ -50,6 +50,16 @@
             <artifactId>junit-jupiter</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.jboss.shrinkwrap</groupId>
+            <artifactId>shrinkwrap-impl-base</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jsoup</groupId>
+            <artifactId>jsoup</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
@@ -61,6 +71,10 @@
                         <module.path>/opt/wildfly/modules${path.separator}${project.build.directory}/modules${path.separator}${project.build.directory}/unused</module.path>
                         <org.wildfly.testing.tools.modules.immutable.paths>/opt/wildfly/modules</org.wildfly.testing.tools.modules.immutable.paths>
                     </systemPropertyVariables>
+                    <classpathDependencyExcludes>
+                        <!-- Excluded as we don't want to attempt to use the FileSystem provider -->
+                        <exclude>org.apache.sshd:sshd-common</exclude>
+                    </classpathDependencyExcludes>
                 </configuration>
             </plugin>
         </plugins>

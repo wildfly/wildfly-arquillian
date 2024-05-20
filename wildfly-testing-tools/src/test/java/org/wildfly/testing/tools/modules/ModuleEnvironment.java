@@ -20,24 +20,20 @@
 package org.wildfly.testing.tools.modules;
 
 import java.io.IOException;
-
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-public class ModulesTest {
+class ModuleEnvironment {
 
-    @BeforeAll
-    public static void createModuleDir() throws IOException {
-        ModuleEnvironment.createBaseModuleDir();
-    }
+    // The project.build.directory is set as the java.io.tmpdir
+    static final Path BASE_MODULE_DIR = Path.of(System.getProperty("java.io.tmpdir"), "modules").toAbsolutePath();
 
-    @Test
-    public void checkModulePath() {
-        Assertions.assertEquals(ModuleEnvironment.BASE_MODULE_DIR, Modules.discoverModulePath(),
-                "Failed to discover the expected module path. The module path should be the first path which is not said to be immutable.");
+    static void createBaseModuleDir() throws IOException {
+        if (Files.notExists(BASE_MODULE_DIR)) {
+            Files.createDirectories(BASE_MODULE_DIR);
+        }
     }
 }

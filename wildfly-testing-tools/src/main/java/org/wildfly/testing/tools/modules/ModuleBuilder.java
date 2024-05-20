@@ -23,22 +23,18 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UncheckedIOException;
-import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Set;
-import java.util.stream.Stream;
 
 import javax.xml.stream.XMLStreamException;
 
-import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.wildfly.testing.tools.xml.CloseableXMLStreamWriter;
@@ -57,14 +53,21 @@ public class ModuleBuilder {
     private final String name;
     private final Path modulePath;
     private final JavaArchive jar;
-    private final Collection<ModuleDependency> dependencies;
+    private final Set<String> resourcePaths;
+    private final Set<JavaArchive> resources;
+    private final Set<ModuleDependency> dependencies;
 
-    private ModuleBuilder(final String name, final String archiveName, final Path modulePath) {
+    private ModuleBuilder(final String name, final JavaArchive jar, final Path modulePath) {
         this.name = name;
         this.modulePath = modulePath == null ? Modules.discoverModulePath() : modulePath;
-        final String resourceName = archiveName == null ? "test-module.jar" : archiveName;
-        jar = ShrinkWrap.create(JavaArchive.class, resourceName);
-        dependencies = new ArrayList<>();
+        this.jar = jar;
+        dependencies = new LinkedHashSet<>();
+        resources = new LinkedHashSet<>();
+        this.resourcePaths = new LinkedHashSet<>();
+    }
+
+    private ModuleBuilder(final String name, final String archiveName, final Path modulePath) {
+        this(name, ShrinkWrap.create(JavaArchive.class, archiveName == null ? "test-module.jar" : archiveName), modulePath);
     }
 
     /**
@@ -75,7 +78,19 @@ public class ModuleBuilder {
      * @return a new module builder
      */
     public static ModuleBuilder of(final String moduleName) {
-        return of(moduleName, null);
+        return of(moduleName, (String) null);
+    }
+
+    /**
+     * Creates a new module builder with an archive name of test-module.jar.
+     *
+     * @param moduleName the name for the module
+     * @param jar        the JAR to use for the module
+     *
+     * @return a new module builder
+     */
+    public static ModuleBuilder of(final String moduleName, final JavaArchive jar) {
+        return of(moduleName, jar, null);
     }
 
     /**
@@ -105,12 +120,39 @@ public class ModuleBuilder {
     }
 
     /**
+     * Creates a new module builder.
+     *
+     * @param moduleName the name for the module
+     * @param jar        the JAR to use for the module
+     * @param modulePath the JBoss Modules path where the module should be created, if {@code null} there will be an attempt to
+     *                       discover the path
+     *
+     * @return a new module builder
+     */
+    public static ModuleBuilder of(final String moduleName, final JavaArchive jar, final Path modulePath) {
+        return new ModuleBuilder(moduleName, jar, modulePath);
+    }
+
+    /**
      * Returns the module name.
      *
      * @return the module name
      */
     public String name() {
         return name;
+    }
+
+    /**
+     * Adds an asset to the module library.
+     *
+     * @param asset  the asset to add
+     * @param target the target path for the asset
+     *
+     * @return this builder
+     */
+    public ModuleBuilder addAsset(final Asset asset, final String target) {
+        jar.add(asset, target);
+        return this;
     }
 
     /**
@@ -145,7 +187,7 @@ public class ModuleBuilder {
      * @return this builder
      */
     public ModuleBuilder addDependency(final String dependency) {
-        this.dependencies.add(ModuleDependency.of(dependency));
+        this.dependencies.add(ModuleDependency.builder(dependency).build());
         return this;
     }
 
@@ -183,7 +225,18 @@ public class ModuleBuilder {
      * @return this builder
      */
     public ModuleBuilder addDependencies(final ModuleDependency... dependencies) {
-        Collections.addAll(this.dependencies, dependencies);
+        return addDependencies(Set.of(dependencies));
+    }
+
+    /**
+     * Adds the dependencies for the module.xml file.
+     *
+     * @param dependencies the dependencies to add
+     *
+     * @return this builder
+     */
+    public ModuleBuilder addDependencies(final Collection<ModuleDependency> dependencies) {
+        this.dependencies.addAll(dependencies);
         return this;
     }
 
@@ -226,6 +279,91 @@ public class ModuleBuilder {
     }
 
     /**
+     * Adds a manifest resource, {@code META-INF}, inside the module JAR.
+     *
+     * @param asset  the resource to add
+     * @param target the target path within the archive in which to add the resource, relative to the {@code META-INF} path
+     *
+     * @return this builder
+     */
+    public ModuleBuilder addManifestResource(final Asset asset, final String target) {
+        jar.addAsManifestResource(asset, target);
+        return this;
+    }
+
+    /**
+     * Adds another resource root library to the module.
+     *
+     * @param resource the resource to add
+     *
+     * @return this builder
+     */
+    public ModuleBuilder addResource(final JavaArchive resource) {
+        this.resources.add(resource);
+        return this;
+    }
+
+    /**
+     * Adds more resource root libraries to the module.
+     *
+     * @param resources the resources to add
+     *
+     * @return this builder
+     */
+    public ModuleBuilder addResources(final JavaArchive... resources) {
+        this.resources.addAll(Set.of(resources));
+        return this;
+    }
+
+    /**
+     * Adds more resource root libraries to the module.
+     *
+     * @param resources the resources to add
+     *
+     * @return this builder
+     */
+    public ModuleBuilder addResources(final Collection<JavaArchive> resources) {
+        this.resources.addAll(resources);
+        return this;
+    }
+
+    /**
+     * Adds a resource path to be added to the root resource.
+     *
+     * @param resourcePath the resource path to add
+     *
+     * @return this builder
+     */
+    public ModuleBuilder addResourcePath(final String resourcePath) {
+        this.resourcePaths.add(resourcePath);
+        return this;
+    }
+
+    /**
+     * Adds the resource paths to be added to the root resource.
+     *
+     * @param resourcePaths the resource paths to add
+     *
+     * @return this builder
+     */
+    public ModuleBuilder addResourcePaths(final String... resourcePaths) {
+        this.resourcePaths.addAll(Set.of(resourcePaths));
+        return this;
+    }
+
+    /**
+     * Adds the resource paths to be added to the root resource.
+     *
+     * @param resourcePaths the resource paths to add
+     *
+     * @return this builder
+     */
+    public ModuleBuilder addResourcePaths(final Set<String> resourcePaths) {
+        this.resourcePaths.addAll(resourcePaths);
+        return this;
+    }
+
+    /**
      * Creates the module by:
      * <ul>
      * <li>Creating the module directory based on the modules name</li>
@@ -240,7 +378,7 @@ public class ModuleBuilder {
      *
      * @return a task to clean up the module
      */
-    public Runnable build() {
+    public ModuleDescription build() {
         try {
             final Path mp = modulePath;
             final Path moduleDir = mp.resolve(name.replace('.', File.separatorChar)).resolve("main");
@@ -249,53 +387,7 @@ public class ModuleBuilder {
             }
             final Path fullPathToDelete = moduleDir.subpath(0, mp.getNameCount() + 1);
             createModule(moduleDir);
-            return new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        delete(moduleDir, true);
-                    } catch (IOException ignore) {
-                        // There is a chance resources are still locked. We will add a shutdown hook here to delete
-                        // the files once the JVM has shutdown
-                        final Thread task = new Thread(() -> {
-                            try {
-                                delete(moduleDir, true);
-                            } catch (IOException e) {
-                                Logger.getLogger(ModuleBuilder.class).errorf(e, "Failed to delete module %s", name);
-                            }
-                        }, String.format("%s-shutdown", name));
-                        task.setDaemon(true);
-                        Runtime.getRuntime().addShutdownHook(task);
-                    }
-                }
-
-                private void delete(final Path dir, final boolean deleteFiles) throws IOException {
-                    if (deleteFiles) {
-                        try (DirectoryStream<Path> dirStream = Files.newDirectoryStream(dir)) {
-                            for (Path path : dirStream) {
-                                if (!Files.isDirectory(path)) {
-                                    Files.delete(path);
-                                }
-                            }
-                        }
-                    }
-                    if (isDirectoryEmpty(dir)) {
-                        Files.delete(dir);
-                    } else {
-                        return;
-                    }
-                    final Path parent = dir.getParent();
-                    if (parent != null && !parent.equals(mp)) {
-                        delete(parent, false);
-                    }
-                }
-
-                private boolean isDirectoryEmpty(final Path dir) throws IOException {
-                    try (Stream<Path> files = Files.list(dir)) {
-                        return files.findAny().isEmpty();
-                    }
-                }
-            };
+            return new ModuleDescription(name, mp, moduleDir);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
@@ -313,22 +405,71 @@ public class ModuleBuilder {
             writer.writeStartElement("resources");
             writer.writeEmptyElement("resource-root");
             writer.writeAttribute("path", jar.getName());
+            for (String resource : resourcePaths) {
+                writer.writeEmptyElement("resource-root");
+                writer.writeAttribute("path", resource);
+            }
+            for (JavaArchive resource : resources) {
+                writer.writeEmptyElement("resource-root");
+                writer.writeAttribute("path", resource.getName());
+
+                // Create the JAR
+                try (
+                        OutputStream out = Files.newOutputStream(moduleDir.resolve(resource.getName()),
+                                StandardOpenOption.CREATE_NEW)) {
+                    resource.as(ZipExporter.class).exportTo(out);
+                }
+            }
             writer.writeEndElement();
 
             // Write the dependencies
             if (!dependencies.isEmpty()) {
                 writer.writeStartElement("dependencies");
                 for (ModuleDependency dependency : dependencies) {
-                    writer.writeEmptyElement("module");
-                    writer.writeAttribute("name", dependency.getName());
+                    final boolean emptyElement = dependency.imports().isEmpty() && dependency.exports().isEmpty();
+                    if (emptyElement) {
+                        writer.writeEmptyElement("module");
+                    } else {
+                        writer.writeStartElement("module");
+                    }
+                    writer.writeAttribute("name", dependency.name());
                     if (dependency.isExport()) {
                         writer.writeAttribute("export", "true");
                     }
                     if (dependency.isOptional()) {
                         writer.writeAttribute("optional", "true");
                     }
-                    if (dependency.getServices() != null) {
-                        writer.writeAttribute("services", dependency.getServices().toString());
+                    if (dependency.services().isPresent()) {
+                        writer.writeAttribute("services", dependency.services().get().toString());
+                    }
+                    if (!emptyElement) {
+                        if (!dependency.imports().isEmpty()) {
+                            writer.writeStartElement("imports");
+                            for (ModuleDependency.Filter filter : dependency.imports()) {
+                                if (filter.include()) {
+                                    writer.writeEmptyElement("include");
+                                    writer.writeAttribute("path", filter.path());
+                                } else {
+                                    writer.writeEmptyElement("exclude");
+                                    writer.writeAttribute("path", filter.path());
+                                }
+                            }
+                            writer.writeEndElement();
+                        }
+                        if (!dependency.exports().isEmpty()) {
+                            writer.writeStartElement("exports");
+                            for (ModuleDependency.Filter filter : dependency.exports()) {
+                                if (filter.include()) {
+                                    writer.writeEmptyElement("include");
+                                    writer.writeAttribute("path", filter.path());
+                                } else {
+                                    writer.writeEmptyElement("exclude");
+                                    writer.writeAttribute("path", filter.path());
+                                }
+                            }
+                            writer.writeEndElement();
+                        }
+                        writer.writeEndElement(); // end module
                     }
                 }
                 writer.writeEndElement();

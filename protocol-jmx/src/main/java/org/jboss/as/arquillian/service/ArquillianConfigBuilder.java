@@ -18,7 +18,9 @@ package org.jboss.as.arquillian.service;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.jboss.as.server.deployment.AttachmentKey;
@@ -56,14 +58,18 @@ class ArquillianConfigBuilder {
 
     private static final String CLASS_NAME_TESTNG_RUNNER = "org.jboss.arquillian.testng.Arquillian";
 
-    private static final AttachmentKey<Set<String>> CLASSES = AttachmentKey.create(Set.class);
+    private static final DotName OPERATE_ON_DEPLOYMENT = DotName
+            .createSimple("org.jboss.arquillian.container.test.api.OperateOnDeployment");
+
+    private static final AttachmentKey<Map<String, ArquillianConfig.TestClassMethods>> CLASSES = AttachmentKey
+            .create(Map.class);
 
     ArquillianConfigBuilder() {
     }
 
-    static Set<String> getClasses(final DeploymentUnit depUnit) {
+    static Map<String, ArquillianConfig.TestClassMethods> getClasses(final DeploymentUnit depUnit) {
         // Get Test Class Names
-        final Set<String> testClasses = depUnit.getAttachment(CLASSES);
+        final Map<String, ArquillianConfig.TestClassMethods> testClasses = depUnit.getAttachment(CLASSES);
         return testClasses == null || testClasses.isEmpty() ? null : testClasses;
     }
 
@@ -102,20 +108,37 @@ class ArquillianConfigBuilder {
         final Set<ClassInfo> testNgTests = compositeIndex.getAllKnownSubclasses(testNGClassName);
 
         // Get Test Class Names
-        final Set<String> testClasses = new HashSet<>();
+        final Map<String, ArquillianConfig.TestClassMethods> testClasses = new LinkedHashMap<>();
         // JUnit
         for (AnnotationInstance instance : runWithList) {
             final AnnotationTarget target = instance.target();
             if (target instanceof ClassInfo) {
                 final ClassInfo classInfo = (ClassInfo) target;
                 final String testClassName = classInfo.name().toString();
-                testClasses.add(testClassName);
+                testClasses.put(testClassName, getTestMethods(classInfo, deploymentUnit.getName()));
             }
         }
         // TestNG
         for (final ClassInfo classInfo : testNgTests) {
-            testClasses.add(classInfo.name().toString());
+            testClasses.put(classInfo.name().toString(), getTestMethods(classInfo, deploymentUnit.getName()));
         }
         deploymentUnit.putAttachment(CLASSES, testClasses);
+    }
+
+    private static ArquillianConfig.TestClassMethods getTestMethods(ClassInfo classInfo, String deployment) {
+
+        List<AnnotationInstance> instances = classInfo.annotations(OPERATE_ON_DEPLOYMENT);
+        if (instances.isEmpty()) {
+            return ArquillianConfig.TestClassMethods.ALL_METHODS;
+        }
+
+        Set<String> methods = new HashSet<>();
+        for (AnnotationInstance instance : instances) {
+            if (deployment.equals(instance.value().asString())
+                    && instance.target().kind() == AnnotationTarget.Kind.METHOD) {
+                methods.add(instance.target().asMethod().name());
+            }
+        }
+        return new ArquillianConfig.TestClassMethods(methods);
     }
 }

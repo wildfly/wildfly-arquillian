@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.jboss.as.arquillian.protocol.jmx.TestDescription;
 import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -61,15 +62,15 @@ class ArquillianConfigBuilder {
     private static final DotName OPERATE_ON_DEPLOYMENT = DotName
             .createSimple("org.jboss.arquillian.container.test.api.OperateOnDeployment");
 
-    private static final AttachmentKey<Map<String, ArquillianConfig.TestClassMethods>> CLASSES = AttachmentKey
+    private static final AttachmentKey<Map<String, ArquillianConfig.TestClassInfo>> CLASSES = AttachmentKey
             .create(Map.class);
 
     ArquillianConfigBuilder() {
     }
 
-    static Map<String, ArquillianConfig.TestClassMethods> getClasses(final DeploymentUnit depUnit) {
+    static Map<String, ArquillianConfig.TestClassInfo> getClasses(final DeploymentUnit depUnit) {
         // Get Test Class Names
-        final Map<String, ArquillianConfig.TestClassMethods> testClasses = depUnit.getAttachment(CLASSES);
+        final Map<String, ArquillianConfig.TestClassInfo> testClasses = depUnit.getAttachment(CLASSES);
         return testClasses == null || testClasses.isEmpty() ? null : testClasses;
     }
 
@@ -108,37 +109,57 @@ class ArquillianConfigBuilder {
         final Set<ClassInfo> testNgTests = compositeIndex.getAllKnownSubclasses(testNGClassName);
 
         // Get Test Class Names
-        final Map<String, ArquillianConfig.TestClassMethods> testClasses = new LinkedHashMap<>();
+        final Map<String, ArquillianConfig.TestClassInfo> testClasses = new LinkedHashMap<>();
+        final TestDescription testDescription = TestDescription.from(deploymentUnit);
         // JUnit
         for (AnnotationInstance instance : runWithList) {
             final AnnotationTarget target = instance.target();
             if (target instanceof ClassInfo) {
                 final ClassInfo classInfo = (ClassInfo) target;
                 final String testClassName = classInfo.name().toString();
-                testClasses.put(testClassName, getTestMethods(classInfo, deploymentUnit.getName()));
+                testClasses.put(testClassName,
+                        getTestMethods(compositeIndex, classInfo, testDescription));
             }
         }
         // TestNG
         for (final ClassInfo classInfo : testNgTests) {
-            testClasses.put(classInfo.name().toString(), getTestMethods(classInfo, deploymentUnit.getName()));
+            testClasses.put(classInfo.name().toString(), getTestMethods(compositeIndex, classInfo, testDescription));
         }
         deploymentUnit.putAttachment(CLASSES, testClasses);
     }
 
-    private static ArquillianConfig.TestClassMethods getTestMethods(ClassInfo classInfo, String deployment) {
+    private static ArquillianConfig.TestClassInfo getTestMethods(final CompositeIndex compositeIndex, final ClassInfo classInfo,
+            final TestDescription testDescription) {
+        // Record all methods which can operate on this deployment.
+        final Set<String> methods = new HashSet<>();
+        final String deploymentName = testDescription.arquillianDeploymentName().orElse(null);
+        findAllMethods(compositeIndex, classInfo, deploymentName, methods);
+        return new ArquillianConfig.TestClassInfo(testDescription, Set.copyOf(methods));
+    }
 
-        List<AnnotationInstance> instances = classInfo.annotations(OPERATE_ON_DEPLOYMENT);
-        if (instances.isEmpty()) {
-            return ArquillianConfig.TestClassMethods.ALL_METHODS;
+    private static void findAllMethods(final CompositeIndex compositeIndex, final ClassInfo classInfo,
+            final String deploymentName, final Set<String> methods) {
+        if (classInfo == null) {
+            return;
         }
-
-        Set<String> methods = new HashSet<>();
-        for (AnnotationInstance instance : instances) {
-            if (deployment.equals(instance.value().asString())
-                    && instance.target().kind() == AnnotationTarget.Kind.METHOD) {
-                methods.add(instance.target().asMethod().name());
+        classInfo.methods().forEach(methodInfo -> {
+            // If the @OperateOnDeployment method is present, it must match the test descriptions deployment
+            if (methodInfo.hasAnnotation(OPERATE_ON_DEPLOYMENT)) {
+                final AnnotationInstance annotation = methodInfo.annotation(OPERATE_ON_DEPLOYMENT);
+                if (annotation.value().asString().equals(deploymentName)) {
+                    methods.add(methodInfo.name());
+                }
+            } else {
+                // No @OperateOnDeployment annotation present on the method, we have to assume it's okay to run for
+                // this test description.
+                methods.add(methodInfo.name());
             }
+        });
+        if (classInfo.superName() != null && !classInfo.superName().toString().equals(Object.class.getName())) {
+            findAllMethods(compositeIndex, compositeIndex.getClassByName(classInfo.superName()), deploymentName, methods);
         }
-        return new ArquillianConfig.TestClassMethods(methods);
+        // Interfaces can have default methods, we'll check those too
+        classInfo.interfaceNames()
+                .forEach(name -> findAllMethods(compositeIndex, compositeIndex.getClassByName(name), deploymentName, methods));
     }
 }

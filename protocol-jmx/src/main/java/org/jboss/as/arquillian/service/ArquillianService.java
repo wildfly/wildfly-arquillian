@@ -88,7 +88,7 @@ public class ArquillianService implements Service {
         arquillianServiceConsumer.accept(this);
         final MBeanServer mbeanServer = mBeanServerSupplier.get();
         try {
-            jmxTestRunner = new ExtendedJMXTestRunner();
+            jmxTestRunner = new ExtendedJMXTestRunner(new ThreadLocal<>());
             jmxTestRunner.registerMBean(mbeanServer);
         } catch (Throwable t) {
             throw new StartException("Failed to start Arquillian Test Runner", t);
@@ -133,6 +133,10 @@ public class ArquillianService implements Service {
 
     private ArquillianConfig getArquillianConfig(final String className, String methodName, final long timeout) {
         synchronized (deployedTests) {
+            if (methodName == null && deployedTests.size() > 1) {
+                log.warn(
+                        "An attempt was made to lookup an Arquillian configuration with more than one deployed test. This may result in unexpected behavior.");
+            }
             log.debugf("Getting Arquillian config for: %s", className);
             for (ArquillianConfig arqConfig : deployedTests) {
                 // A test class with methods annotated with @OperateOnDeployment may be packaged in multiple
@@ -170,18 +174,21 @@ public class ArquillianService implements Service {
     }
 
     private class ExtendedJMXTestRunner extends JMXTestRunner {
+        private final ThreadLocal<ArquillianConfig> configHolder;
 
-        ExtendedJMXTestRunner() {
-            super(new ExtendedTestClassLoader());
+        ExtendedJMXTestRunner(final ThreadLocal<ArquillianConfig> configHolder) {
+            super(new ExtendedTestClassLoader(configHolder));
+            this.configHolder = configHolder;
         }
 
         @Override
         public byte[] runTestMethod(final String className, final String methodName, Map<String, String> protocolProps) {
             // Setup the ContextManager
-            ArquillianConfig config = getArquillianConfig(className, methodName, 30000L);
+            final ArquillianConfig config = getArquillianConfig(className, methodName, 30000L);
             Map<String, Object> properties = Collections.singletonMap(TEST_CLASS_PROPERTY, className);
             ContextManager contextManager = setupContextManager(config, properties);
             try {
+                configHolder.set(config);
                 ClassLoader runWithClassLoader = ClassLoader.getSystemClassLoader();
                 if (Boolean.parseBoolean(protocolProps.get(ExtendedJMXProtocolConfiguration.PROPERTY_ENABLE_TCCL))) {
                     DeploymentUnit depUnit = config.getDeploymentUnit();
@@ -197,6 +204,7 @@ public class ArquillianService implements Service {
                     WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(tccl);
                 }
             } finally {
+                configHolder.remove();
                 if (contextManager != null) {
                     contextManager.teardown(properties);
                 }
@@ -208,7 +216,11 @@ public class ArquillianService implements Service {
                 Map<String, String> protocolProps) {
             ClassLoader runWithClassLoader = ClassLoader.getSystemClassLoader();
             if (Boolean.parseBoolean(protocolProps.get(ExtendedJMXProtocolConfiguration.PROPERTY_ENABLE_TCCL))) {
-                ArquillianConfig config = getArquillianConfig(testClass.getName(), methodName, 30000L);
+                ArquillianConfig config = configHolder.get();
+                // This should not happen, but in this case we'll be safe
+                if (config == null) {
+                    config = getArquillianConfig(testClass.getName(), methodName, 30000L);
+                }
                 DeploymentUnit depUnit = config.getDeploymentUnit();
                 Module module = depUnit.getAttachment(Attachments.MODULE);
                 if (module != null) {
@@ -237,13 +249,21 @@ public class ArquillianService implements Service {
     }
 
     class ExtendedTestClassLoader implements JMXTestRunner.TestClassLoader {
+        private final ThreadLocal<ArquillianConfig> configHolder;
+
+        ExtendedTestClassLoader(final ThreadLocal<ArquillianConfig> configHolder) {
+            this.configHolder = configHolder;
+        }
 
         @Override
         public Class<?> loadTestClass(final String className) throws ClassNotFoundException {
-
-            final ArquillianConfig arqConfig = getArquillianConfig(className, -1);
-            if (arqConfig == null)
-                throw new ClassNotFoundException("No Arquillian config found for: " + className);
+            // We first attempt to check the thread local, if not set we will make an attempt to look it up
+            ArquillianConfig arqConfig = configHolder.get();
+            if (arqConfig == null) {
+                arqConfig = getArquillianConfig(className, -1);
+                if (arqConfig == null)
+                    throw new ClassNotFoundException("No Arquillian config found for: " + className);
+            }
 
             return arqConfig.loadClass(className);
         }
@@ -277,7 +297,7 @@ public class ArquillianService implements Service {
                 ServiceName parentName = serviceName.getParent();
                 ServiceController<?> parentController = controller.getServiceContainer().getService(parentName);
                 DeploymentUnit depUnit = (DeploymentUnit) parentController.getValue(); // TODO: eliminate deprecated API usage
-                Map<String, ArquillianConfig.TestClassMethods> testClasses = ArquillianConfigBuilder.getClasses(depUnit);
+                Map<String, ArquillianConfig.TestClassInfo> testClasses = ArquillianConfigBuilder.getClasses(depUnit);
                 if (testClasses != null) {
                     String duName = ArquillianConfigBuilder.getName(depUnit);
                     ServiceName arqConfigSN = ServiceName.JBOSS.append("arquillian", "config", duName);

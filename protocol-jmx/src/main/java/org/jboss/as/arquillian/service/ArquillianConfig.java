@@ -18,7 +18,6 @@ package org.jboss.as.arquillian.service;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -26,6 +25,7 @@ import java.util.function.Supplier;
 
 import org.jboss.arquillian.container.test.spi.util.ServiceLoader;
 import org.jboss.arquillian.testenricher.msc.ServiceTargetAssociation;
+import org.jboss.as.arquillian.protocol.jmx.TestDescription;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.modules.Module;
@@ -49,13 +49,13 @@ public final class ArquillianConfig implements Service {
     private final Supplier<ArquillianService> arquillianServiceSupplier;
     private final Supplier<DeploymentUnit> deploymentUnitSupplier;
     private final ServiceName serviceName;
-    private final Map<String, ArquillianConfig.TestClassMethods> testClasses = new LinkedHashMap<>();
+    private final Map<String, TestClassInfo> testClasses;
 
-    ArquillianConfig(final ServiceName serviceName, final Map<String, TestClassMethods> testClasses,
+    ArquillianConfig(final ServiceName serviceName, final Map<String, TestClassInfo> testClasses,
             final Supplier<ArquillianService> arquillianServiceSupplier,
             final Supplier<DeploymentUnit> deploymentUnitSupplier) {
         this.serviceName = serviceName;
-        this.testClasses.putAll(testClasses);
+        this.testClasses = Map.copyOf(testClasses);
         this.arquillianServiceSupplier = arquillianServiceSupplier;
         this.deploymentUnitSupplier = deploymentUnitSupplier;
         for (ArquillianConfigServiceCustomizer customizer : ServiceLoader.load(ArquillianConfigServiceCustomizer.class)) {
@@ -101,8 +101,10 @@ public final class ArquillianConfig implements Service {
      * @return {@code true} if this config supports a test class with the given classname and method name
      */
     boolean supports(String className, String methodName) {
-        TestClassMethods methods = testClasses.get(className);
-        return methods != null && methods.supportsMethod(methodName);
+        final TestClassInfo testClassInfo = testClasses.get(className);
+        return testClassInfo != null && (getDeploymentUnit().getName()
+                .equals(testClassInfo.testDescription.deploymentName())
+                && testClassInfo.supportsMethod(methodName));
     }
 
     Class<?> loadClass(String className) throws ClassNotFoundException {
@@ -143,24 +145,25 @@ public final class ArquillianConfig implements Service {
         return "ArquillianConfig[service=" + sname + ",unit=" + uname + ",tests=" + testClasses + "]";
     }
 
-    static final class TestClassMethods {
-
-        static final TestClassMethods ALL_METHODS = new TestClassMethods();
+    static final class TestClassInfo {
 
         private final boolean allMethods;
+        private final TestDescription testDescription;
         private final Set<String> methods;
 
-        private TestClassMethods() {
+        TestClassInfo(final TestDescription testDescription) {
             this.allMethods = true;
+            this.testDescription = testDescription;
             this.methods = Collections.emptySet();
         }
 
-        TestClassMethods(Set<String> methods) {
+        TestClassInfo(final TestDescription testDescription, final Set<String> methods) {
             this.allMethods = false;
+            this.testDescription = testDescription;
             this.methods = new HashSet<>(methods);
         }
 
-        private boolean supportsMethod(String methodName) {
+        private boolean supportsMethod(final String methodName) {
             return allMethods || methods.contains(methodName);
         }
     }

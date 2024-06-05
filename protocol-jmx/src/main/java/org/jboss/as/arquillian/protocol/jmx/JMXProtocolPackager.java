@@ -122,6 +122,7 @@ public class JMXProtocolPackager implements DeploymentPackager {
             }
         }
         addModulesManifestDependencies(appArchive);
+        TestDescription.addTestDescription(testDeployment);
         archiveHolder.addPreparedDeployment(testDeployment.getDeploymentName());
         return appArchive;
     }
@@ -135,7 +136,7 @@ public class JMXProtocolPackager implements DeploymentPackager {
         archive.addPackage(AbstractJMXProtocol.class.getPackage());
         // add the classes required for server setup
         archive.addClasses(ServerSetup.class, ServerSetupTask.class, ManagementClient.class, Authentication.class,
-                NetworkUtils.class);
+                NetworkUtils.class, TestDescription.class);
 
         final Set<ModuleIdentifier> archiveDependencies = new LinkedHashSet<ModuleIdentifier>();
         archiveDependencies.add(ModuleIdentifier.create("org.jboss.as.jmx"));

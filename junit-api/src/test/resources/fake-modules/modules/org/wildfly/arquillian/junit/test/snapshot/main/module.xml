@@ -1,4 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+~ Copyright The WildFly Authors
+~ SPDX-License-Identifier: Apache-2.0
+-->
+
 <module name="org.wildfly.arquillian.junit.test.snapshot" xmlns="urn:jboss:module:1.9">
 
     <resources>

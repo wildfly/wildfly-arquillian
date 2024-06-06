@@ -18,9 +18,12 @@ package org.jboss.as.arquillian.service;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
+import org.jboss.as.arquillian.protocol.jmx.TestDescription;
 import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -56,14 +59,18 @@ class ArquillianConfigBuilder {
 
     private static final String CLASS_NAME_TESTNG_RUNNER = "org.jboss.arquillian.testng.Arquillian";
 
-    private static final AttachmentKey<Set<String>> CLASSES = AttachmentKey.create(Set.class);
+    private static final DotName OPERATE_ON_DEPLOYMENT = DotName
+            .createSimple("org.jboss.arquillian.container.test.api.OperateOnDeployment");
+
+    private static final AttachmentKey<Map<String, ArquillianConfig.TestClassInfo>> CLASSES = AttachmentKey
+            .create(Map.class);
 
     ArquillianConfigBuilder() {
     }
 
-    static Set<String> getClasses(final DeploymentUnit depUnit) {
+    static Map<String, ArquillianConfig.TestClassInfo> getClasses(final DeploymentUnit depUnit) {
         // Get Test Class Names
-        final Set<String> testClasses = depUnit.getAttachment(CLASSES);
+        final Map<String, ArquillianConfig.TestClassInfo> testClasses = depUnit.getAttachment(CLASSES);
         return testClasses == null || testClasses.isEmpty() ? null : testClasses;
     }
 
@@ -102,20 +109,57 @@ class ArquillianConfigBuilder {
         final Set<ClassInfo> testNgTests = compositeIndex.getAllKnownSubclasses(testNGClassName);
 
         // Get Test Class Names
-        final Set<String> testClasses = new HashSet<>();
+        final Map<String, ArquillianConfig.TestClassInfo> testClasses = new LinkedHashMap<>();
+        final TestDescription testDescription = TestDescription.from(deploymentUnit);
         // JUnit
         for (AnnotationInstance instance : runWithList) {
             final AnnotationTarget target = instance.target();
             if (target instanceof ClassInfo) {
                 final ClassInfo classInfo = (ClassInfo) target;
                 final String testClassName = classInfo.name().toString();
-                testClasses.add(testClassName);
+                testClasses.put(testClassName,
+                        getTestMethods(compositeIndex, classInfo, testDescription));
             }
         }
         // TestNG
         for (final ClassInfo classInfo : testNgTests) {
-            testClasses.add(classInfo.name().toString());
+            testClasses.put(classInfo.name().toString(), getTestMethods(compositeIndex, classInfo, testDescription));
         }
         deploymentUnit.putAttachment(CLASSES, testClasses);
+    }
+
+    private static ArquillianConfig.TestClassInfo getTestMethods(final CompositeIndex compositeIndex, final ClassInfo classInfo,
+            final TestDescription testDescription) {
+        // Record all methods which can operate on this deployment.
+        final Set<String> methods = new HashSet<>();
+        final String deploymentName = testDescription.arquillianDeploymentName().orElse(null);
+        findAllMethods(compositeIndex, classInfo, deploymentName, methods);
+        return new ArquillianConfig.TestClassInfo(testDescription, Set.copyOf(methods));
+    }
+
+    private static void findAllMethods(final CompositeIndex compositeIndex, final ClassInfo classInfo,
+            final String deploymentName, final Set<String> methods) {
+        if (classInfo == null) {
+            return;
+        }
+        classInfo.methods().forEach(methodInfo -> {
+            // If the @OperateOnDeployment method is present, it must match the test descriptions deployment
+            if (methodInfo.hasAnnotation(OPERATE_ON_DEPLOYMENT)) {
+                final AnnotationInstance annotation = methodInfo.annotation(OPERATE_ON_DEPLOYMENT);
+                if (annotation.value().asString().equals(deploymentName)) {
+                    methods.add(methodInfo.name());
+                }
+            } else {
+                // No @OperateOnDeployment annotation present on the method, we have to assume it's okay to run for
+                // this test description.
+                methods.add(methodInfo.name());
+            }
+        });
+        if (classInfo.superName() != null && !classInfo.superName().toString().equals(Object.class.getName())) {
+            findAllMethods(compositeIndex, compositeIndex.getClassByName(classInfo.superName()), deploymentName, methods);
+        }
+        // Interfaces can have default methods, we'll check those too
+        classInfo.interfaceNames()
+                .forEach(name -> findAllMethods(compositeIndex, compositeIndex.getClassByName(name), deploymentName, methods));
     }
 }

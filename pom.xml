@@ -25,8 +25,8 @@
         <version.io.smallrye.jandex>3.1.6</version.io.smallrye.jandex>
         <version.junit>4.13.2</version.junit>
         <version.org.junit>5.10.2</version.org.junit>
-        <version.org.jboss.arquillian.core>1.8.0.Final</version.org.jboss.arquillian.core>
-        <version.org.jboss.arquillian.jakarta>1.8.0.Final</version.org.jboss.arquillian.jakarta>
+        <version.org.jboss.arquillian.core>1.9.0.Final</version.org.jboss.arquillian.core>
+        <version.org.jboss.arquillian.jakarta>10.0.0.Final</version.org.jboss.arquillian.jakarta>
         <version.org.jboss.logging.jboss-logging>3.5.3.Final</version.org.jboss.logging.jboss-logging>
         <version.org.jboss.msc.jboss-msc>1.5.5.Final</version.org.jboss.msc.jboss-msc>
         <version.org.jboss.remotingjmx.remoting-jmx>3.1.0.Final</version.org.jboss.remotingjmx.remoting-jmx>
@@ -283,6 +283,20 @@
         <dependencies>
             <!-- Import BOMs -->
             <dependency>
+                <groupId>org.jboss.arquillian</groupId>
+                <artifactId>arquillian-bom</artifactId>
+                <version>${version.org.jboss.arquillian.core}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.arquillian.jakarta</groupId>
+                <artifactId>arquillian-jakarta-bom</artifactId>
+                <version>${version.org.jboss.arquillian.jakarta}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
                 <groupId>org.junit</groupId>
                 <artifactId>junit-bom</artifactId>
                 <version>${version.org.junit}</version>
@@ -368,133 +382,6 @@
                 <groupId>io.smallrye</groupId>
                 <artifactId>jandex</artifactId>
                 <version>${version.io.smallrye.jandex}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.arquillian.container</groupId>
-                <artifactId>arquillian-container-spi</artifactId>
-                <version>${version.org.jboss.arquillian.core}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.jboss.arquillian.container</groupId>
-                <artifactId>arquillian-container-test-api</artifactId>
-                <version>${version.org.jboss.arquillian.core}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.jboss.arquillian.container</groupId>
-                <artifactId>arquillian-container-test-impl-base</artifactId>
-                <version>${version.org.jboss.arquillian.core}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.jboss.arquillian.container</groupId>
-                <artifactId>arquillian-container-test-spi</artifactId>
-                <version>${version.org.jboss.arquillian.core}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.jboss.arquillian.core</groupId>
-                <artifactId>arquillian-core-api</artifactId>
-                <version>${version.org.jboss.arquillian.core}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.jboss.arquillian.core</groupId>
-                <artifactId>arquillian-core-impl-base</artifactId>
-                <version>${version.org.jboss.arquillian.core}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.jboss.arquillian.core</groupId>
-                <artifactId>arquillian-core-spi</artifactId>
-                <version>${version.org.jboss.arquillian.core}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.jboss.arquillian.junit</groupId>
-                <artifactId>arquillian-junit-container</artifactId>
-                <version>${version.org.jboss.arquillian.core}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>commons-logging</groupId>
-                        <artifactId>commons-logging</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.jboss.arquillian.junit</groupId>
-                <artifactId>arquillian-junit-core</artifactId>
-                <version>${version.org.jboss.arquillian.core}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.jboss.arquillian.junit5</groupId>
-                <artifactId>arquillian-junit5-container</artifactId>
-                <version>${version.org.jboss.arquillian.core}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.jboss.arquillian.junit5</groupId>
-                <artifactId>arquillian-junit5-core</artifactId>
-                <version>${version.org.jboss.arquillian.core}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.jboss.arquillian.protocol</groupId>
-                <artifactId>arquillian-protocol-jmx</artifactId>
-                <version>${version.org.jboss.arquillian.core}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.jboss.arquillian.protocol</groupId>
-                <artifactId>arquillian-protocol-rest-jakarta</artifactId>
-                <version>${version.org.jboss.arquillian.jakarta}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.jboss.arquillian.protocol</groupId>
-                <artifactId>arquillian-protocol-servlet-jakarta</artifactId>
-                <version>${version.org.jboss.arquillian.jakarta}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.jboss.arquillian.test</groupId>
-                <artifactId>arquillian-test-impl-base</artifactId>
-                <version>${version.org.jboss.arquillian.core}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.jboss.arquillian.test</groupId>
-                <artifactId>arquillian-test-spi</artifactId>
-                <version>${version.org.jboss.arquillian.core}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.jboss.arquillian.testenricher</groupId>
-                <artifactId>arquillian-testenricher-cdi-jakarta</artifactId>
-                <version>${version.org.jboss.arquillian.jakarta}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.jboss.arquillian.testenricher</groupId>
-                <artifactId>arquillian-testenricher-ejb-jakarta</artifactId>
-                <version>${version.org.jboss.arquillian.jakarta}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.jboss.arquillian.testenricher</groupId>
-                <artifactId>arquillian-testenricher-initialcontext</artifactId>
-                <version>${version.org.jboss.arquillian.core}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.jboss.arquillian.testenricher</groupId>
-                <artifactId>arquillian-testenricher-resource-jakarta</artifactId>
-                <version>${version.org.jboss.arquillian.jakarta}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.jboss.arquillian.testng</groupId>
-                <artifactId>arquillian-testng-container</artifactId>
-                <version>${version.org.jboss.arquillian.core}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>commons-logging</groupId>
-                        <artifactId>commons-logging</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.logging</groupId>
-                        <artifactId>jboss-logging-tools</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.jboss.arquillian.testng</groupId>
-                <artifactId>arquillian-testng-core</artifactId>
-                <version>${version.org.jboss.arquillian.core}</version>
             </dependency>
 
             <dependency>

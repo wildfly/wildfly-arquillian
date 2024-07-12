@@ -12,6 +12,7 @@ import java.io.InputStream;
 import java.net.DatagramSocket;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
@@ -196,11 +197,18 @@ public abstract class CommonManagedDeployableContainer<T extends CommonManagedCo
                         logger.error("The management client does not seem to be active. Forcibly destroying the process.");
                         process.destroyForcibly();
                     } else {
-                        final ModelNode result = client.getControllerClient().execute(op);
-                        if (!Operations.isSuccessfulOutcome(result)) {
+                        String shutdownFailureMessage = null;
+                        try {
+                            final ModelNode result = client.getControllerClient().execute(op);
+                            if (!Operations.isSuccessfulOutcome(result)) {
+                                shutdownFailureMessage = Operations.getFailureDescription(result).asString();
+                            }
+                        } catch (CancellationException ce) {
+                            shutdownFailureMessage = ce.toString();
+                        }
+                        if (shutdownFailureMessage != null) {
                             // Don't fail stopping, but we should log an error
-                            logger.errorf("Failed to shutdown the server: %s",
-                                    Operations.getFailureDescription(result).asString());
+                            logger.errorf("Failed to shutdown the server: %s", shutdownFailureMessage);
                             process.destroyForcibly();
                         }
                     }

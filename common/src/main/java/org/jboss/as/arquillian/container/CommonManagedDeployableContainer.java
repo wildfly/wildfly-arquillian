@@ -54,7 +54,7 @@ public abstract class CommonManagedDeployableContainer<T extends CommonManagedCo
                         .client(getManagementClient().getControllerClient())
                         .process(ServerManager.findProcess().orElse(null))
                         .standalone();
-                serverManagerProducer.set(new ArquillianServerManager(serverManager));
+                serverManagerProducer.set(serverManager.asManaged());
                 return;
             } else {
                 failDueToRunning(config);
@@ -83,7 +83,7 @@ public abstract class CommonManagedDeployableContainer<T extends CommonManagedCo
             }
             timeoutSupported = isOperationAttributeSupported("shutdown", "timeout");
             this.process = process;
-            serverManagerProducer.set(new ArquillianServerManager(serverManager));
+            serverManagerProducer.set(serverManager.asManaged());
 
         } catch (LifecycleException e) {
             throw e;

@@ -78,7 +78,7 @@ public class ArchiveDeployer {
     public ArchiveDeployer(final ManagementClient client) {
         Objects.requireNonNull(client, "The client cannot be null");
         deploymentManagerDeprecated = null;
-        this.deploymentManager = DeploymentManager.Factory.create(client.getControllerClient());
+        this.deploymentManager = DeploymentManager.create(client.getControllerClient());
     }
 
     /**
@@ -114,12 +114,13 @@ public class ArchiveDeployer {
             // If a deployment manager is available use it, otherwise default to the previous behavior
             if (deploymentManager != null) {
                 final String name = archive.getName();
-                final DeploymentResult result = deploymentManager.deploy(Deployment.of(input, name)
-                        .setServerGroups(serverGroups));
-                if (!result.successful()) {
-                    throw new DeploymentException("Could not deploy to container: " + result.getFailureMessage());
+                try (Deployment deployment = Deployment.of(input, name).setServerGroups(serverGroups)) {
+                    final DeploymentResult result = deploymentManager.deploy(deployment);
+                    if (!result.successful()) {
+                        throw new DeploymentException("Could not deploy to container: " + result.getFailureMessage());
+                    }
+                    return name;
                 }
-                return name;
             } else {
                 // Fallback behavior if constructed with a DomainDeploymentManager
                 try {

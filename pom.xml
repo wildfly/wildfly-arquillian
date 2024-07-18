@@ -20,7 +20,7 @@
     <name>WildFly: Arquillian</name>
 
     <properties>
-        <version.org.wildfly.core>24.0.1.Final</version.org.wildfly.core>
+        <version.org.wildfly.core>25.0.0.Final</version.org.wildfly.core>
         <version.org.wildfly.full>31.0.1.Final</version.org.wildfly.full>
         <version.io.smallrye.jandex>3.1.6</version.io.smallrye.jandex>
         <version.junit>4.13.2</version.junit>

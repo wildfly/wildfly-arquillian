@@ -52,7 +52,7 @@ public class ArchiveDeployer {
      */
     @Deprecated
     public ArchiveDeployer(ModelControllerClient modelControllerClient) {
-        this.deploymentManager = DeploymentManager.Factory.create(modelControllerClient);
+        this.deploymentManager = DeploymentManager.create(modelControllerClient);
         client = null;
     }
 
@@ -63,7 +63,7 @@ public class ArchiveDeployer {
      */
     public ArchiveDeployer(ManagementClient client) {
         this.client = client;
-        this.deploymentManager = DeploymentManager.Factory.create(client.getControllerClient());
+        this.deploymentManager = DeploymentManager.create(client.getControllerClient());
     }
 
     /**
@@ -163,8 +163,8 @@ public class ArchiveDeployer {
     private String deployInternal(String name, InputStream input) throws DeploymentException {
         checkState();
         final DeploymentResult result;
-        try {
-            result = deploymentManager.deploy(Deployment.of(input, name));
+        try (Deployment deployment = Deployment.of(input, name)) {
+            result = deploymentManager.deploy(deployment);
         } catch (Exception ex) {
             throw createException("Cannot deploy: " + name, ex);
         }

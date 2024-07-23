@@ -127,7 +127,7 @@ public abstract class CommonDeployableContainer<T extends CommonContainerConfigu
                     // Note this won't work on Windows, but should work on other platforms
                     .process(ServerManager.findProcess().orElse(null))
                     .standalone();
-            serverManagerProducer.set(new ArquillianServerManager(serverManager));
+            serverManagerProducer.set(serverManager.asManaged());
         }
 
         try {

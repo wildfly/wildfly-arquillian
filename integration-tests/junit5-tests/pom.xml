@@ -14,7 +14,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>junit5-tests</artifactId>
-    <name>WildFly: Arquillian JUnit 5 Integration Tests</name>
+    <name>WildFly Arquillian: JUnit 5 Integration Tests</name>
 
     <dependencies>
         <!-- Test Dependencies -->

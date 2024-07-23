@@ -16,7 +16,7 @@
 
     <artifactId>wildfly-arquillian-container-domain-remote</artifactId>
 
-    <name>WildFly: Arquillian Remote Domain Container</name>
+    <name>WildFly Arquillian: Remote Domain Container</name>
 
     <packaging>jar</packaging>
 

@@ -16,7 +16,7 @@
 
     <artifactId>wildfly-arquillian-common</artifactId>
 
-    <name>WildFly: Arquillian Common</name>
+    <name>WildFly Arquillian: Common</name>
 
     <packaging>jar</packaging>
 

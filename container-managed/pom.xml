@@ -15,7 +15,7 @@
     </parent>
 
     <artifactId>wildfly-arquillian-container-managed</artifactId>
-    <name>WildFly: Arquillian Managed Container</name>
+    <name>WildFly Arquillian: Managed Container</name>
     <packaging>jar</packaging>
     
     <dependencies>

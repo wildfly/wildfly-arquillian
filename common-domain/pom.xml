@@ -16,7 +16,7 @@
 
     <artifactId>wildfly-arquillian-common-domain</artifactId>
 
-    <name>WildFly: Arquillian Common Domain</name>
+    <name>WildFly Arquillian: Common Domain</name>
 
     <packaging>jar</packaging>
 

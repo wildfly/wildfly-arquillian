@@ -14,7 +14,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>protocol-tests</artifactId>
-    <name>WildFly: Arquillian Protocol Integration Tests</name>
+    <name>WildFly Arquillian: Protocol Integration Tests</name>
 
     <dependencies>
         <!-- Test Dependencies -->

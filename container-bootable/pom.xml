@@ -15,7 +15,7 @@
     </parent>
 
     <artifactId>wildfly-arquillian-container-bootable</artifactId>
-    <name>WildFly: Arquillian Bootable jar Container</name>
+    <name>WildFly Arquillian: Bootable jar Container</name>
     <packaging>jar</packaging>
 
     <dependencies>

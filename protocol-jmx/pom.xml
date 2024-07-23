@@ -16,7 +16,7 @@
 
     <artifactId>wildfly-arquillian-protocol-jmx</artifactId>
 
-    <name>WildFly: Arquillian Protocol JMX</name>
+    <name>WildFly Arquillian: Protocol JMX</name>
 
     <packaging>jar</packaging>
 

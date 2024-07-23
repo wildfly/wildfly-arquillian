@@ -22,7 +22,7 @@
 
     <artifactId>wildfly-arquillian-container-embedded</artifactId>
 
-    <name>WildFly: Arquillian Embedded Container</name>
+    <name>WildFly Arquillian: Embedded Container</name>
     <properties>
         <modular.jdk.args>--add-modules=java.se --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.base/java.lang=ALL-UNNAMED</modular.jdk.args>
     </properties>
@@ -81,8 +81,6 @@
                 <configuration>
                     <!-- Works around WFCORE-4211 -->
                     <argLine>${modular.jdk.args}</argLine>
-                    <!-- Fork every test because it will launch a separate AS instance -->
-                    <forkMode>always</forkMode>
                     <systemPropertyVariables>
                         <maven.repo.local>${settings.localRepository}</maven.repo.local>
                         <jboss.home>${jboss.home}</jboss.home>

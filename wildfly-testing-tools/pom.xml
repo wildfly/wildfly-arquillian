@@ -15,6 +15,10 @@
     </parent>
 
     <artifactId>wildfly-testing-tools</artifactId>
+    <name>WildFly Arquillian: Testing Tools</name>
+    <description>Testing utilities for using Arquillian with WildFly. These include add deployment descriptors and
+        modules to WildFly for testing.
+    </description>
 
     <dependencies>
         <dependency>

@@ -14,8 +14,8 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>elytron</artifactId>
-    <name>WildFly: Arquillian Elytron Integration Tests</name>
     <packaging>pom</packaging>
+    <name>WildFly Arquillian: Elytron Integration Tests</name>
 
     <modules>
         <module>standalone</module>

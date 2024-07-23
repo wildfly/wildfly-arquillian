@@ -7,14 +7,15 @@ https://www.redhat.com/en/technologies/jboss-middleware/application-platform[JBo
 and unmanaged standalone and domain servers. As of 3.0.0 there is also a bootable JAR adapter as well.
 
 Versions under 3.0.0 should work with any version of WildFly and JBoss EAP 7.0 and higher. Version 3.0.0 requires a
-minimum of WildFly 13 or JBoss EAP 7.2.
+minimum of WildFly 13 or JBoss EAP 7.2. Versions 5.0 for for Jakarta EE 10 and work with WildFly 27 and higher and
+JBoss EAP 8.0 and higher.
 
 Found a bug or want a new feature? Please file a bug on the https://issues.redhat.com/browse/WFARQ[issue tracker].
 
 
 == Building
 
-The current minimum is Java 11 and Maven 3.6.0. To build execute the following command.
+The current minimum is Java 11 and Maven 3.8.0. To build execute the following command.
 
 ----
 mvn clean install
@@ -23,26 +24,45 @@ mvn clean install
 
 == Usage
 
+=== BOM Usage
+
+You can import the `org.wildfly.arquillian:wildfly-arquillian-bom` to easily include the dependencies you'd need.
+
+[source,xml]
+----
+<dependencyManagement>
+    <dependencies>
+        <dependency>
+            <groupId>org.wildfly.arquillian</groupId>
+            <artifactId>wildfly-arquillian-bom</artifactId>
+            <version>${version.org.wildfly.arquillian}</version>
+            <type>pom</type>
+            <scope>import</scope>
+        </dependency>
+    </dependencies>
+</dependencyManagement>
+----
+
 === Standalone
 
 The WildFly Arquillian Adapter can manage the container process with the following dependency.
 
+[source,xml]
 ----
 <dependency>
   <groupId>org.wildfly.arquillian</groupId>
   <artifactId>wildfly-arquillian-container-managed</artifactId>
-  <version>${version.org.wildfly.arquillian}</version>
   <scope>test</scope>
 </dependency>
 ----
 
 If you'd to manage the container process via a different method use the following dependency.
 
+[source,xml]
 ----
 <dependency>
   <groupId>org.wildfly.arquillian</groupId>
   <artifactId>wildfly-arquillian-container-remote</artifactId>
-  <version>${version.org.wildfly.arquillian}</version>
   <scope>test</scope>
 </dependency>
 ----
@@ -51,22 +71,22 @@ If you'd to manage the container process via a different method use the followin
 
 The WildFly Arquillian Adapter can manage the container process with the following dependency.
 
+[source,xml]
 ----
 <dependency>
   <groupId>org.wildfly.arquillian</groupId>
   <artifactId>wildfly-arquillian-container-domain-managed</artifactId>
-  <version>${version.org.wildfly.arquillian}</version>
   <scope>test</scope>
 </dependency>
 ----
 
 If you'd to manage the container process via a different method use the following dependency.
 
+[source,xml]
 ----
 <dependency>
   <groupId>org.wildfly.arquillian</groupId>
   <artifactId>wildfly-arquillian-container-domain-remote</artifactId>
-  <version>${version.org.wildfly.arquillian}</version>
   <scope>test</scope>
 </dependency>
 ----
@@ -75,11 +95,11 @@ If you'd to manage the container process via a different method use the followin
 
 Since version 3.0.0 of the adapter you can now use Arquillian to test your bootable JAR's.
 
+[source,xml]
 ----
 <dependency>
   <groupId>org.wildfly.arquillian</groupId>
   <artifactId>wildfly-arquillian-container-bootable</artifactId>
-  <version>${version.org.wildfly.arquillian}</version>
   <scope>test</scope>
 </dependency>
 ----

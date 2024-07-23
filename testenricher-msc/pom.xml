@@ -20,7 +20,7 @@
     <!-- Artifact Configuration -->
     <artifactId>wildfly-arquillian-testenricher-msc</artifactId>
 
-    <name>WildFly: Arquillian TestEnricher MSC</name>
+    <name>WildFly Arquillian: TestEnricher MSC</name>
 
     <!-- Properties -->
     <properties>

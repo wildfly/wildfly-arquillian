@@ -14,7 +14,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>integration-tests</artifactId>
-    <name>WildFly: Arquillian Integration Tests</name>
+    <name>WildFly Arquillian: Integration Tests</name>
     <packaging>pom</packaging>
 
     <modules>

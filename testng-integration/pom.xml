@@ -15,7 +15,7 @@
     </parent>
 
     <artifactId>wildfly-arquillian-testng-integration</artifactId>
-    <name>WildFly: Arquillian TestNG Integration</name>
+    <name>WildFly Arquillian: TestNG Integration</name>
     <packaging>jar</packaging>
 
     <dependencies>

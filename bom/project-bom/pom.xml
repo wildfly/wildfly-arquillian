@@ -32,7 +32,7 @@
         <version.org.jboss.msc.jboss-msc>1.5.5.Final</version.org.jboss.msc.jboss-msc>
         <version.org.jboss.remotingjmx.remoting-jmx>3.1.0.Final</version.org.jboss.remotingjmx.remoting-jmx>
         <!-- Required by Elytron dependencies -->
-        <version.org.slf4j>1.7.36</version.org.slf4j>
+        <version.org.slf4j>2.0.14</version.org.slf4j>
         <version.org.wildfly.plugins.wildfly-plugin-tools>1.2.0.Beta1</version.org.wildfly.plugins.wildfly-plugin-tools>
 
         <!-- keep this in sync with version that is used in arquillian -->

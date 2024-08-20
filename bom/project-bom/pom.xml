@@ -38,7 +38,7 @@
         <!-- keep this in sync with version that is used in arquillian -->
         <version.org.jboss.shrinkwrap>1.2.6</version.org.jboss.shrinkwrap>
         <version.org.jboss.shrinkwrap.descriptors>2.0.0</version.org.jboss.shrinkwrap.descriptors>
-        <version.org.jboss.ejb-client>4.0.54.Final</version.org.jboss.ejb-client>
+        <version.org.jboss.ejb-client>4.0.55.Final</version.org.jboss.ejb-client>
         <version.org.jsoup>1.17.2</version.org.jsoup>
         <version.org.testng>7.7.0</version.org.testng>
         <version.jakarta.ejb>4.0.1</version.jakarta.ejb>

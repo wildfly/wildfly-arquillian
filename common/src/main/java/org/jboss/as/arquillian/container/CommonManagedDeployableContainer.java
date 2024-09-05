@@ -203,8 +203,12 @@ public abstract class CommonManagedDeployableContainer<T extends CommonManagedCo
                             if (!Operations.isSuccessfulOutcome(result)) {
                                 shutdownFailureMessage = Operations.getFailureDescription(result).asString();
                             }
-                        } catch (CancellationException ce) {
-                            shutdownFailureMessage = ce.toString();
+                        } catch (CancellationException | IOException e) {
+                            if (e instanceof CancellationException || e.getCause() instanceof CancellationException) {
+                                shutdownFailureMessage = e.toString();
+                            } else {
+                                throw e;
+                            }
                         }
                         if (shutdownFailureMessage != null) {
                             // Don't fail stopping, but we should log an error

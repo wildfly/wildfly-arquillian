@@ -11,6 +11,13 @@ import org.jboss.as.arquillian.container.ManagementClient;
 import org.wildfly.plugin.tools.server.ServerManager;
 
 /**
+ * A {@link ServerSetupTask} which will reload the server, if required, after the {@link #doSetup(ManagementClient, String)}
+ * and {@link #doTearDown(ManagementClient, String)} methods are invoked.
+ * <p>
+ * This can be used as the last {@link ServerSetupTask} in the chain to ensure the server is in the correct state after
+ * the other setup tasks have executed.
+ * </p>
+ *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 @SuppressWarnings({ "unused", "RedundantThrows" })
@@ -38,7 +45,9 @@ public class ReloadServerSetupTask implements ServerSetupTask {
     }
 
     /**
-     * Execute any necessary setup work that needs to happen before the first deployment to the given container.
+     * Execute any necessary setup work that needs to happen before the first deployment to the given container. If
+     * any of the operations executed end with the server left in a state of {@code reload-required}, the server will
+     * be reloaded.
      *
      * @param client      management client to use to interact with the container
      * @param containerId id of the container to which the deployment will be deployed
@@ -50,8 +59,9 @@ public class ReloadServerSetupTask implements ServerSetupTask {
     }
 
     /**
-     * Execute any tear down work that needs to happen after the last deployment associated
-     * with the given container has been undeployed.
+     * Execute any tear down work that needs to happen after the last deployment associated with the given container has
+     * been undeployed. If any of the operations executed end with the server left in a state of {@code reload-required},
+     * the server will be reloaded.
      *
      * @param managementClient management client to use to interact with the container
      * @param containerId      id of the container to which the deployment will be deployed

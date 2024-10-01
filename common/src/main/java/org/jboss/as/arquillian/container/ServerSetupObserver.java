@@ -5,6 +5,7 @@
 
 package org.jboss.as.arquillian.container;
 
+import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.ArrayDeque;
@@ -33,9 +34,11 @@ import org.jboss.arquillian.test.spi.event.enrichment.BeforeEnrichment;
 import org.jboss.arquillian.test.spi.event.enrichment.EnrichmentEvent;
 import org.jboss.arquillian.test.spi.event.suite.AfterClass;
 import org.jboss.arquillian.test.spi.event.suite.BeforeClass;
+import org.jboss.as.arquillian.api.ReloadIfRequired;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.logging.Logger;
+import org.wildfly.plugin.tools.server.ServerManager;
 
 /**
  * Observes the {@link BeforeDeploy}, {@link AfterUnDeploy} and {@link AfterClass} lifecycle events to ensure
@@ -63,6 +66,9 @@ public class ServerSetupObserver {
 
     @Inject
     private Event<EnrichmentEvent> enrichmentEvent;
+
+    @Inject
+    private Instance<ServerManager> serverManager;
 
     private final Map<String, ServerSetupTaskHolder> setupTasks = new HashMap<>();
     private boolean afterClassRun = false;
@@ -109,7 +115,7 @@ public class ServerSetupObserver {
         }
 
         final ManagementClient client = managementClient.get();
-        final ServerSetupTaskHolder holder = new ServerSetupTaskHolder(client, container.getName());
+        final ServerSetupTaskHolder holder = new ServerSetupTaskHolder(serverManager.get(), client, container.getName());
         executeSetup(holder, setup, containerName, event.getDeployment());
     }
 
@@ -227,12 +233,15 @@ public class ServerSetupObserver {
     private class ServerSetupTaskHolder {
 
         private final ManagementClient client;
+        private final ServerManager serverManager;
         private final Deque<ServerSetupTask> setupTasks;
         private final Set<DeploymentDescription> deployments;
         private final String containerName;;
 
-        private ServerSetupTaskHolder(final ManagementClient client, final String containerName) {
+        private ServerSetupTaskHolder(final ServerManager serverManager, final ManagementClient client,
+                final String containerName) {
             this.client = client;
+            this.serverManager = serverManager;
             setupTasks = new ArrayDeque<>();
             deployments = new HashSet<>();
             this.containerName = containerName;
@@ -246,7 +255,13 @@ public class ServerSetupObserver {
                 final ServerSetupTask task = ctor.newInstance();
                 enrich(task, clazz.getMethod("setup", ManagementClient.class, String.class));
                 setupTasks.add(task);
-                task.setup(client, containerName);
+                try {
+                    task.setup(client, containerName);
+                } finally {
+                    if (task.getClass().isAnnotationPresent(ReloadIfRequired.class) && serverManager != null) {
+                        serverManager.reloadIfRequired();
+                    }
+                }
             }
         }
 
@@ -266,6 +281,14 @@ public class ServerSetupObserver {
                         // already been turned off; here we want to ensure all tear down work proceeds.
 
                         log.errorf(e, "Setup task failed during tear down. Offending class '%s'", task);
+                    } finally {
+                        if (task.getClass().isAnnotationPresent(ReloadIfRequired.class) && serverManager != null) {
+                            try {
+                                serverManager.reloadIfRequired();
+                            } catch (IOException e) {
+                                log.errorf(e, "Failed to reload server. The server may still be in reload-required state.");
+                            }
+                        }
                     }
                 }
             }

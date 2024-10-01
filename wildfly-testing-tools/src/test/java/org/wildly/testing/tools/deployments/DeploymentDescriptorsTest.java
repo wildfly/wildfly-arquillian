@@ -5,15 +5,24 @@
 
 package org.wildly.testing.tools.deployments;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.SocketPermission;
 import java.security.Permission;
 import java.util.Collection;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.PropertyPermission;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.jboss.shrinkwrap.api.asset.Asset;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.parser.Parser;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Named;
 import org.junit.jupiter.api.Test;
@@ -66,6 +75,50 @@ public class DeploymentDescriptorsTest {
         final String expected = generatePermissionsXml(permissions);
         Assertions.assertEquals(expected,
                 new String(DeploymentDescriptors.createPermissionsXml(permissions)));
+    }
+
+    @Test
+    public void appendPermissionsXml() throws IOException {
+        final Set<Permission> permissions = new LinkedHashSet<>();
+        permissions.add(new RuntimePermission("test.permissions", "action1"));
+        permissions.add(new SocketPermission("localhost", "connect,resolve"));
+        permissions.add(new PropertyPermission("java.io.tmpdir", "read"));
+        permissions.add(new PropertyPermission("test.property", "read,write"));
+
+        final Set<Permission> allPermissions = new LinkedHashSet<>(permissions);
+        final Set<Permission> additionalPermissions = new LinkedHashSet<>();
+        additionalPermissions.add(new RuntimePermission("getClassLoader"));
+        additionalPermissions.add(new PropertyPermission("java.io.tmpdir", "read,write"));
+        additionalPermissions.add(new PropertyPermission("other.property", "read"));
+        additionalPermissions.add(new PropertyPermission("test.property", "read,write"));
+
+        allPermissions.addAll(additionalPermissions);
+
+        final String expected = generatePermissionsXml(allPermissions);
+        final Asset permissionsXml = DeploymentDescriptors.createPermissionsXmlAsset(permissions);
+        try (
+                InputStream in = DeploymentDescriptors.appendPermissions(permissionsXml, additionalPermissions)
+                        .openStream()) {
+            final String assetValue = new String(in.readAllBytes());
+            Assertions.assertEquals(expected, assetValue);
+            // Ensure the java.io.tmpdir is inserted twice, but test.property only once
+            final Document document = Jsoup.parse(assetValue, Parser.xmlParser());
+            List<Element> elements = document.select("permission")
+                    .stream()
+                    .filter(e -> e.select("class-name").text().equals(PropertyPermission.class.getName())
+                            && e.select("name").text().equals("java.io.tmpdir"))
+                    .collect(Collectors.toList());
+            Assertions.assertEquals(2, elements.size(),
+                    () -> String.format("Expected two java.io.tmpdir properties in %n%s", assetValue));
+
+            elements = document.select("permission")
+                    .stream()
+                    .filter(e -> e.select("class-name").text().equals(PropertyPermission.class.getName())
+                            && e.select("name").text().equals("test.property"))
+                    .collect(Collectors.toList());
+            Assertions.assertEquals(1, elements.size(),
+                    () -> String.format("Expected one test.property properties in %n%s", assetValue));
+        }
     }
 
     static Stream<Arguments> moduleArguments() {

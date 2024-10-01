@@ -9,6 +9,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FilePermission;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -16,11 +17,17 @@ import java.security.Permission;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
@@ -28,7 +35,12 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.asset.ByteArrayAsset;
 import org.jboss.shrinkwrap.api.container.WebContainer;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 import org.wildfly.testing.tools.xml.CloseableXMLStreamWriter;
+import org.xml.sax.SAXException;
 
 /**
  * A utility to generate various deployment descriptors.
@@ -235,25 +247,80 @@ public class DeploymentDescriptors {
      */
     public static byte[] createPermissionsXml(final Iterable<? extends Permission> permissions,
             final Permission... additionalPermissions) {
-        try (
-                ByteArrayOutputStream out = new ByteArrayOutputStream();
-                CloseableXMLStreamWriter writer = CloseableXMLStreamWriter.of(out);) {
+        final Set<PermissionDescription> allPermissions = new LinkedHashSet<>();
+        permissions.forEach(permission -> allPermissions.add(PermissionDescription.of(permission)));
+        allPermissions.addAll(Stream.of(additionalPermissions)
+                .map(PermissionDescription::of)
+                .collect(Collectors.toSet()));
+        return createPermissionsXml(allPermissions);
+    }
 
-            writer.writeStartDocument("utf-8", "1.0");
-            writer.writeStartElement("permissions");
-            writer.writeNamespace(null, "https://jakarta.ee/xml/ns/jakartaee");
-            writer.writeAttribute("version", "10");
-            addPermissionXml(writer, permissions);
-            if (additionalPermissions != null && additionalPermissions.length > 0) {
-                addPermissionXml(writer, List.of(additionalPermissions));
+    /**
+     * Creates a new asset with the new permissions appended to the current permissions. Note that duplicates will not
+     * be added. A duplicates is considered a {@link Permission} with the same {@linkplain Class#getName() class name},
+     * same {@linkplain Permission#getName() name} and same {@linkplain Permission#getActions() actions}.
+     *
+     * @param currentPermissions the current permissions, must be valid XML content
+     * @param permissions        the permissions to add
+     *
+     * @return a new asset to replace the current {@code permissions.xml} file
+     */
+    public static Asset appendPermissions(final Asset currentPermissions, final Permission... permissions) {
+        final Set<Permission> orderedPermissions = new LinkedHashSet<>();
+        Collections.addAll(orderedPermissions, permissions);
+        return appendPermissions(currentPermissions, orderedPermissions);
+    }
+
+    /**
+     * Creates a new asset with the new permissions appended to the current permissions. Note that duplicates will not
+     * be added. A duplicates is considered a {@link Permission} with the same {@linkplain Class#getName() class name},
+     * same {@linkplain Permission#getName() name} and same {@linkplain Permission#getActions() actions}.
+     *
+     * @param currentPermissions the current permissions, must be valid XML content
+     * @param permissions        the permissions to add
+     *
+     * @return a new asset to replace the current {@code permissions.xml} file
+     */
+    public static Asset appendPermissions(final Asset currentPermissions, final Iterable<? extends Permission> permissions) {
+        final Set<PermissionDescription> allPermissions = new LinkedHashSet<>();
+        try {
+            final DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            final DocumentBuilder builder = factory.newDocumentBuilder();
+            try (InputStream in = currentPermissions.openStream()) {
+                final Document doc = builder.parse(in);
+
+                final Element root = doc.getDocumentElement();
+                final NodeList xmlPermissions = root.getElementsByTagName("permission");
+                for (int i = 0; i < xmlPermissions.getLength(); i++) {
+                    final Node permission = xmlPermissions.item(i);
+                    String className = null;
+                    String name = null;
+                    String actions = null;
+                    if (permission.hasChildNodes()) {
+                        final NodeList children = permission.getChildNodes();
+                        for (int j = 0; j < children.getLength(); j++) {
+                            final Node child = children.item(j);
+                            if (child.getNodeType() == Node.ELEMENT_NODE) {
+                                if (child.getNodeName().equals("class-name")) {
+                                    className = child.getTextContent();
+                                } else if (child.getNodeName().equals("name")) {
+                                    name = child.getTextContent();
+                                } else if (child.getNodeName().equals("actions")) {
+                                    actions = child.getTextContent();
+                                }
+                            }
+                        }
+                    }
+                    if (className != null) {
+                        allPermissions.add(new PermissionDescription(className, name, actions));
+                    }
+                }
             }
-            writer.writeEndElement();
-            writer.writeEndDocument();
-            writer.flush();
-            return out.toByteArray();
-        } catch (IOException | XMLStreamException e) {
-            throw new RuntimeException("Failed to create the permissions.xml file.", e);
+        } catch (ParserConfigurationException | SAXException | IOException e) {
+            throw new RuntimeException("Failed to append permissions.xml file.", e);
         }
+        permissions.forEach(p -> allPermissions.add(PermissionDescription.of(p)));
+        return new ByteArrayAsset(createPermissionsXml(allPermissions));
     }
 
     /**
@@ -310,26 +377,87 @@ public class DeploymentDescriptors {
         return List.of(new FilePermission(tempDir, "read"), new FilePermission(tempDir + "-", actions));
     }
 
-    private static void addPermissionXml(final XMLStreamWriter writer, final Iterable<? extends Permission> permissions)
+    private static void addPermissionXml(final XMLStreamWriter writer,
+            final Iterable<? extends PermissionDescription> permissions)
             throws XMLStreamException {
-        for (Permission permission : permissions) {
+        for (PermissionDescription permission : permissions) {
             writer.writeStartElement("permission");
 
             writer.writeStartElement("class-name");
-            writer.writeCharacters(permission.getClass().getName());
+            writer.writeCharacters(permission.className);
             writer.writeEndElement();
 
             writer.writeStartElement("name");
-            writer.writeCharacters(permission.getName());
+            writer.writeCharacters(permission.name);
             writer.writeEndElement();
 
-            final String actions = permission.getActions();
+            final String actions = permission.actions;
             if (actions != null && !actions.isEmpty()) {
                 writer.writeStartElement("actions");
                 writer.writeCharacters(actions);
                 writer.writeEndElement();
             }
             writer.writeEndElement();
+        }
+    }
+
+    private static byte[] createPermissionsXml(final Set<PermissionDescription> permissions) {
+        try (
+                ByteArrayOutputStream out = new ByteArrayOutputStream();
+                CloseableXMLStreamWriter writer = CloseableXMLStreamWriter.of(out);) {
+
+            writer.writeStartDocument("utf-8", "1.0");
+            writer.writeStartElement("permissions");
+            writer.writeNamespace(null, "https://jakarta.ee/xml/ns/jakartaee");
+            writer.writeAttribute("version", "10");
+            addPermissionXml(writer, permissions);
+            writer.writeEndElement();
+            writer.writeEndDocument();
+            writer.flush();
+            return out.toByteArray();
+        } catch (IOException | XMLStreamException e) {
+            throw new RuntimeException("Failed to create the permissions.xml file.", e);
+        }
+    }
+
+    private static class PermissionDescription {
+        private final String className;
+        private final String name;
+        private final String actions;
+
+        private PermissionDescription(final String className, final String name, final String actions) {
+            this.className = className;
+            this.name = name;
+            this.actions = actions;
+        }
+
+        static PermissionDescription of(final Permission permission) {
+            return new PermissionDescription(permission.getClass()
+                    .getName(), permission.getName(), permission.getActions());
+        }
+
+        @Override
+        public boolean equals(final Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (!(obj instanceof PermissionDescription)) {
+                return false;
+            }
+            final PermissionDescription other = (PermissionDescription) obj;
+            return Objects.equals(className, other.className)
+                    && Objects.equals(name, other.name)
+                    && Objects.equals(actions, other.actions);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(className, name, actions);
+        }
+
+        @Override
+        public String toString() {
+            return "PermissionDescription[className=" + className + ", name=" + name + ", actions=" + actions + "]";
         }
     }
 }

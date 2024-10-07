@@ -25,7 +25,7 @@
         <version.org.wildfly.full>31.0.1.Final</version.org.wildfly.full>
         <version.io.smallrye.jandex>3.1.6</version.io.smallrye.jandex>
         <version.junit>4.13.2</version.junit>
-        <version.org.junit>5.11.1</version.org.junit>
+        <version.org.junit>5.11.2</version.org.junit>
         <version.org.jboss.arquillian.core>1.9.1.Final</version.org.jboss.arquillian.core>
         <version.org.jboss.arquillian.jakarta>10.0.0.Final</version.org.jboss.arquillian.jakarta>
         <version.org.jboss.logging.jboss-logging>3.6.1.Final</version.org.jboss.logging.jboss-logging>

@@ -21,6 +21,8 @@
     <name>WildFly Arquillian: Parent</name>
 
     <modules>
+        <!-- The project BOM must be built first -->
+        <module>bom/project-bom</module>
         <module>wildfly-testing-tools</module>
         <module>common</module>
         <module>container-bootable</module>
@@ -34,7 +36,7 @@
         <module>container-remote-domain</module>
         <module>container-managed-domain</module>
         <module>junit-api</module>
-        <module>bom</module>
+        <module>bom/bom</module>
         <module>integration-tests</module>
     </modules>
 
@@ -88,25 +90,6 @@
         <jdk.min.version>11</jdk.min.version>
         <maven.compiler.release>11</maven.compiler.release>
     </properties>
-
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>org.wildfly.arquillian</groupId>
-                <artifactId>wildfly-arquillian-bom</artifactId>
-                <version>${project.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.wildfly.arquillian</groupId>
-                <artifactId>wildfly-arquillian-project-bom</artifactId>
-                <version>${project.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
 
     <build>
         <!-- Filter test resources -->
@@ -347,14 +330,6 @@
             </build>
         </profile>
     </profiles>
-
-    <dependencies>
-
-        <dependency>
-            <groupId>org.jboss.arquillian.core</groupId>
-            <artifactId>arquillian-core-api</artifactId>
-        </dependency>
-    </dependencies>
 
     <repositories>
         <repository>

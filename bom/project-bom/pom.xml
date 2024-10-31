@@ -10,8 +10,9 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.wildfly.arquillian</groupId>
-        <artifactId>wildfly-bom-parent</artifactId>
+        <artifactId>wildfly-arquillian-parent</artifactId>
         <version>5.1.0.Beta7-SNAPSHOT</version>
+        <relativePath>../../pom.xml</relativePath>
     </parent>
 
     <artifactId>wildfly-arquillian-project-bom</artifactId>

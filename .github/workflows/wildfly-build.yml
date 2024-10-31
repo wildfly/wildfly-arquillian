@@ -58,30 +58,18 @@ jobs:
           name: server-logs-${{ matrix.os }}-${{ matrix.java }}
           path: '**/server.log'
 
-  wildfly-build:
-    uses: wildfly/wildfly/.github/workflows/shared-wildfly-build.yml@main
-    with:
-      wildfly-branch: "main"
-      wildfly-repo: "wildfly/wildfly"
-
   wildfly-arquillian-build:
     runs-on: ${{ matrix.os }}
-    needs: wildfly-build
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest]
-        java: ['11', '17', '21']
+        java: ['17', '21']
 
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
-        with:
-          name: wildfly-maven-repository
-          path: .
-      - name: Extract Maven Repo
-        shell: bash
-        run: tar -xzf wildfly-maven-repository.tar.gz -C ~
+      - uses: wildfly-extras/wildfly-nightly-download@v1
+        id: wildfly-nightly
       - name: Set up JDK ${{ matrix.java }}
         uses: actions/setup-java@v4
         with:
@@ -90,7 +78,7 @@ jobs:
           cache: 'maven'
       - name: Build with Maven Java ${{ matrix.java }}
         run: |
-          mvn clean install '-Dversion.org.wildfly.full=${{needs.wildfly-build.outputs.wildfly-version}}' '-Dorg.wildfly.logging.skipLogManagerCheck=true'
+          mvn clean install '-Dversion.org.wildfly.full=${{steps.wildfly-nightly.outputs.wildfly-version}}' '-Dorg.wildfly.logging.skipLogManagerCheck=true'
       - name: Upload surefire reports
         uses: actions/upload-artifact@v4
         if: failure()

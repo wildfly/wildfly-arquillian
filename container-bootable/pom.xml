@@ -103,20 +103,18 @@
         <plugins>
             <plugin>
                 <groupId>org.wildfly.plugins</groupId>
-                <artifactId>wildfly-jar-maven-plugin</artifactId>   
-                <version>${version.org.wildfly.plugins.wildfly-jar-maven-plugin}</version>
-                <configuration>
-                    <skip>${skipTests}</skip>
-                    <feature-pack-location>${galleon.feature.pack.location}</feature-pack-location>
-                    <hollowJar>true</hollowJar>
-                    <outputFileName>test-wildfly.jar</outputFileName>
-                </configuration>
+                <artifactId>wildfly-maven-plugin</artifactId>
                 <executions>
                     <execution>
                         <goals>
                             <goal>package</goal>
                         </goals>
                         <phase>compile</phase>
+                        <configuration>
+                            <bootable-jar>true</bootable-jar>
+                            <skip-deployment>true</skip-deployment>
+                            <bootable-jar-name>test-wildfly.jar</bootable-jar-name>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>

@@ -42,7 +42,7 @@ public class ReloadServerSetupTaskTestCase {
         private ServerManager serverManager;
 
         @Override
-        protected void doSetup(final ManagementClient client, final String containerId) throws Exception {
+        public void setup(final ManagementClient client, final String containerId) throws Exception {
             currentValue = executeOperation(client, Operations.createReadAttributeOperation(address, attributeName)).asInt();
             // Increase the current value which should put the server in a state of reload-required
             executeOperation(client, Operations.createWriteAttributeOperation(address, attributeName, currentValue + 10));
@@ -51,7 +51,7 @@ public class ReloadServerSetupTaskTestCase {
         }
 
         @Override
-        protected void doTearDown(final ManagementClient managementClient, final String containerId) throws Exception {
+        public void tearDown(final ManagementClient managementClient, final String containerId) throws Exception {
             // Reset the old value
             executeOperation(managementClient, Operations.createWriteAttributeOperation(address, attributeName, currentValue));
             // Check the server state is in a reload required state

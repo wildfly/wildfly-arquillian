@@ -20,11 +20,10 @@ import javax.management.ReflectionException;
 import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
 
-import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.arquillian.api.ReloadIfRequired;
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.logging.Logger;
-import org.wildfly.plugin.tools.server.ServerManager;
 import org.wildfly.testing.tools.modules.ModuleDescription;
 
 /**
@@ -34,20 +33,18 @@ import org.wildfly.testing.tools.modules.ModuleDescription;
  * is executing in terminates.
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
+ * @since 5.1
  */
 @SuppressWarnings({ "unused", "RedundantThrows" })
+@ReloadIfRequired
 public abstract class CreateModuleServerSetupTask implements ServerSetupTask {
     private static final Logger LOGGER = Logger.getLogger(CreateModuleServerSetupTask.class);
     private final Set<ModuleDescription> modules = new ConcurrentSkipListSet<>();
-
-    @ArquillianResource
-    private ServerManager serverManager;
 
     @Override
     public final void setup(final ManagementClient managementClient, final String containerId) throws Exception {
         modules.addAll(moduleDescriptions());
         doSetup(managementClient, containerId, Set.copyOf(modules));
-        serverManager.reloadIfRequired();
     }
 
     @Override
@@ -63,7 +60,6 @@ public abstract class CreateModuleServerSetupTask implements ServerSetupTask {
             }
         } finally {
             doTearDown(managementClient, containerId);
-            serverManager.reloadIfRequired();
         }
     }
 

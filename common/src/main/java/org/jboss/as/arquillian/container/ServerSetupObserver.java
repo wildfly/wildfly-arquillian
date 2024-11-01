@@ -259,7 +259,8 @@ public class ServerSetupObserver {
                     task.setup(client, containerName);
                 } finally {
                     if (task.getClass().isAnnotationPresent(ReloadIfRequired.class) && serverManager != null) {
-                        serverManager.reloadIfRequired();
+                        final ReloadIfRequired reloadIfRequired = task.getClass().getAnnotation(ReloadIfRequired.class);
+                        serverManager.reloadIfRequired(reloadIfRequired.value(), reloadIfRequired.timeUnit());
                     }
                 }
             }
@@ -284,7 +285,8 @@ public class ServerSetupObserver {
                     } finally {
                         if (task.getClass().isAnnotationPresent(ReloadIfRequired.class) && serverManager != null) {
                             try {
-                                serverManager.reloadIfRequired();
+                                final ReloadIfRequired reloadIfRequired = task.getClass().getAnnotation(ReloadIfRequired.class);
+                                serverManager.reloadIfRequired(reloadIfRequired.value(), reloadIfRequired.timeUnit());
                             } catch (IOException e) {
                                 log.errorf(e, "Failed to reload server. The server may still be in reload-required state.");
                             }

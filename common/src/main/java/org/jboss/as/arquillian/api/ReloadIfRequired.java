@@ -10,6 +10,7 @@ import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.util.concurrent.TimeUnit;
 
 import org.jboss.as.arquillian.container.ManagementClient;
 
@@ -24,4 +25,18 @@ import org.jboss.as.arquillian.container.ManagementClient;
 @Target(ElementType.TYPE)
 @Inherited
 public @interface ReloadIfRequired {
+
+    /**
+     * The time to wait for the reload to happen. The default is {@code 10}.
+     *
+     * @return the default time to wait for a reload
+     */
+    long value() default 10L;
+
+    /**
+     * The time unit used for the timeout to wait for a reload. The default is {@link TimeUnit#SECONDS SECONDS}.
+     *
+     * @return the timeout time unit
+     */
+    TimeUnit timeUnit() default TimeUnit.SECONDS;
 }

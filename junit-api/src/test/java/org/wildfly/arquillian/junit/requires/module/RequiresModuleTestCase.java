@@ -144,6 +144,49 @@ public class RequiresModuleTestCase {
                         "Found version 1.0.0.Beta2-SNAPSHOT and required a minimum of version 1.0.0.Beta3. Disabling test.")));
     }
 
+    @Test
+    public void client() {
+        final var testEvents = EngineTestKit.engine("junit-jupiter")
+                .selectors(DiscoverySelectors.selectMethod(RequireArtifact.class, "client"))
+                .execute()
+                .testEvents();
+
+        testEvents.assertStatistics((stats) -> stats.succeeded(1L));
+    }
+
+    @Test
+    public void clientApi() {
+        final var testEvents = EngineTestKit.engine("junit-jupiter")
+                .selectors(DiscoverySelectors.selectMethod(RequireArtifact.class, "clientApi"))
+                .execute()
+                .testEvents();
+
+        testEvents.assertStatistics((stats) -> stats.succeeded(1L));
+    }
+
+    @Test
+    public void clientApiTest() {
+        final var testEvents = EngineTestKit.engine("junit-jupiter")
+                .selectors(DiscoverySelectors.selectMethod(RequireArtifact.class, "clientApiTest"))
+                .execute()
+                .testEvents();
+
+        testEvents.assertStatistics((stats) -> stats.succeeded(1L));
+    }
+
+    @Test
+    public void clientSpi() {
+        final var testEvents = EngineTestKit.engine("junit-jupiter")
+                .selectors(DiscoverySelectors.selectMethod(RequireArtifact.class, "clientSpi"))
+                .execute()
+                .testEvents();
+
+        testEvents.assertStatistics((stats) -> stats.skipped(1L));
+        testEvents.assertThatEvents().haveExactly(1, EventConditions.event(
+                EventConditions.skippedWithReason(
+                        "Found version 1.0.0.Beta1 and required a minimum of version 1.0.0.Final. Disabling test.")));
+    }
+
     private static void createJar(final String moduleName, final Path jbossHome, final String version) throws IOException {
         // Create the JAR with a manifest only
         final Path jarPath = jbossHome.resolve(

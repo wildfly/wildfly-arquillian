@@ -54,7 +54,8 @@ public class RequiresModuleExecutionCondition implements ExecutionCondition {
 
         try {
             // Get the module XML file.
-            final Optional<ModuleDefinition> moduleDefinition = findModuleXml(moduleDir, moduleToPath(requiresModule.value()));
+            final Optional<ModuleDefinition> moduleDefinition = findModuleXml(moduleDir,
+                    moduleToPath(requiresModule.value(), requiresModule.slot()));
             if (moduleDefinition.isPresent()) {
                 if (requiresModule.minVersion().isBlank()) {
                     final var def = moduleDefinition.get();
@@ -103,8 +104,8 @@ public class RequiresModuleExecutionCondition implements ExecutionCondition {
                         requiresModule.minVersion()));
     }
 
-    private static String moduleToPath(final String moduleName) {
-        return String.join(File.separator, moduleName.split("\\."));
+    private static String moduleToPath(final String moduleName, final String slot) {
+        return String.join(File.separator, moduleName.split("\\.")) + File.separator + slot;
     }
 
     private static ModuleDefinition parse(final Path moduleXmlFile) throws IOException {

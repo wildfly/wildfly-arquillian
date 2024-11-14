@@ -5,6 +5,7 @@
 
 package org.wildfly.arquillian.junit.requires.module;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.wildfly.arquillian.junit.annotations.RequiresModule;
 
@@ -27,5 +28,26 @@ public class RequireArtifact {
     @Test
     @RequiresModule(value = "org.wildfly.arquillian.junit.test.artifact.invalid")
     public void skippedMissingModule() {
+    }
+
+    @Test
+    @RequiresModule(value = "org.wildfly.arquillian.junit.test.client", minVersion = "3.0.0.Final")
+    public void client() {
+    }
+
+    @Test
+    @RequiresModule(value = "org.wildfly.arquillian.junit.test.client-api", minVersion = "1.0.0.Final")
+    public void clientApi() {
+    }
+
+    @Test
+    @RequiresModule(value = "org.wildfly.arquillian.junit.test.client-api", slot = "test", minVersion = "1.1.0.Beta1")
+    public void clientApiTest() {
+    }
+
+    @Test
+    @RequiresModule(value = "org.wildfly.arquillian.junit.test.client-spi", minVersion = "1.0.0.Final")
+    public void clientSpi() {
+        Assertions.fail("Should have skipped");
     }
 }

@@ -58,4 +58,11 @@ public @interface RequiresModule {
      * @return the module name
      */
     String value();
+
+    /**
+     * The slot for the module. The default is {@code main}.
+     *
+     * @return the slot for the module
+     */
+    String slot() default "main";
 }

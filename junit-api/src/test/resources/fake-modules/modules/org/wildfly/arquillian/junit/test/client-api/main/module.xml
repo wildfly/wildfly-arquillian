@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+~ Copyright The WildFly Authors
+~ SPDX-License-Identifier: Apache-2.0
+-->
+
+<module name="org.wildfly.arquillian.junit.test.client-api" xmlns="urn:jboss:module:1.9">
+
+    <resources>
+        <artifact name="org.wildfly.arquillian.test:client-api:1.0.0.Final" />
+    </resources>
+
+    <dependencies>
+        <module name="java.logging" />
+    </dependencies>
+</module>

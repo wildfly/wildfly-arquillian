@@ -11,7 +11,7 @@
     <parent>
         <groupId>org.wildfly.arquillian</groupId>
         <artifactId>wildfly-arquillian-parent</artifactId>
-        <version>5.1.0.Beta7-SNAPSHOT</version>
+        <version>5.1.0.Beta7</version>
     </parent>
 
     <artifactId>wildfly-arquillian-junit-api</artifactId>

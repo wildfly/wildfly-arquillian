@@ -24,7 +24,7 @@
     <properties>
         <version.org.wildfly.core>26.0.1.Final</version.org.wildfly.core>
         <version.org.wildfly.full>31.0.1.Final</version.org.wildfly.full>
-        <version.org.wildfly.launcher>1.0.0.Beta1</version.org.wildfly.launcher>
+        <version.org.wildfly.launcher>1.0.0.Beta2</version.org.wildfly.launcher>
         <version.io.smallrye.jandex>3.1.6</version.io.smallrye.jandex>
         <version.junit>4.13.2</version.junit>
         <version.org.junit>5.11.3</version.org.junit>

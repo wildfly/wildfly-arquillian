@@ -256,39 +256,6 @@
                             </environmentVariables>
                         </configuration>
                     </execution>
-                    <execution>
-                        <id>appclient-tests</id>
-                        <phase>test</phase>
-                        <goals>
-                            <goal>test</goal>
-                        </goals>
-                        <configuration>
-                            <skip>false</skip>
-                            <includes>
-                                <include>**/app/AppClientTestCase.java</include>
-                            </includes>
-                            <systemPropertyVariables>
-                                <arquillian.xml>appclient-arquillian.xml</arquillian.xml>
-                            </systemPropertyVariables>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>appclient-tests-manual</id>
-                        <phase>test</phase>
-                        <goals>
-                            <goal>test</goal>
-                        </goals>
-                        <configuration>
-                            <skip>false</skip>
-                            <includes>
-                                <include>**/app/AppClient2TestCase.java</include>
-                            </includes>
-                            <systemPropertyVariables>
-                                <arquillian.launch>jboss-manual-client</arquillian.launch>
-                                <arquillian.xml>appclient-arquillian.xml</arquillian.xml>
-                            </systemPropertyVariables>
-                        </configuration>
-                    </execution>
                 </executions>
             </plugin>
         </plugins>

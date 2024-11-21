@@ -4,11 +4,6 @@
  */
 package org.jboss.as.arquillian.container.managed;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.Locale;
-import java.util.Map;
-
 import org.jboss.arquillian.container.spi.ConfigurationException;
 import org.jboss.as.arquillian.container.DistributionContainerConfiguration;
 
@@ -44,16 +39,6 @@ public class ManagedContainerConfiguration extends DistributionContainerConfigur
     private String cleanServerBaseDir;
     private String yamlConfiguration;
 
-    // Application client container specific settings
-    private String clientAppEar;
-    private String clientArchiveName;
-    private String appClientCommand;
-    private boolean runClient = true;
-
-    private Map<String, String> clientEnv = System.getenv();
-
-    private String clientArguments;
-
     public ManagedContainerConfiguration() {
     }
 
@@ -64,18 +49,6 @@ public class ManagedContainerConfiguration extends DistributionContainerConfigur
         if (serverConfig != null && readOnlyServerConfig != null) {
             throw new ConfigurationException(String.format("Cannot define both a serverConfig and a readOnlyServerConfig: " +
                     "serverConfig=%s - readOnlyServerConfig=%s", serverConfig, readOnlyServerConfig));
-        }
-        // Validate the server has been provisioned with the application client available if we're using the
-        // application client.
-        if (clientAppEar != null) {
-            if (getJbossHome() == null) {
-                throw new ConfigurationException("The jbossHome is required to be set if the clientAppEar is set.");
-            }
-            final String client = resolveAppClientCommand();
-            final Path clientExe = Path.of(getJbossHome(), "bin", client);
-            if (Files.notExists(clientExe)) {
-                throw new ConfigurationException("Could not find appclient executable " + clientExe);
-            }
         }
     }
 
@@ -195,72 +168,6 @@ public class ManagedContainerConfiguration extends DistributionContainerConfigur
         if (yamlConfiguration != null && !yamlConfiguration.isBlank()) {
             this.yamlConfiguration = yamlConfiguration;
         }
-    }
-
-    public String getClientArguments() {
-        return clientArguments;
-    }
-
-    public void setClientArguments(String clientArguments) {
-        this.clientArguments = clientArguments;
-    }
-
-    public String getClientAppEar() {
-        return clientAppEar;
-    }
-
-    public void setClientAppEar(String clientAppEar) {
-        this.clientAppEar = clientAppEar;
-    }
-
-    public String getClientArchiveName() {
-        return clientArchiveName;
-    }
-
-    public void setClientArchiveName(String clientArchiveName) {
-        this.clientArchiveName = clientArchiveName;
-    }
-
-    public Map<String, String> getClientEnv() {
-        return clientEnv;
-    }
-
-    public void setClientEnv(Map<String, String> clientEnv) {
-        this.clientEnv = clientEnv;
-    }
-
-    public String getAppClientCommand() {
-        return appClientCommand;
-    }
-
-    public void setAppClientCommand(String appClientCommand) {
-        this.appClientCommand = appClientCommand;
-    }
-
-    public boolean isRunClient() {
-        return runClient;
-    }
-
-    public void setRunClient(boolean runClient) {
-        this.runClient = runClient;
-    }
-
-    /**
-     * Resolves the application client command appropriate for the current OS unless it was explicitly set.
-     *
-     * @return application client shell script, default based on current OS
-     */
-    public String resolveAppClientCommand() {
-        if (appClientCommand != null) {
-            return appClientCommand;
-        }
-
-        return isWindows() ? "appclient.bat" : "appclient.sh";
-    }
-
-    private static boolean isWindows() {
-        final String os = System.getProperty("os.name", "generic").toLowerCase(Locale.ROOT);
-        return os.contains("windows");
     }
 
     private static boolean getBooleanProperty(final String key, final boolean dft) {

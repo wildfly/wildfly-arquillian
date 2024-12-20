@@ -4,22 +4,23 @@
  */
 package org.jboss.as.arquillian.container;
 
-import org.junit.Assert;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class ManagementClientTest {
+import org.junit.jupiter.api.Test;
+
+class ManagementClientTest {
 
     @Test
-    public void shouldParseBindAllAsLocalhost() {
+    void shouldParseBindAllAsLocalhost() {
         String sourceIp = "0.0.0.0";
         String parsedIp = ManagementClient.formatIP(sourceIp);
-        Assert.assertEquals("127.0.0.1", parsedIp);
+        assertEquals("127.0.0.1", parsedIp);
     }
 
     @Test
-    public void shouldParseLocalIPAsNormalIP() {
+    void shouldParseLocalIPAsNormalIP() {
         String sourceIp = "10.1.2.3";
         String formattedIp = ManagementClient.formatIP(sourceIp);
-        Assert.assertEquals(sourceIp, formattedIp);
+        assertEquals(sourceIp, formattedIp);
     }
 }

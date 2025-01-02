@@ -8,7 +8,7 @@
     <parent>
         <artifactId>elytron</artifactId>
         <groupId>org.wildfly.arquillian</groupId>
-        <version>5.1.0.Beta8-SNAPSHOT</version>
+        <version>5.1.0.Beta8</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 

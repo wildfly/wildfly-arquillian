@@ -16,7 +16,7 @@
     <artifactId>wildfly-arquillian-parent</artifactId>
 
     <groupId>org.wildfly.arquillian</groupId>
-    <version>5.1.0.Beta8-SNAPSHOT</version>
+    <version>5.1.0.Beta8</version>
     <packaging>pom</packaging>
     <name>WildFly Arquillian: Parent</name>
 
@@ -108,7 +108,6 @@
                     <artifactId>maven-javadoc-plugin</artifactId>
                     <configuration>
                         <release>${maven.compiler.release}</release>
-                        <additionalJOption>--no-module-directories</additionalJOption>
                     </configuration>
                 </plugin>
                 <!-- Checkstyle -->

@@ -6,7 +6,7 @@ package org.jboss.as.arquillian.container.managed;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ArchiveDeployer;
 import org.jboss.as.arquillian.container.ManagementClient;
@@ -14,16 +14,16 @@ import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Test deploying through an injected {@link ArchiveDeployer}.
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class ClientDeploymentTestCase {
 
@@ -37,29 +37,29 @@ public class ClientDeploymentTestCase {
 
     @Test
     public void globalDeploymentTest(@ArquillianResource ManagementClient client) throws Exception {
-        Assert.assertNotNull("Expected the ArchiveDeployer to be injected", deployer);
+        Assertions.assertNotNull(deployer, "Expected the ArchiveDeployer to be injected");
         testDeploy(deployer, client);
     }
 
     @Test
     public void parameterDeploymentTest(@ArquillianResource ManagementClient client,
             @ArquillianResource ArchiveDeployer deployer) throws Exception {
-        Assert.assertNotNull("Expected the ArchiveDeployer to be injected", deployer);
+        Assertions.assertNotNull(deployer, "Expected the ArchiveDeployer to be injected");
         testDeploy(deployer, client);
     }
 
     private void testDeploy(final ArchiveDeployer deployer, final ManagementClient client) throws Exception {
         final WebArchive deployment = createDeployment("test-client-deployment.war");
-        Assert.assertEquals(deployment.getName(), deployer.deploy(deployment));
+        Assertions.assertEquals(deployment.getName(), deployer.deploy(deployment));
 
         // Check the server for the deployment
         final ModelNode address = Operations.createAddress("deployment", deployment.getName());
         final ModelNode result = client.getControllerClient()
                 .execute(Operations.createReadAttributeOperation(address, "status"));
         if (!Operations.isSuccessfulOutcome(result)) {
-            Assert.fail(Operations.getFailureDescription(result).asString());
+            Assertions.fail(Operations.getFailureDescription(result).asString());
         }
-        Assert.assertEquals("OK", Operations.readResult(result).asString());
+        Assertions.assertEquals("OK", Operations.readResult(result).asString());
         deployer.undeploy(deployment.getName());
     }
 

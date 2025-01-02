@@ -5,22 +5,22 @@
 
 package org.jboss.as.arquillian.container.managed;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class ServerSetupAfterClassTestCase extends TestOperations {
     @ArquillianResource
@@ -70,7 +70,7 @@ public class ServerSetupAfterClassTestCase extends TestOperations {
     private void testInVMProperty(String property, String expected) {
         String value = System.getProperty(property, "");
         System.clearProperty(property); // housekeeping
-        assertEquals("Unexpected value for " + property, expected, value);
+        assertEquals(expected, value, "Unexpected value for " + property);
     }
 
     @Override

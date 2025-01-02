@@ -10,14 +10,14 @@ import java.net.URL;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * A client-side test case that verifies that the root deployment URL can be injected
@@ -25,7 +25,7 @@ import org.junit.runner.RunWith;
  *
  * @author <a href="http://community.jboss.org/people/dan.j.allen">Dan Allen</a>
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class ManagedAsClientEnterpriseArchiveServletTestCase {
 
@@ -42,16 +42,16 @@ public class ManagedAsClientEnterpriseArchiveServletTestCase {
 
     @Test
     public void shouldBeAbleToInvokeServlet() throws Exception {
-        Assert.assertNotNull(deploymentUrl);
+        Assertions.assertNotNull(deploymentUrl);
         String result = getContent(new URL(deploymentUrl.toString() + HelloWorldServlet.URL_PATTERN.substring(1)));
-        Assert.assertEquals(HelloWorldServlet.GREETING, result);
+        Assertions.assertEquals(HelloWorldServlet.GREETING, result);
     }
 
     @Test
     public void testWebContext() {
-        Assert.assertTrue(
-                String.format("Expected context to start with /%s, but found %s", CONTEXT_NAME, deploymentUrl.getPath()),
-                deploymentUrl.getPath().startsWith("/" + CONTEXT_NAME));
+        Assertions.assertTrue(
+                deploymentUrl.getPath().startsWith("/" + CONTEXT_NAME),
+                String.format("Expected context to start with /%s, but found %s", CONTEXT_NAME, deploymentUrl.getPath()));
     }
 
     private String getContent(URL url) throws Exception {

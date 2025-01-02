@@ -12,18 +12,18 @@ import org.jboss.arquillian.container.test.api.ContainerController;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import com.sun.jdi.Bootstrap;
 import com.sun.jdi.VirtualMachine;
@@ -33,8 +33,8 @@ import com.sun.jdi.connect.IllegalConnectorArgumentsException;
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-@Category(ManualMode.class)
-@RunWith(Arquillian.class)
+@Tag("ManualMode")
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class DebugManualModeTestCase {
     private static final String DEBUG_SUSPEND_CONTAINER_ID = "debug-config";
@@ -53,7 +53,7 @@ public class DebugManualModeTestCase {
                 .addClass(ManualMode.class);
     }
 
-    @After
+    @AfterEach
     public void shutdown() {
         if (controller.isStarted(DEBUG_SUSPEND_CONTAINER_ID)) {
             controller.stop(DEBUG_SUSPEND_CONTAINER_ID);
@@ -67,12 +67,12 @@ public class DebugManualModeTestCase {
         // Attach a debugger
         final VirtualMachine vm = attachDebugger();
         try {
-            Assert.assertFalse("VM should be able to see all threads: " + vm, vm.allThreads().isEmpty());
+            Assertions.assertFalse(vm.allThreads().isEmpty(), "VM should be able to see all threads: " + vm);
             // Check the server-state
             final ModelNode address = new ModelNode().setEmptyList();
             final ModelNode op = Operations.createReadAttributeOperation(address, "server-state");
             final ModelNode result = executeOperation(debugSuspendClient, op);
-            Assert.assertEquals("running", result.asString());
+            Assertions.assertEquals("running", result.asString());
         } finally {
             vm.dispose();
         }
@@ -81,7 +81,7 @@ public class DebugManualModeTestCase {
     private static ModelNode executeOperation(final ManagementClient client, final ModelNode op) throws IOException {
         final ModelNode result = client.getControllerClient().execute(op);
         if (!Operations.isSuccessfulOutcome(result)) {
-            Assert.fail(Operations.getFailureDescription(result).asString());
+            Assertions.fail(Operations.getFailureDescription(result).asString());
         }
         return Operations.readResult(result);
     }
@@ -89,7 +89,7 @@ public class DebugManualModeTestCase {
     private static VirtualMachine attachDebugger() throws IllegalConnectorArgumentsException, IOException {
         final var manager = Bootstrap.virtualMachineManager();
         final AttachingConnector connector = findSocket(manager.attachingConnectors());
-        Assert.assertNotNull("Failed to find socket connector", connector);
+        Assertions.assertNotNull(connector, "Failed to find socket connector");
         final var defaultArguments = connector.defaultArguments();
         defaultArguments.get("port").setValue(System.getProperty("test.debug.port", "5005"));
         return connector.attach(defaultArguments);

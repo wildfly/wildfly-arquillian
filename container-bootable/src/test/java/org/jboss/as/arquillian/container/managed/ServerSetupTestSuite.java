@@ -5,16 +5,16 @@
 
 package org.jboss.as.arquillian.container.managed;
 
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
+import org.junit.platform.suite.api.SelectClasses;
+import org.junit.platform.suite.api.Suite;
 
 /**
  * Ensures the order of the tests to execute in the correct order.
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-@RunWith(Suite.class)
-@Suite.SuiteClasses({
+@Suite
+@SelectClasses(value = {
         ServerSetupDeploymentTestCase.class,
         ServerSetupAssumptionViolationTestCase.class,
         ServerSetupUnmanagedAssumptionViolationTestCase.class,

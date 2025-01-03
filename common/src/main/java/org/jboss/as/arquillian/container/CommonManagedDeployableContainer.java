@@ -213,7 +213,6 @@ public abstract class CommonManagedDeployableContainer<T extends CommonManagedCo
                         if (shutdownFailureMessage != null) {
                             // Don't fail stopping, but we should log an error
                             logger.errorf("Failed to shutdown the server: %s", shutdownFailureMessage);
-                            process.destroyForcibly();
                         }
                     }
                 }

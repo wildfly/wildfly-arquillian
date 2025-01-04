@@ -10,7 +10,7 @@ import java.net.URL;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.remote.servlet.Servlet1;
 import org.jboss.as.arquillian.container.remote.servlet.Servlet2;
@@ -18,16 +18,16 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Test to verify correct Protocol Metadata returned from Deployment
  *
  * @author <a href="aslak@redhat.com">Aslak Knutsen</a>
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class ServletClientTestCase {
 
     @Deployment(name = "war", testable = false)
@@ -56,10 +56,10 @@ public class ServletClientTestCase {
     @Test
     @OperateOnDeployment("war")
     public void shouldBeAbleToLookupServletURLInAWar(@ArquillianResource URL baseURL) throws Exception {
-        Assert.assertNotNull("Should have injected Base URL for deployed WebContext",
-                baseURL);
+        Assertions.assertNotNull(baseURL,
+                "Should have injected Base URL for deployed WebContext");
 
-        Assert.assertEquals(Servlet1.class.getName(), getContent(new URL(baseURL, Servlet1.PATTERN)));
+        Assertions.assertEquals(Servlet1.class.getName(), getContent(new URL(baseURL, Servlet1.PATTERN)));
     }
 
     @Test
@@ -68,22 +68,22 @@ public class ServletClientTestCase {
             @ArquillianResource(Servlet1.class) URL servlet1BaseURL,
             @ArquillianResource(Servlet2.class) URL servlet2BaseURL) throws Exception {
 
-        Assert.assertNotNull("Should have injected Base URL for deployed WebContext",
-                servlet1BaseURL);
-        Assert.assertEquals(Servlet1.class.getName(), getContent(new URL(servlet1BaseURL, Servlet1.PATTERN)));
+        Assertions.assertNotNull(servlet1BaseURL,
+                "Should have injected Base URL for deployed WebContext");
+        Assertions.assertEquals(Servlet1.class.getName(), getContent(new URL(servlet1BaseURL, Servlet1.PATTERN)));
 
-        Assert.assertNotNull("Should have injected Base URL for deployed WebContext",
-                servlet2BaseURL);
-        Assert.assertEquals(Servlet2.class.getName(), getContent(new URL(servlet2BaseURL, Servlet2.PATTERN)));
+        Assertions.assertNotNull(servlet2BaseURL,
+                "Should have injected Base URL for deployed WebContext");
+        Assertions.assertEquals(Servlet2.class.getName(), getContent(new URL(servlet2BaseURL, Servlet2.PATTERN)));
     }
 
     @Test
     @OperateOnDeployment("war-no-servlet")
     public void shouldBeAbleToDeployWarWithNoServlets(@ArquillianResource URL baseURL) throws Exception {
-        Assert.assertNotNull("Should have injected Base URL for deployed WebContext",
-                baseURL);
+        Assertions.assertNotNull(baseURL,
+                "Should have injected Base URL for deployed WebContext");
 
-        Assert.assertEquals("JSP", getContent(new URL(baseURL, "index.jsp")));
+        Assertions.assertEquals("JSP", getContent(new URL(baseURL, "index.jsp")));
     }
 
     private String getContent(URL url) throws Exception {

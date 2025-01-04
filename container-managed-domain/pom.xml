@@ -53,16 +53,14 @@
             <groupId>org.wildfly.launcher</groupId>
             <artifactId>wildfly-launcher</artifactId>
         </dependency>
-
-        <!-- Test Scope -->
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
+            <groupId>org.jboss.arquillian.junit5</groupId>
+            <artifactId>arquillian-junit5-container</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.jboss.arquillian.junit</groupId>
-            <artifactId>arquillian-junit-container</artifactId>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -98,7 +96,7 @@
                         </goals>
                         <configuration>
                             <skip>false</skip>
-                            <excludedGroups>org.jboss.as.arquillian.container.domain.managed.test.ManualMode</excludedGroups>
+                            <excludedGroups>ManualMode</excludedGroups>
                             <systemPropertyVariables>
                                 <jboss.home>${jboss.home}</jboss.home>
                             </systemPropertyVariables>
@@ -115,7 +113,7 @@
                         </goals>
                         <configuration>
                             <skip>false</skip>
-                            <groups>org.jboss.as.arquillian.container.domain.managed.test.ManualMode</groups>
+                            <groups>ManualMode</groups>
                             <systemPropertyVariables>
                                 <arquillian.xml>manual-arquillian.xml</arquillian.xml>
                                 <jboss.home>${jboss.home}</jboss.home>

@@ -7,21 +7,20 @@ package org.jboss.as.arquillian.container.managed;
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.AssumptionViolatedException;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * In conjunction with {@link ServerSetupAfterClassTestCase#testAssumptionViolated()}, tests
- * what happens when a {@link ServerSetupTask} throws {@link AssumptionViolatedException}
+ * what happens when a {@link ServerSetupTask} throws {@link org.opentest4j.TestAbortedException}
  * when it executes prior to Arquillian deploying a {@code @Deployment(managed=false)} deployment.
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 @ServerSetup({
         ServerSetupUnmanagedAssumptionViolationTestCase.BeforeSetup.class,

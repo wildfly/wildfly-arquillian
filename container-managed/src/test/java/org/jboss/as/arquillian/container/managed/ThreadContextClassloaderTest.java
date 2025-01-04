@@ -6,19 +6,23 @@
 package org.jboss.as.arquillian.container.managed;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.modules.ModuleClassLoader;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
+@Tag("JmxProtocol")
+@Disabled("WFARQ-153 - The enableThreadContextClassLoader setting does not work with JUnit 5")
 public class ThreadContextClassloaderTest {
 
     @Deployment
@@ -27,22 +31,22 @@ public class ThreadContextClassloaderTest {
         return archive;
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void beforeClass() throws Exception {
         assertNoTCCL();
     }
 
-    @AfterClass
+    @AfterAll
     public static void afterClass() throws Exception {
         assertNoTCCL();
     }
 
-    @Before
+    @BeforeEach
     public void before() throws Exception {
         assertNoTCCL();
     }
 
-    @After
+    @AfterEach
     public void after() throws Exception {
         assertNoTCCL();
     }
@@ -54,6 +58,6 @@ public class ThreadContextClassloaderTest {
 
     private static void assertNoTCCL() {
         ClassLoader tccl = Thread.currentThread().getContextClassLoader();
-        Assert.assertFalse("TCCL not ModuleClassLoader: " + tccl, tccl instanceof ModuleClassLoader);
+        Assertions.assertFalse(tccl instanceof ModuleClassLoader, "TCCL not ModuleClassLoader: " + tccl);
     }
 }

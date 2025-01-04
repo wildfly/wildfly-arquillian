@@ -7,8 +7,7 @@ package org.jboss.as.arquillian.container.managed;
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.junit.InSequence;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
@@ -18,14 +17,18 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceActivator;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Tests basic deployment
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @ServerSetup(UnmanagedDeploymentTestCase.SystemPropertyServerSetup.class)
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @RunAsClient
 public class UnmanagedDeploymentTestCase extends TestOperations {
 
@@ -62,7 +65,7 @@ public class UnmanagedDeploymentTestCase extends TestOperations {
     }
 
     @Test
-    @InSequence(1)
+    @Order(1)
     public void undeployFirst() throws Exception {
         // Undeploy first which should not really do anything
         deployer.undeploy("test-deployment");
@@ -73,7 +76,7 @@ public class UnmanagedDeploymentTestCase extends TestOperations {
     }
 
     @Test
-    @InSequence(2)
+    @Order(2)
     public void contentDeployedThenUndeployed() throws Exception {
         // After the undeploy, the tearDown() won't happen until the class is complete
         deployer.undeploy("test-deployment");

@@ -11,24 +11,24 @@ import org.jboss.arquillian.container.test.api.ContainerController;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-@Category(ManualMode.class)
-@RunWith(Arquillian.class)
+@Tag("ManualMode")
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class ReadOnlyServerConfigTestCase {
     private static final String DEFAULT_CONTAINER_ID = "jboss";
@@ -55,7 +55,7 @@ public class ReadOnlyServerConfigTestCase {
                 .addClass(ManualMode.class);
     }
 
-    @After
+    @AfterEach
     public void shutdown() {
         if (controller.isStarted(READ_ONLY_CONTAINER_ID)) {
             controller.stop(READ_ONLY_CONTAINER_ID);
@@ -112,11 +112,11 @@ public class ReadOnlyServerConfigTestCase {
             throws IOException {
         final ModelNode result = client.getControllerClient().execute(op);
         if (expectFailure) {
-            Assert.assertFalse(String.format("Expected operation %s to fail: %n%s", op, result),
-                    Operations.isSuccessfulOutcome(result));
+            Assertions.assertFalse(Operations.isSuccessfulOutcome(result),
+                    String.format("Expected operation %s to fail: %n%s", op, result));
         } else {
             if (!Operations.isSuccessfulOutcome(result)) {
-                Assert.fail(Operations.getFailureDescription(result).asString());
+                Assertions.fail(Operations.getFailureDescription(result).asString());
             }
         }
     }

@@ -5,7 +5,7 @@
 
 package org.jboss.as.arquillian.container.managed;
 
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.util.function.Function;
 
@@ -13,8 +13,8 @@ import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.AssumptionViolatedException;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.opentest4j.TestAbortedException;
 
 abstract class ServerSetupAssumptionTestBase {
 
@@ -61,7 +61,7 @@ abstract class ServerSetupAssumptionTestBase {
         private final Function<String, RuntimeException> assumptionFailureProducer;
 
         AssumptionViolatedSetup(String property) {
-            this(property, AssumptionViolatedException::new);
+            this(property, TestAbortedException::new);
         }
 
         AssumptionViolatedSetup(String property, Function<String, RuntimeException> assumptionFailureProducer) {

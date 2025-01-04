@@ -9,7 +9,7 @@ import java.io.IOException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.domain.ManagementClient;
 import org.jboss.as.controller.client.helpers.Operations;
@@ -17,16 +17,16 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.wildfly.arquillian.domain.api.TargetsServerGroup;
 
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class ElytronIntegrationTestCase {
 
     @Deployment
@@ -41,20 +41,22 @@ public class ElytronIntegrationTestCase {
     @RunAsClient
     public void testClientUser(@ArquillianResource ManagementClient client) throws IOException {
         final ModelNode result = client.getControllerClient().execute(Operations.createOperation("whoami"));
-        Assert.assertTrue(Operations.isSuccessfulOutcome(result));
+        Assertions.assertTrue(Operations.isSuccessfulOutcome(result));
         final ModelNode identity = Operations.readResult(result);
-        Assert.assertEquals("Expected the connected user to be test-admin", "test-admin",
-                identity.get("identity", "username").asString());
+        Assertions.assertEquals("test-admin",
+                identity.get("identity", "username").asString(),
+                "Expected the connected user to be test-admin");
     }
 
     @Test
     @TargetsServerGroup("main-server-group")
-    @Ignore("Currently domain does not allow injecting clients into in container tests")
+    @Disabled("Currently domain does not allow injecting clients into in container tests")
     public void testInContainerClientUser(@ArquillianResource ManagementClient client) throws IOException {
         final ModelNode result = client.getControllerClient().execute(Operations.createOperation("whoami"));
-        Assert.assertTrue(Operations.isSuccessfulOutcome(result));
+        Assertions.assertTrue(Operations.isSuccessfulOutcome(result));
         final ModelNode identity = Operations.readResult(result);
-        Assert.assertEquals("Expected the connected user to be test-admin", "test-admin",
-                identity.get("identity", "username").asString());
+        Assertions.assertEquals("test-admin",
+                identity.get("identity", "username").asString(),
+                "Expected the connected user to be test-admin");
     }
 }

@@ -4,13 +4,14 @@
  */
 package org.jboss.as.arquillian.container.embedded;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 
 import org.jboss.arquillian.container.spi.ConfigurationException;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * @author <a href="mailto:tommy.tynja@diabol.se">Tommy Tynj&auml;</a>
@@ -23,11 +24,11 @@ public class EmbeddedContainerConfigurationTestCase {
         conf.validate();
     }
 
-    @Test(expected = ConfigurationException.class)
+    @Test
     public void shouldValidateThatModulePathIsNonExisting() {
         final EmbeddedContainerConfiguration conf = new EmbeddedContainerConfiguration();
         conf.setModulePath("");
-        validate(conf);
+        assertThrows(ConfigurationException.class, () -> validate(conf));
     }
 
     @Test
@@ -42,11 +43,11 @@ public class EmbeddedContainerConfigurationTestCase {
         validate(conf);
     }
 
-    @Test(expected = ConfigurationException.class)
+    @Test
     public void shouldValidateThatJbossHomePathIsNonExisting() {
         final EmbeddedContainerConfiguration conf = new EmbeddedContainerConfiguration();
         conf.setJbossHome(null);
-        conf.validate();
+        assertThrows(ConfigurationException.class, () -> conf.validate());
     }
 
     @Test
@@ -66,7 +67,7 @@ public class EmbeddedContainerConfigurationTestCase {
         if (path != null) {
             File dir = new File(path);
             if (!dir.exists()) {
-                assertTrue("Failed to create directory", dir.mkdirs());
+                assertTrue(dir.mkdirs(), "Failed to create directory");
             }
         }
     }

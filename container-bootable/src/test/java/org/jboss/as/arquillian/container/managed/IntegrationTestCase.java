@@ -7,21 +7,21 @@ package org.jboss.as.arquillian.container.managed;
 import jakarta.inject.Inject;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.container.managed.archive.GreetingService;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * IntegrationTestCase
  *
  * @author <a href="mailto:aslak@redhat.com">Aslak Knutsen</a>
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class IntegrationTestCase {
 
     @Deployment
@@ -36,16 +36,16 @@ public class IntegrationTestCase {
 
     @Test
     public void shouldBeAbleToInject() throws Exception {
-        Assert.assertNotNull(service);
-        Assert.assertEquals("Hello Earthling!", service.greet("Earthling"));
+        Assertions.assertNotNull(service);
+        Assertions.assertEquals("Hello Earthling!", service.greet("Earthling"));
     }
 
     @Test
     public void shouldBeAbleToFetchSystemProperties() throws Exception {
         final String prop1 = System.getProperties().getProperty("org.jboss.as.arquillian.container.managed.prop1");
         final String prop2 = System.getProperties().getProperty("org.jboss.as.arquillian.container.managed.prop2");
-        Assert.assertEquals("prop1", prop1);
-        Assert.assertEquals("prop2", prop2);
+        Assertions.assertEquals("prop1", prop1);
+        Assertions.assertEquals("prop2", prop2);
     }
 
 }

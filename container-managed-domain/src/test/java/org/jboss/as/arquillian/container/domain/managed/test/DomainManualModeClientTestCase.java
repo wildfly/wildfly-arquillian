@@ -7,13 +7,13 @@ package org.jboss.as.arquillian.container.domain.managed.test;
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.domain.ManagementClient;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * For Domain server DeployableContainer implementations, the DeployableContainer will register
@@ -21,9 +21,9 @@ import org.junit.runner.RunWith;
  *
  * @author <a href="mailto:aslak@redhat.com">Aslak Knutsen</a>
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
-@Category(ManualMode.class)
+@Tag("ManualMode")
 public class DomainManualModeClientTestCase extends AbstractDomainManualModeTestCase {
     private static final String CONTAINER_NAME = "jboss";
 
@@ -34,15 +34,15 @@ public class DomainManualModeClientTestCase extends AbstractDomainManualModeTest
     @ArquillianResource
     private Deployer deployer;
 
-    @AfterClass
-    public static void stop() throws Exception {
+    @AfterEach
+    public void stop() {
         if (controller.isStarted(CONTAINER_NAME)) {
             controller.stop(CONTAINER_NAME);
         }
     }
 
-    @Before
-    public void startOnce() throws Exception {
+    @BeforeEach
+    public void startOnce() {
         if (!controller.isStarted(CONTAINER_NAME)) {
             controller.start(CONTAINER_NAME);
         }

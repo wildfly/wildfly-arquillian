@@ -22,9 +22,9 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
@@ -45,7 +45,7 @@ public abstract class AbstractManualModeTestCase {
                 .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
     }
 
-    @After
+    @AfterEach
     public void stop() throws Exception {
         if (controller.isStarted(containerName())) {
             controller.stop(containerName());
@@ -57,11 +57,11 @@ public abstract class AbstractManualModeTestCase {
         final String containerName = containerName();
         // The primary container should already be started
         controller.start(containerName, createConfig("server-control"));
-        Assert.assertTrue(String.format("The container \"%s\" should be started", containerName),
-                controller.isStarted(containerName));
+        Assertions.assertTrue(controller.isStarted(containerName),
+                String.format("The container \"%s\" should be started", containerName));
         controller.stop(containerName);
-        Assert.assertFalse(String.format("The container \"%s\" should be stopped", containerName),
-                controller.isStarted(containerName));
+        Assertions.assertFalse(controller.isStarted(containerName),
+                String.format("The container \"%s\" should be stopped", containerName));
     }
 
     @Test
@@ -82,8 +82,9 @@ public abstract class AbstractManualModeTestCase {
             deployer().deploy(createDeployment());
             // Read each result, we should have two results for the first op and one for the second
             final int newDeployments = getCurrentDeploymentCount(client());
-            Assert.assertEquals("Expected 1 deployments found " + (newDeployments - currentDeployments) + " for container "
-                    + containerName, newDeployments, (1 + currentDeployments));
+            Assertions.assertEquals(newDeployments, (1 + currentDeployments),
+                    "Expected 1 deployments found " + (newDeployments - currentDeployments) + " for container "
+                            + containerName);
         } finally {
             deployer().undeploy("dep1");
             controller.stop(containerName);
@@ -109,7 +110,7 @@ public abstract class AbstractManualModeTestCase {
         if (Operations.isSuccessfulOutcome(result)) {
             return Operations.readResult(result);
         }
-        Assert.fail(
+        Assertions.fail(
                 String.format("Failed to execute operation: %s%n%s", op, Operations.getFailureDescription(result)
                         .asString()));
         return new ModelNode();

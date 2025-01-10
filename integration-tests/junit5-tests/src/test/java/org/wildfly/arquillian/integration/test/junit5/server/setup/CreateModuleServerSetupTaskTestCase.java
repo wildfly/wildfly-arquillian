@@ -20,6 +20,7 @@ import javax.management.remote.JMXConnectorFactory;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
+import org.jboss.arquillian.junit5.container.annotation.ArquillianTest;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
@@ -34,7 +35,6 @@ import org.junit.jupiter.api.condition.OS;
 import org.junit.platform.engine.discovery.DiscoverySelectors;
 import org.junit.platform.testkit.engine.EngineTestKit;
 import org.junit.platform.testkit.engine.EventConditions;
-import org.wildfly.arquillian.junit.annotations.WildFlyArquillian;
 import org.wildfly.testing.tools.deployments.DeploymentDescriptors;
 import org.wildfly.testing.tools.modules.ModuleBuilder;
 import org.wildfly.testing.tools.modules.ModuleDescription;
@@ -45,7 +45,7 @@ import org.wildfly.testing.tools.modules.Modules;
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-@WildFlyArquillian
+@ArquillianTest
 @RunAsClient
 public class CreateModuleServerSetupTaskTestCase {
     private static final String MODULE_NAME = "org.wildfly.arquillian.test";
@@ -145,7 +145,7 @@ public class CreateModuleServerSetupTaskTestCase {
         }
     }
 
-    @WildFlyArquillian
+    @ArquillianTest
     @ServerSetup(CreateModuleServerSetupTaskTestCase.TestModuleServerSetupTask.class)
     public static class ModuleSetupTask {
 

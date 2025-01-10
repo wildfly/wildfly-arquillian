@@ -4,10 +4,6 @@ This library includes some utility for running Arquillian tests on WildFly with 
 
 == Annotations
 
-=== `@WildFlyArquillian`
-
-The `@WildFlyArquillian` annotation is a simple shorthand annotation for `@ExtendsWith(ArquillianExtension.class)`.
-
 === `@RequiresModule`
 
 The `@RequiresModule` annotation can be used on a class or test method and will disable a test if the required module
@@ -16,7 +12,7 @@ is not found. There is also an option to define minimum version of a module requ
 .Example
 [source,java]
 ----
-import org.junit.jupiter.api.Test;import org.wildfly.arquillian.junit.annotations.RequiresModule;@WildFlyArquillian
+@ArquillianTest
 @RequiresModule("org.jboss.as.ejb3")
 public class Ejb3Test {
 

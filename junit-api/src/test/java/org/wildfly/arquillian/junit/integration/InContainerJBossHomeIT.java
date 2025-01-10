@@ -9,18 +9,18 @@ import java.io.File;
 import java.nio.file.Path;
 
 import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.junit5.container.annotation.ArquillianTest;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.wildfly.arquillian.junit.annotations.JBossHome;
-import org.wildfly.arquillian.junit.annotations.WildFlyArquillian;
 
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-@WildFlyArquillian
+@ArquillianTest
 public class InContainerJBossHomeIT {
 
     @Deployment

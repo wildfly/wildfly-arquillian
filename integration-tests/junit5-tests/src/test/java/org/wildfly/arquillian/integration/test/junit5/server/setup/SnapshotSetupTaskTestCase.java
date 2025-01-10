@@ -12,6 +12,7 @@ import java.util.function.Supplier;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
+import org.jboss.arquillian.junit5.container.annotation.ArquillianTest;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
@@ -27,12 +28,11 @@ import org.junit.platform.engine.discovery.DiscoverySelectors;
 import org.junit.platform.testkit.engine.EngineTestKit;
 import org.junit.platform.testkit.engine.EventConditions;
 import org.junit.platform.testkit.engine.TestExecutionResultConditions;
-import org.wildfly.arquillian.junit.annotations.WildFlyArquillian;
 
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-@WildFlyArquillian
+@ArquillianTest
 @RunAsClient
 public class SnapshotSetupTaskTestCase {
     private static final String PROPERTY_NAME = SnapshotServerSetupTask.class.getName();
@@ -122,7 +122,7 @@ public class SnapshotSetupTaskTestCase {
         }
     }
 
-    @WildFlyArquillian
+    @ArquillianTest
     @RunAsClient
     public abstract static class SnapshotTests {
 

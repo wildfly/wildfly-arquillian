@@ -6,14 +6,14 @@
 package org.wildfly.arquillian.junit.integration;
 
 import org.jboss.arquillian.container.test.api.RunAsClient;
+import org.jboss.arquillian.junit5.container.annotation.ArquillianTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.wildfly.arquillian.junit.annotations.WildFlyArquillian;
 
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-@WildFlyArquillian
+@ArquillianTest
 @RunAsClient
 public class ClientJBossHomeIT extends InContainerJBossHomeIT {
 

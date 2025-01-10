@@ -54,15 +54,19 @@
             <groupId>org.wildfly.launcher</groupId>
             <artifactId>wildfly-launcher</artifactId>
         </dependency>
-        <!-- Test Dependencies -->
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.jboss.arquillian.junit</groupId>
-            <artifactId>arquillian-junit-container</artifactId>
+            <groupId>org.junit.platform</groupId>
+            <artifactId>junit-platform-suite</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.arquillian.junit5</groupId>
+            <artifactId>arquillian-junit5-container</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -112,7 +116,7 @@
                         <phase>compile</phase>
                         <configuration>
                             <bootable-jar>true</bootable-jar>
-                            <skip-deployment>true</skip-deployment>
+                            <skipDeployment>true</skipDeployment>
                             <bootable-jar-name>test-wildfly.jar</bootable-jar-name>
                         </configuration>
                     </execution>
@@ -145,7 +149,7 @@
                                 <include>**/*TestCase.java</include>
                                 <include>**/*TestSuite.java</include>
                             </includes>
-                            <excludedGroups>org.jboss.as.arquillian.container.managed.manual.ManualMode</excludedGroups>
+                            <excludedGroups>ManualMode</excludedGroups>
                             <excludes>
                                 <exclude>**/ThreadContextClassloaderTest.java</exclude>
                                 <!-- These run as part of test suites -->
@@ -183,7 +187,7 @@
                         </goals>
                         <configuration>
                             <skip>false</skip>
-                            <groups>org.jboss.as.arquillian.container.managed.manual.ManualMode</groups>
+                            <groups>ManualMode</groups>
                             <systemPropertyVariables>
                                 <arquillian.xml>manual-arquillian.xml</arquillian.xml>
                                 <install.dir>${jboss.home}</install.dir>

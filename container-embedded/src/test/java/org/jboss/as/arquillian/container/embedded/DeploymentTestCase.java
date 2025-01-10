@@ -5,18 +5,18 @@
 package org.jboss.as.arquillian.container.embedded;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.msc.service.ServiceActivator;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * Tests basic deployment
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class DeploymentTestCase {
 
     @Deployment
@@ -29,7 +29,7 @@ public class DeploymentTestCase {
 
     @Test
     public void testSystemPropSet() throws Exception {
-        Assert.assertEquals(SystemPropertyServiceActivator.VALUE,
+        Assertions.assertEquals(SystemPropertyServiceActivator.VALUE,
                 System.getProperty(SystemPropertyServiceActivator.TEST_PROPERTY));
     }
 
@@ -40,6 +40,6 @@ public class DeploymentTestCase {
     }
 
     private static void testSystemProperty(final String key) {
-        Assert.assertNotNull(String.format("Expected a value for property \"%s\"", key), System.getProperty(key));
+        Assertions.assertNotNull(System.getProperty(key), String.format("Expected a value for property \"%s\"", key));
     }
 }

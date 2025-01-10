@@ -23,8 +23,8 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.wildfly.arquillian.domain.api.DomainContainerController;
 import org.wildfly.arquillian.domain.api.TargetsServerGroup;
 
@@ -60,13 +60,13 @@ public abstract class AbstractDomainManualModeTestCase {
         final String serverName = "server-two";
         final String containerName = containerName();
         controller.stopServer(containerName, hostName, serverName);
-        Assert.assertFalse("server-two on host " + hostName + " should not be started",
-                controller.isServerStarted(containerName, hostName, serverName));
+        Assertions.assertFalse(controller.isServerStarted(containerName, hostName, serverName),
+                "server-two on host " + hostName + " should not be started");
 
         // Attempt to start server-two
         controller.startServer(containerName, hostName, serverName);
-        Assert.assertTrue("server-two should not be started on host " + hostName + ", but was not",
-                controller.isServerStarted(containerName, hostName, serverName));
+        Assertions.assertTrue(controller.isServerStarted(containerName, hostName, serverName),
+                "server-two should not be started on host " + hostName + ", but was not");
     }
 
     @Test
@@ -78,13 +78,15 @@ public abstract class AbstractDomainManualModeTestCase {
 
         // The servers should all be stopped
         for (String serverName : getServerGroupServers(serverGroupName)) {
-            Assert.assertFalse(String.format("Server %s should be stopped on host %s - server group %s", serverName, hostName,
-                    serverGroupName), controller.isServerStarted(containerName, hostName, serverName));
+            Assertions.assertFalse(controller.isServerStarted(containerName, hostName, serverName),
+                    String.format("Server %s should be stopped on host %s - server group %s", serverName, hostName,
+                            serverGroupName));
         }
         controller.startServers(containerName, serverGroupName);
         for (String serverName : getServerGroupServers(serverGroupName)) {
-            Assert.assertTrue(String.format("Server %s should be stopped on host %s - server group %s", serverName, hostName,
-                    serverGroupName), controller.isServerStarted(containerName, hostName, serverName));
+            Assertions.assertTrue(controller.isServerStarted(containerName, hostName, serverName),
+                    String.format("Server %s should be stopped on host %s - server group %s", serverName, hostName,
+                            serverGroupName));
         }
         TimeUnit.SECONDS.sleep(2L);
     }
@@ -113,11 +115,11 @@ public abstract class AbstractDomainManualModeTestCase {
             ModelNode result = executeForSuccess(builder.build());
             // Read each result, we should have two results for the first op and one for the second
             final List<ModelNode> step1Result = Operations.readResult(result.get("step-1")).asList();
-            Assert.assertTrue("Expected 2 deployments found " + (step1Result.size() - currentMainServerGroupDeployments),
-                    step1Result.size() == (2 + currentMainServerGroupDeployments));
+            Assertions.assertEquals(step1Result.size(), (2 + currentMainServerGroupDeployments),
+                    "Expected 2 deployments found " + (step1Result.size() - currentMainServerGroupDeployments));
             final List<ModelNode> step2Result = Operations.readResult(result.get("step-2")).asList();
-            Assert.assertTrue("Expected 1 deployments found " + (step2Result.size() - currentOtherServerGroupDeployments),
-                    step2Result.size() == (1 + currentOtherServerGroupDeployments));
+            Assertions.assertEquals(step2Result.size(), (1 + currentOtherServerGroupDeployments),
+                    "Expected 1 deployments found " + (step2Result.size() - currentOtherServerGroupDeployments));
         } finally {
             deployer.undeploy("dep1");
             deployer.undeploy("dep2");
@@ -139,7 +141,7 @@ public abstract class AbstractDomainManualModeTestCase {
         if (Operations.isSuccessfulOutcome(result)) {
             return Operations.readResult(result);
         }
-        Assert.fail(
+        Assertions.fail(
                 String.format("Failed to execute operation: %s%n%s", op, Operations.getFailureDescription(result).asString()));
         return new ModelNode();
     }

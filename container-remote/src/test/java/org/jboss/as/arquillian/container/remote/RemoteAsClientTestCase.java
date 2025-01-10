@@ -10,13 +10,13 @@ import java.net.URL;
 import javax.management.MBeanServerConnection;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.as.arquillian.container.MBeanServerConnectionProvider;
 import org.jboss.as.arquillian.container.remote.archive.ConfigService;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Ignore;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * JBossASRemoteIntegrationTestCase
@@ -24,8 +24,8 @@ import org.junit.runner.RunWith;
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @author Thomas.Diesler@jboss.com
  */
-@RunWith(Arquillian.class)
-@Ignore // Disable until JMX over Remoting is implemented
+@ExtendWith(ArquillianExtension.class)
+@Disabled // Disable until JMX over Remoting is implemented
 public class RemoteAsClientTestCase extends AbstractContainerTestCase {
 
     @Deployment(testable = false)

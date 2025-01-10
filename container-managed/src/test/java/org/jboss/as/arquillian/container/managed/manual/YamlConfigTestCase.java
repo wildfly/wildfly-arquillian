@@ -15,24 +15,24 @@ import org.jboss.arquillian.container.test.api.ContainerController;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-@Category(ManualMode.class)
-@RunWith(Arquillian.class)
+@Tag("ManualMode")
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class YamlConfigTestCase {
     private static final String CONTAINER_ID = "yaml";
@@ -54,7 +54,7 @@ public class YamlConfigTestCase {
                 .addClass(ManualMode.class);
     }
 
-    @After
+    @AfterEach
     public void shutdown() {
         if (controller.isStarted(CONTAINER_ID)) {
             controller.stop(CONTAINER_ID);
@@ -68,7 +68,7 @@ public class YamlConfigTestCase {
         // Check the system property
         ModelNode address = Operations.createAddress("system-property", "test-yaml1");
         ModelNode op = Operations.createReadAttributeOperation(address, "value");
-        Assert.assertEquals("yaml1", executeOperation(defaultClient, op).asString());
+        Assertions.assertEquals("yaml1", executeOperation(defaultClient, op).asString());
 
         // Stop the container and restart it, the system property should exist
         controller.stop(CONTAINER_ID);
@@ -78,7 +78,7 @@ public class YamlConfigTestCase {
 
         address = Operations.createAddress("system-property", "test-yaml2");
         op = Operations.createReadAttributeOperation(address, "value");
-        Assert.assertEquals("yaml2", executeOperation(defaultClient, op).asString());
+        Assertions.assertEquals("yaml2", executeOperation(defaultClient, op).asString());
     }
 
     @Test
@@ -97,11 +97,11 @@ public class YamlConfigTestCase {
         // Check the system properties
         ModelNode address = Operations.createAddress("system-property", "test-yaml1");
         ModelNode op = Operations.createReadAttributeOperation(address, "value");
-        Assert.assertEquals("yaml1", executeOperation(defaultClient, op).asString());
+        Assertions.assertEquals("yaml1", executeOperation(defaultClient, op).asString());
 
         address = Operations.createAddress("system-property", "test-yaml2");
         op = Operations.createReadAttributeOperation(address, "value");
-        Assert.assertEquals("yaml2", executeOperation(defaultClient, op).asString());
+        Assertions.assertEquals("yaml2", executeOperation(defaultClient, op).asString());
     }
 
     private static ModelNode executeOperation(final ManagementClient client, final ModelNode op) throws IOException {
@@ -112,19 +112,19 @@ public class YamlConfigTestCase {
             throws IOException {
         final ModelNode result = client.getControllerClient().execute(op);
         if (expectFailure) {
-            Assert.assertFalse(String.format("Expected operation %s to fail: %n%s", op, result),
-                    Operations.isSuccessfulOutcome(result));
+            Assertions.assertFalse(Operations.isSuccessfulOutcome(result),
+                    String.format("Expected operation %s to fail: %n%s", op, result));
             return result;
         }
         if (!Operations.isSuccessfulOutcome(result)) {
-            Assert.fail(Operations.getFailureDescription(result).asString());
+            Assertions.fail(Operations.getFailureDescription(result).asString());
         }
         return Operations.readResult(result);
     }
 
     private static String resolveYamlFile(final String name) throws URISyntaxException {
         final URL resource = YamlConfigTestCase.class.getResource("/" + name);
-        Assert.assertNotNull("Could not find " + name, resource);
+        Assertions.assertNotNull(resource, "Could not find " + name);
         return Path.of(resource.toURI()).toString();
     }
 

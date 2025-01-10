@@ -12,18 +12,18 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class AddAgentTestCase {
 
     @Deployment
@@ -35,7 +35,7 @@ public class AddAgentTestCase {
     @Test
     public void agentSet() throws Exception {
         final Path logFile = Paths.get(System.getProperty("jboss.log.dir"), "server.log");
-        Assert.assertTrue(String.format("Log file %s does not exist.", logFile), Files.exists(logFile));
+        Assertions.assertTrue(Files.exists(logFile), String.format("Log file %s does not exist.", logFile));
         try (BufferedReader reader = Files.newBufferedReader(logFile, StandardCharsets.UTF_8)) {
             boolean found = false;
             String line;
@@ -45,8 +45,8 @@ public class AddAgentTestCase {
                     break;
                 }
             }
-            Assert.assertTrue(String.format("Expected to filed line container \"%s\" in %s.", LoggingAgent.MSG, logFile),
-                    found);
+            Assertions.assertTrue(found,
+                    String.format("Expected to filed line container \"%s\" in %s.", LoggingAgent.MSG, logFile));
         }
     }
 }

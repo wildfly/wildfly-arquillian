@@ -9,20 +9,20 @@ import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * AS7-3111 Ensures the JNDI Naming {@link Context} can be injected
  *
  * @author <a href="mailto:alr@jboss.org">Andrew Lee Rubinger</a>
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 @RunAsClient
 public class InjectJndiContextTestCase {
 
@@ -47,9 +47,9 @@ public class InjectJndiContextTestCase {
      */
     @Test
     public void shouldInjectJndiContext() throws NamingException {
-        Assert.assertNotNull("AS7-3111: JNDI Context must be injected", jndiContext);
+        Assertions.assertNotNull(jndiContext, "AS7-3111: JNDI Context must be injected");
         // Attempt to look up the remote EJB
         final EjbBusiness ejb = (EjbBusiness) jndiContext.lookup(JNDI_NAME);
-        Assert.assertNotNull("Could not look up datasource using supplied JNDI Context", ejb);
+        Assertions.assertNotNull(ejb, "Could not look up datasource using supplied JNDI Context");
     }
 }

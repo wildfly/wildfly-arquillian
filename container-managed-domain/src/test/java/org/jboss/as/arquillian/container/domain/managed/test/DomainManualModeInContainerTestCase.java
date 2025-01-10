@@ -7,10 +7,10 @@ package org.jboss.as.arquillian.container.domain.managed.test;
 
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
-import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit5.ArquillianExtension;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.domain.ManagementClient;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
  * For Domain server DeployableContainer implementations, the DeployableContainer will register
@@ -18,7 +18,7 @@ import org.junit.runner.RunWith;
  *
  * @author <a href="mailto:aslak@redhat.com">Aslak Knutsen</a>
  */
-@RunWith(Arquillian.class)
+@ExtendWith(ArquillianExtension.class)
 public class DomainManualModeInContainerTestCase extends AbstractDomainManualModeTestCase {
     private static final String CONTAINER_NAME = "jboss";
 

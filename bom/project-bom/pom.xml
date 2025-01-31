@@ -22,7 +22,7 @@
     <description>WildFly Arquillian Bill of Materials for the project</description>
 
     <properties>
-        <version.org.wildfly.core>27.0.0.Final</version.org.wildfly.core>
+        <version.org.wildfly.core>27.0.1.Final</version.org.wildfly.core>
         <version.org.wildfly.full>31.0.1.Final</version.org.wildfly.full>
         <version.org.wildfly.launcher>1.0.0.Final</version.org.wildfly.launcher>
         <version.io.smallrye.jandex>3.1.6</version.io.smallrye.jandex>

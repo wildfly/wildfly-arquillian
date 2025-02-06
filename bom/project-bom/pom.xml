@@ -25,7 +25,7 @@
         <version.org.wildfly.core>27.0.0.Final</version.org.wildfly.core>
         <version.org.wildfly.full>31.0.1.Final</version.org.wildfly.full>
         <version.org.wildfly.launcher>1.0.0.Final</version.org.wildfly.launcher>
-        <version.io.smallrye.jandex>3.1.6</version.io.smallrye.jandex>
+        <version.io.smallrye.jandex>3.2.3.redhat-00001</version.io.smallrye.jandex>
         <version.org.junit>5.11.3</version.org.junit>
         <version.org.jboss.arquillian.core>1.9.2.Final</version.org.jboss.arquillian.core>
         <version.org.jboss.arquillian.jakarta>10.0.0.Final</version.org.jboss.arquillian.jakarta>

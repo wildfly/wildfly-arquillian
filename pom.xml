@@ -56,7 +56,7 @@
     <properties>
         <version.org.wildfly>34.0.0.Final</version.org.wildfly>
         <version.org.wildfly.checkstyle-config>1.0.8.Final</version.org.wildfly.checkstyle-config>
-        <version.org.wildfly.plugins.wildfly-maven-plugin>5.1.1.Final</version.org.wildfly.plugins.wildfly-maven-plugin>
+        <version.org.wildfly.plugins.wildfly-maven-plugin>5.1.2.Final</version.org.wildfly.plugins.wildfly-maven-plugin>
 
         <!-- Provisioning -->
         <galleon.fork.embedded>true</galleon.fork.embedded>

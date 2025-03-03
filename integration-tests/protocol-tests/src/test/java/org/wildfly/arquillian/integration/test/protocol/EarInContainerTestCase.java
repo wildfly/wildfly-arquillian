@@ -35,7 +35,7 @@ public class EarInContainerTestCase extends AbstractInContainerTestCase {
                 .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
         return ShrinkWrap.create(EnterpriseArchive.class, DEPLOYMENT_NAME)
                 .addAsModule(war)
-                .addAsModule(jar);
+                .addAsLibrary(jar);
 
     }
 }

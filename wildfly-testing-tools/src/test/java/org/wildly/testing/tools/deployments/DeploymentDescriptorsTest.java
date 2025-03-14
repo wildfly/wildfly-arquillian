@@ -173,9 +173,7 @@ public class DeploymentDescriptorsTest {
             xml.append("        <dependencies>")
                     .append(System.lineSeparator());
             for (String module : addedModules) {
-                xml.append("            <module name=\"").append(module).append("\">")
-                        .append(System.lineSeparator())
-                        .append("            </module>")
+                xml.append("            <module name=\"").append(module).append("\"/>")
                         .append(System.lineSeparator());
             }
             xml.append("        </dependencies>")
@@ -184,10 +182,8 @@ public class DeploymentDescriptorsTest {
         if (!excludedModules.isEmpty()) {
             xml.append("        <exclusions>")
                     .append(System.lineSeparator());
-            for (String module : addedModules) {
-                xml.append("            <module name=\"").append(module).append("\">")
-                        .append(System.lineSeparator())
-                        .append("            </module>")
+            for (String module : excludedModules) {
+                xml.append("            <module name=\"").append(module).append("\"/>")
                         .append(System.lineSeparator());
             }
             xml.append("        </exclusions>")

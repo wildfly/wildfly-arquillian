@@ -102,18 +102,16 @@ public class DeploymentDescriptors {
             if (!addedModules.isEmpty()) {
                 writer.writeStartElement("dependencies");
                 for (String module : addedModules) {
-                    writer.writeStartElement("module");
+                    writer.writeEmptyElement("module");
                     writer.writeAttribute("name", module);
-                    writer.writeEndElement();
                 }
                 writer.writeEndElement();
             }
             if (!excludedModules.isEmpty()) {
                 writer.writeStartElement("exclusions");
-                for (String module : addedModules) {
-                    writer.writeStartElement("module");
+                for (String module : excludedModules) {
+                    writer.writeEmptyElement("module");
                     writer.writeAttribute("name", module);
-                    writer.writeEndElement();
                 }
                 writer.writeEndElement();
             }

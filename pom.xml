@@ -16,7 +16,7 @@
     <artifactId>wildfly-arquillian-parent</artifactId>
 
     <groupId>org.wildfly.arquillian</groupId>
-    <version>5.1.0.Beta11</version>
+    <version>5.1.0.Beta12-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>WildFly Arquillian: Parent</name>
 

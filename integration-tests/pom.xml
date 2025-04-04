@@ -8,7 +8,7 @@
     <parent>
         <groupId>org.wildfly.arquillian</groupId>
         <artifactId>wildfly-arquillian-parent</artifactId>
-        <version>5.1.0.Beta11-SNAPSHOT</version>
+        <version>5.1.0.Beta11</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>

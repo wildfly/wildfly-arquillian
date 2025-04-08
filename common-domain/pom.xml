@@ -57,6 +57,11 @@
           <groupId>org.jboss.arquillian.container</groupId>
           <artifactId>arquillian-container-test-impl-base</artifactId>
         </dependency>
+        <!-- Ensure an old version of jboss-logging is not brought in transitively -->
+        <dependency>
+            <groupId>org.jboss.logging</groupId>
+            <artifactId>jboss-logging</artifactId>
+        </dependency>
         <!-- Required by the wildfly-controller-client transitive dependency org.apache.sshd:sshd-common -->
         <dependency>
             <groupId>org.slf4j</groupId>

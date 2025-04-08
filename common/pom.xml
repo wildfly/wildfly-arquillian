@@ -57,6 +57,11 @@
           <groupId>org.jboss.arquillian.protocol</groupId>
           <artifactId>arquillian-protocol-servlet-jakarta</artifactId>
         </dependency>
+        <!-- Ensure an old version of jboss-logging is not brought in transitively -->
+        <dependency>
+            <groupId>org.jboss.logging</groupId>
+            <artifactId>jboss-logging</artifactId>
+        </dependency>
         <!-- Required for the JMX MBeanServerConnection -->
         <dependency>
             <groupId>org.jboss.remotingjmx</groupId>

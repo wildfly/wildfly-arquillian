@@ -165,7 +165,7 @@
                             <provisioning-dir>${jboss.home}</provisioning-dir>
                             <feature-packs>
                                 <feature-pack>
-                                    <location>wildfly@maven(org.jboss.universe:community-universe)#${version.org.wildfly.full}</location>
+                                    <location>wildfly@maven(org.jboss.universe:community-universe)#${version.org.wildfly}</location>
                                 </feature-pack>
                             </feature-packs>
                             <layers>ee-core-profile-server</layers>

@@ -35,7 +35,6 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest ]
         java: ['11']
-        wildfly-version: ['28.0.1.Final', '29.0.1.Final']
 
     steps:
       - uses: actions/checkout@v4
@@ -46,7 +45,7 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
       - name: Build with Maven Java ${{ matrix.java }}
-        run: mvn -B clean verify '-Dorg.wildfly.logging.skipLogManagerCheck=true' '-Dversion.org.wildfly.full=${{ matrix.wildfly-version }}' '-Dwildfly.preview'
+        run: mvn -B clean verify '-Dorg.wildfly.logging.skipLogManagerCheck=true'
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
@@ -65,6 +64,9 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest]
         java: ['17', '21']
+        profile:
+          - ''
+          - '-Pwildfly-preview'
 
     steps:
       - uses: actions/checkout@v4
@@ -76,18 +78,18 @@ jobs:
           java-version: ${{ matrix.java }}
           distribution: 'temurin'
           cache: 'maven'
-      - name: Build with Maven Java ${{ matrix.java }}
+      - name: Build with Maven Java ${{ matrix.java }} ${{ matrix.profile }}
         run: |
-          mvn clean install '-Dversion.org.wildfly.full=${{steps.wildfly-nightly.outputs.wildfly-version}}' '-Dorg.wildfly.logging.skipLogManagerCheck=true'
+          mvn clean install '-Dversion.org.wildfly=${{steps.wildfly-nightly.outputs.wildfly-version}}' '-Dorg.wildfly.logging.skipLogManagerCheck=true' '${{ matrix.profile }}'
       - name: Upload surefire reports
         uses: actions/upload-artifact@v4
         if: failure()
         with:
-          name: surefire-reports-${{ matrix.os }}-${{ matrix.java }}
+          name: surefire-reports-${{ matrix.os }}-${{ matrix.java }}${{ matrix.profile }}
           path: '**/surefire-reports/*'
       - name: Upload server logs
         uses: actions/upload-artifact@v4
         if: failure()
         with:
-          name: server-logs-${{ matrix.os }}-${{ matrix.java }}
+          name: server-logs-${{ matrix.os }}-${{ matrix.java }}${{ matrix.profile }}
           path: '**/*.log'

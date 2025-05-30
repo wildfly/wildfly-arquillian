@@ -76,7 +76,7 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
       - name: Build with Maven Java ${{ matrix.java }}
-        run: mvn -B clean verify '-Dorg.wildfly.logging.skipLogManagerCheck=true' '-Dversion.org.wildfly.full='
+        run: mvn -B clean verify '-Dorg.wildfly.logging.skipLogManagerCheck=true'
       - uses: actions/upload-artifact@v4
         if: failure()
         with:

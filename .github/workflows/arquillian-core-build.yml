@@ -3,6 +3,11 @@
 name: Build and Test Against Arquillian Core
 
 on:
+  pull_request:
+    branches:
+      - '**'
+    paths:
+      - './.github/workflows/arquillian-core-build.yml'
   push:
     branches:
       - 'main'

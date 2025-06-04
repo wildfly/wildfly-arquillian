@@ -55,7 +55,8 @@ public class ServletClientTestCase {
 
     @Test
     @OperateOnDeployment("war")
-    public void shouldBeAbleToLookupServletURLInAWar(@ArquillianResource URL baseURL) throws Exception {
+    public void shouldBeAbleToLookupServletURLInAWar(@OperateOnDeployment("war") @ArquillianResource URL baseURL)
+            throws Exception {
         Assertions.assertNotNull(baseURL,
                 "Should have injected Base URL for deployed WebContext");
 
@@ -65,8 +66,8 @@ public class ServletClientTestCase {
     @Test
     @OperateOnDeployment("ear")
     public void shouldBeAbleToLookupServletURLInAEar(
-            @ArquillianResource(Servlet1.class) URL servlet1BaseURL,
-            @ArquillianResource(Servlet2.class) URL servlet2BaseURL) throws Exception {
+            @OperateOnDeployment("ear") @ArquillianResource(Servlet1.class) URL servlet1BaseURL,
+            @OperateOnDeployment("ear") @ArquillianResource(Servlet2.class) URL servlet2BaseURL) throws Exception {
 
         Assertions.assertNotNull(servlet1BaseURL,
                 "Should have injected Base URL for deployed WebContext");
@@ -79,7 +80,8 @@ public class ServletClientTestCase {
 
     @Test
     @OperateOnDeployment("war-no-servlet")
-    public void shouldBeAbleToDeployWarWithNoServlets(@ArquillianResource URL baseURL) throws Exception {
+    public void shouldBeAbleToDeployWarWithNoServlets(@OperateOnDeployment("war-no-servlet") @ArquillianResource URL baseURL)
+            throws Exception {
         Assertions.assertNotNull(baseURL,
                 "Should have injected Base URL for deployed WebContext");
 

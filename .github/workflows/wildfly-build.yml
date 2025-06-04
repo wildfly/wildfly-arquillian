@@ -3,6 +3,11 @@
 name: WildFly Test Build
 
 on:
+  pull_request:
+    branches:
+      - '**'
+    paths:
+      - './.github/workflows/wildfly-build.yml'
   push:
     branches:
       - 'main'
@@ -80,7 +85,7 @@ jobs:
           cache: 'maven'
       - name: Build with Maven Java ${{ matrix.java }} ${{ matrix.profile }}
         run: |
-          mvn clean install '-Dversion.org.wildfly=${{steps.wildfly-nightly.outputs.wildfly-version}}' '-Dorg.wildfly.logging.skipLogManagerCheck=true' '${{ matrix.profile }}'
+          mvn clean install '-Dversion.org.wildfly=${{steps.wildfly-nightly.outputs.wildfly-version}}' '-Dorg.wildfly.logging.skipLogManagerCheck=true' ${{ matrix.profile }}
       - name: Upload surefire reports
         uses: actions/upload-artifact@v4
         if: failure()

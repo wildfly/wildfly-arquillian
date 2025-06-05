@@ -7,7 +7,7 @@ on:
     branches:
       - '**'
     paths:
-      - './.github/workflows/wildfly-build.yml'
+      - '.github/workflows/wildfly-build.yml'
   push:
     branches:
       - 'main'

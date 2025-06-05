@@ -7,7 +7,7 @@ on:
     branches:
       - '**'
     paths:
-      - './.github/workflows/arquillian-core-build.yml'
+      - '.github/workflows/arquillian-core-build.yml'
   push:
     branches:
       - 'main'

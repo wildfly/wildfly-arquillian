@@ -7,7 +7,7 @@ on:
     branches:
       - '**'
     paths:
-      - './.github/workflows/wildfly-build.yml'
+      - '.github/workflows/wildfly-build.yml'
   push:
     branches:
       - 'main'
@@ -70,8 +70,8 @@ jobs:
         os: [ubuntu-latest, windows-latest]
         java: ['17', '21']
         profile:
-          - ''
-          - '-Pwildfly-preview'
+          - ""
+          - "'-Pwildfly-preview'"
 
     steps:
       - uses: actions/checkout@v4

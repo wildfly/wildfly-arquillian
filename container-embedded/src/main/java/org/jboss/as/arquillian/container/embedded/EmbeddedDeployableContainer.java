@@ -12,6 +12,7 @@ import java.util.List;
 
 import org.jboss.arquillian.container.spi.client.container.LifecycleException;
 import org.jboss.as.arquillian.container.CommonDeployableContainer;
+import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.arquillian.container.ParameterUtils;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleLoader;
@@ -76,6 +77,11 @@ public final class EmbeddedDeployableContainer extends CommonDeployableContainer
         } catch (Throwable e) {
             throw new LifecycleException("Could not invoke stop on: " + server, e);
         }
+    }
+
+    @Override
+    protected ManagementClient getManagementClient() {
+        return super.getManagementClient();
     }
 
     private static String[] getCommandArgs(final EmbeddedContainerConfiguration config) {

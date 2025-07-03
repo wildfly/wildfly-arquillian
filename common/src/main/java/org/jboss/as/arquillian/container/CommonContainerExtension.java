@@ -35,7 +35,9 @@ public class CommonContainerExtension implements LoadableExtension {
         builder.service(TestEnricher.class, ContainerResourceTestEnricher.class);
         builder.service(AuxiliaryArchiveAppender.class, CommonContainerArchiveAppender.class);
 
-        builder.observer(ServerSetupObserver.class);
+        builder.observer(ServerSetupObserver.class)
+                // Used to append a configuration file to the deployment, see addConfiguration
+                .observer(InContainerManagementClientProvider.class);
 
         // WildFlyContainerController
         builder

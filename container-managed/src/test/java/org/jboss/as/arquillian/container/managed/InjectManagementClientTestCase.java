@@ -11,7 +11,6 @@ import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -21,13 +20,12 @@ import org.junit.jupiter.api.extension.ExtendWith;
  * @author <a href="mailto:alr@jboss.org">Andrew Lee Rubinger</a>
  */
 @ExtendWith(ArquillianExtension.class)
-@Tag("JmxProtocol")
 public class InjectManagementClientTestCase {
 
     @ArquillianResource
     private ManagementClient managementClient;
 
-    @Deployment(testable = false)
+    @Deployment
     public static WebArchive createDeployment() throws Exception {
         return ShrinkWrap.create(WebArchive.class).addClass(HelloWorldServlet.class);
     }

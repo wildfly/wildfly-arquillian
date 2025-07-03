@@ -5,11 +5,13 @@
 
 package org.wildfly.arquillian.integration.test.protocol;
 
+import java.io.IOException;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 
 import jakarta.inject.Inject;
 
+import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
@@ -28,10 +30,19 @@ abstract class AbstractInContainerTestCase {
     @Inject
     private Protocol protocol;
 
+    @ArquillianResource
+    private ManagementClient managementClient;
+
     @Test
     public void testInjection() {
         Assertions.assertNotNull(protocol);
         Assertions.assertEquals(getExpectedProtocol(), protocol.getProtocol());
+    }
+
+    @Test
+    public void injectedManagementClient() throws Exception {
+        Assertions.assertNotNull(managementClient);
+        Assertions.assertEquals(lookupProtocol(managementClient), protocol.getProtocol());
     }
 
     private static String getExpectedProtocol() {
@@ -39,6 +50,17 @@ abstract class AbstractInContainerTestCase {
             return System.getProperty("arq.protocol", "");
         }
         return AccessController.doPrivileged((PrivilegedAction<String>) () -> System.getProperty("arq.protocol", ""));
+    }
+
+    private static String lookupProtocol(final ManagementClient managementClient) throws IOException {
+        final ModelNode op = Operations
+                .createReadAttributeOperation(Operations.createAddress("system-property", "arq.protocol"), "value");
+        final ModelNode result = managementClient.getControllerClient().execute(op);
+        if (!Operations.isSuccessfulOutcome(result)) {
+            throw new RuntimeException("Failed to configure properties: " + Operations.getFailureDescription(result)
+                    .asString());
+        }
+        return Operations.readResult(result).asString();
     }
 
     public static class SystemPropertyServerSetupTask implements ServerSetupTask {

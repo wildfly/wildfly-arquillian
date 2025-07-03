@@ -37,7 +37,6 @@ import org.jboss.as.arquillian.container.NetworkUtils;
 import org.jboss.as.arquillian.protocol.jmx.ExtendedJMXProtocol.ServiceArchiveHolder;
 import org.jboss.as.arquillian.service.ArquillianService;
 import org.jboss.as.arquillian.service.DependenciesProvider;
-import org.jboss.as.arquillian.service.InContainerManagementClientExtension;
 import org.jboss.as.arquillian.service.JMXProtocolEndpointExtension;
 import org.jboss.logging.Logger;
 import org.jboss.modules.ModuleIdentifier;
@@ -71,6 +70,7 @@ public class JMXProtocolPackager implements DeploymentPackager {
     private static final List<String> defaultDependencies = new ArrayList<String>();
 
     private static final Set<String> optionalDeps = new HashSet<>();
+    private static final Set<String> exportedDeps = Set.of("org.jboss.as.controller-client", "org.jboss.dmr");
 
     private static final Collection<String> services = new HashSet<>();
 
@@ -164,7 +164,6 @@ public class JMXProtocolPackager implements DeploymentPackager {
             archive.merge(aux);
         }
         loadableExtensions.add(JMXProtocolEndpointExtension.class.getName());
-        loadableExtensions.add(InContainerManagementClientExtension.class.getName());
 
         // Generate the manifest with it's dependencies
         ManifestDescriptor manifest = Descriptors.create(ManifestDescriptor.class);
@@ -175,6 +174,9 @@ public class JMXProtocolPackager implements DeploymentPackager {
             depspec.append(dep);
             if (optionalDeps.contains(dep.getName())) {
                 depspec.append(" optional");
+            }
+            if (exportedDeps.contains(dep.getName())) {
+                depspec.append(" export");
             }
             if (itdep.hasNext()) {
                 depspec.append(",");

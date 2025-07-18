@@ -5,6 +5,7 @@
 
 package org.jboss.as.arquillian.container;
 
+import org.jboss.arquillian.container.test.spi.RemoteLoadableExtension;
 import org.jboss.arquillian.container.test.spi.client.deployment.AuxiliaryArchiveAppender;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
@@ -28,12 +29,18 @@ public class CommonContainerArchiveAppender implements AuxiliaryArchiveAppender 
                 // These two types are added to avoid exceptions with class loading for in-container tests. These
                 // shouldn't really be used for in-container tests.
                 .addClasses(ServerSetupTask.class, ServerSetup.class)
-                .addClasses(ManagementClient.class)
+                .addClasses(
+                        ManagementClient.class,
+                        Authentication.class,
+                        ManagedContainerRemoteExtension.class,
+                        WildFlyArquillianConfiguration.class,
+                        InContainerManagementClientProvider.class)
                 // Add the setup task implementations
                 .addPackage(ConfigureLoggingSetupTask.class.getPackage())
                 // Adds wildfly-plugin-tools, this exception itself is explicitly needed
                 .addPackages(true, OperationExecutionException.class.getPackage())
-                .setManifest(new StringAsset("Manifest-Version: 1.0\n"
-                        + "Dependencies: org.jboss.as.controller-client,org.jboss.dmr\n"));
+                .addAsServiceProvider(RemoteLoadableExtension.class, ManagedContainerRemoteExtension.class)
+                .setManifest(new StringAsset("Manifest-Version: 1.0\r\n"
+                        + "Dependencies: org.jboss.as.controller-client export,org.jboss.dmr export\r\n"));
     }
 }

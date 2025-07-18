@@ -4,11 +4,8 @@
  */
 package org.jboss.as.arquillian.protocol.jmx;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.ObjectOutputStream;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
 import org.jboss.arquillian.container.spi.Container;
@@ -20,11 +17,9 @@ import org.jboss.arquillian.core.api.Instance;
 import org.jboss.arquillian.core.api.annotation.Inject;
 import org.jboss.arquillian.core.api.annotation.Observes;
 import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.as.arquillian.container.NetworkUtils;
 import org.jboss.as.arquillian.protocol.jmx.ExtendedJMXProtocol.ServiceArchiveHolder;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
-import org.jboss.shrinkwrap.api.asset.ByteArrayAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.wildfly.plugin.tools.ContainerDescription;
 
@@ -88,19 +83,6 @@ public class ArquillianServiceDeployer {
             JavaArchive serviceArchive = (JavaArchive) archiveHolder.getArchive();
             try {
                 log.infof("Deploy arquillian service: %s", serviceArchive);
-                final Map<String, String> props = container.getContainerConfiguration().getContainerProperties();
-                // MASSIVE HACK
-                // write the management connection props to the archive, so we can access them from the server
-                final ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-                ObjectOutputStream out = new ObjectOutputStream(bytes);
-                out.writeObject(props.get("managementPort"));
-                out.writeObject(NetworkUtils.formatPossibleIpv6Address(props.get("managementAddress")));
-                out.writeObject(NetworkUtils.formatPossibleIpv6Address(props.get("managementProtocol")));
-                out.writeObject(props.get("authenticationConfig"));
-                out.close();
-                serviceArchive.addAsManifestResource(new ByteArrayAsset(bytes.toByteArray()),
-                        "org.jboss.as.managementConnectionProps");
-
                 DeployableContainer<?> deployableContainer = container.getDeployableContainer();
                 deployableContainer.deploy(serviceArchive);
                 serviceArchiveDeployed.add(container.getName());

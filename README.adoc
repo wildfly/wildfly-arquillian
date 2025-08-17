@@ -7,7 +7,7 @@ https://www.redhat.com/en/technologies/jboss-middleware/application-platform[JBo
 and unmanaged standalone and domain servers. As of 3.0.0 there is also a bootable JAR adapter as well.
 
 Versions under 3.0.0 should work with any version of WildFly and JBoss EAP 7.0 and higher. Version 3.0.0 requires a
-minimum of WildFly 13 or JBoss EAP 7.2. Versions 5.0 for for Jakarta EE 10 and work with WildFly 27 and higher and
+minimum of WildFly 13 or JBoss EAP 7.2. Versions 5.0 for Jakarta EE 10 and work with WildFly 27 and higher and
 JBoss EAP 8.0 and higher.
 
 Found a bug or want a new feature? Please file a bug on the https://issues.redhat.com/browse/WFARQ[issue tracker].

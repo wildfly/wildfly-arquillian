@@ -42,7 +42,7 @@ jobs:
         java: ['11']
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Set up JDK ${{ matrix.java }}
         uses: actions/setup-java@v4
         with:
@@ -74,7 +74,7 @@ jobs:
           - "'-Pwildfly-preview'"
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: wildfly-extras/wildfly-nightly-download@v1
         id: wildfly-nightly
       - name: Set up JDK ${{ matrix.java }}

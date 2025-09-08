@@ -8,6 +8,7 @@ package org.wildfly.arquillian.junit.annotations;
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Inherited;
+import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
@@ -25,6 +26,7 @@ import org.wildfly.arquillian.junit.condition.RequiresModuleExecutionCondition;
 @Documented
 @Target({ ElementType.TYPE, ElementType.METHOD })
 @Retention(RetentionPolicy.RUNTIME)
+@Repeatable(RequiresModules.class)
 @ExtendWith(RequiresModuleExecutionCondition.class)
 public @interface RequiresModule {
 

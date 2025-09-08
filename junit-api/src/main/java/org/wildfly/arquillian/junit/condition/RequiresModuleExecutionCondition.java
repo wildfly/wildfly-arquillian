@@ -11,6 +11,7 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.jar.Attributes;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
@@ -21,10 +22,12 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.jboss.logging.Logger;
 import org.junit.jupiter.api.extension.ConditionEvaluationResult;
 import org.junit.jupiter.api.extension.ExecutionCondition;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.platform.commons.support.AnnotationSupport;
+import org.wildfly.arquillian.junit.annotations.AnyOf;
 import org.wildfly.arquillian.junit.annotations.RequiresModule;
 import org.wildfly.plugin.tools.VersionComparator;
 import org.xml.sax.SAXException;
@@ -35,13 +38,40 @@ import org.xml.sax.SAXException;
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 public class RequiresModuleExecutionCondition implements ExecutionCondition {
+    private static final Logger LOGGER = Logger.getLogger(RequiresModuleExecutionCondition.class);
+
+    // Default enabled condition
+    private static final ConditionEvaluationResult ENABLED = ConditionEvaluationResult
+            .enabled("All modules have been found, enabling the test.");
+    // Default disabled condition
+    private static final ConditionEvaluationResult DISABLED = ConditionEvaluationResult
+            .disabled("None of the modules have been found, disabling the test.");
 
     @Override
     public ConditionEvaluationResult evaluateExecutionCondition(final ExtensionContext context) {
-        return AnnotationSupport.findAnnotation(context.getElement(), RequiresModule.class)
-                .map((this::checkModule))
-                .orElse(ConditionEvaluationResult
-                        .enabled("Could not determine the @RequiresModule was found, enabling by default"));
+        final var annotatedElement = context.getElement();
+
+        final Function<RequiresModule, ConditionEvaluationResult> mapper = (requiresModule -> {
+            final var result = checkModule(requiresModule);
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debugf("Condition of %s on %s result in an evaluation of: %s", requiresModule, annotatedElement, result);
+            }
+            return result;
+        });
+        // First check for the AnyOf annotation
+        final Optional<AnyOf> anyOf = AnnotationSupport.findAnnotation(annotatedElement, AnyOf.class);
+        return anyOf.map(any -> Stream.of(any.value())
+                .map(mapper)
+                .filter((condition) -> !condition.isDisabled())
+                .findFirst()
+                .orElse(DISABLED))
+                // No AnyOf annotation was found, check for the repeatable @RequiresModule annotation
+                .orElseGet(() -> AnnotationSupport.findRepeatableAnnotations(annotatedElement, RequiresModule.class)
+                        .stream()
+                        .map(mapper)
+                        .filter(ConditionEvaluationResult::isDisabled)
+                        .findFirst()
+                        .orElse(ENABLED));
     }
 
     private ConditionEvaluationResult checkModule(final RequiresModule requiresModule) {

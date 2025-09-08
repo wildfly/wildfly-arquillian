@@ -11,13 +11,13 @@
         <groupId>org.jboss</groupId>
         <artifactId>jboss-parent</artifactId>
         <version>50</version>
-        <relativePath/>
+        <relativePath />
     </parent>
 
     <artifactId>wildfly-arquillian-parent</artifactId>
 
     <groupId>org.wildfly.arquillian</groupId>
-    <version>5.1.0.Beta12-SNAPSHOT</version>
+    <version>5.1.0.Final</version>
     <packaging>pom</packaging>
     <name>WildFly Arquillian: Parent</name>
     <description>An Arquillian adaptor for WildFly.</description>
@@ -66,12 +66,11 @@
         <module>integration-tests</module>
     </modules>
 
-    <scm child.scm.connection.inherit.append.path="false" child.scm.developerConnection.inherit.append.path="false"
-         child.scm.url.inherit.append.path="false">
+    <scm child.scm.connection.inherit.append.path="false" child.scm.developerConnection.inherit.append.path="false" child.scm.url.inherit.append.path="false">
         <connection>scm:git:git://github.com/wildfly/wildfly-arquillian.git</connection>
         <developerConnection>scm:git:git@github.com:wildfly/wildfly-arquillian.git</developerConnection>
         <url>https://github.com/wildfly/wildfly-arquillian/</url>
-        <tag>HEAD</tag>
+        <tag>v5.1.0.Final</tag>
     </scm>
 
     <issueManagement>
@@ -82,7 +81,7 @@
     <properties>
         <version.formatter.maven.plugin>2.23.0</version.formatter.maven.plugin>
         <version.impsort.maven.plugin>1.9.0</version.impsort.maven.plugin>
-        <version.org.wildfly/>
+        <version.org.wildfly />
         <version.org.wildfly.checkstyle-config>1.0.8.Final</version.org.wildfly.checkstyle-config>
         <version.org.wildfly.plugins.wildfly-maven-plugin>5.1.4.Final</version.org.wildfly.plugins.wildfly-maven-plugin>
 
@@ -226,7 +225,7 @@
                             </channel>
                         </channels>
                         <galleon-options>
-                            <jboss-maven-dist/>
+                            <jboss-maven-dist />
                             <jboss-fork-embedded>${galleon.fork.embedded}</jboss-fork-embedded>
                         </galleon-options>
                     </configuration>

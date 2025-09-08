@@ -5,11 +5,23 @@
 
 package org.wildfly.arquillian.junit.integration;
 
+import java.net.URI;
+
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.ws.rs.ApplicationPath;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.client.Client;
+import jakarta.ws.rs.client.ClientBuilder;
+import jakarta.ws.rs.core.Application;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.UriBuilder;
 
 import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit5.container.annotation.ArquillianTest;
+import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -21,18 +33,18 @@ import org.wildfly.arquillian.junit.annotations.RequiresModule;
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 @ArquillianTest
-@ApplicationScoped
-public class InContainerRequireModuleIT {
+@RunAsClient
+public class ClientRequiresModuleIT {
+
+    @ArquillianResource
+    private URI uri;
 
     @Deployment
     public static WebArchive deployment() {
-        return ShrinkWrap.create(WebArchive.class)
+        return ShrinkWrap.create(WebArchive.class, ClientRequiresModuleIT.class.getSimpleName() + ".war")
                 .addClass(Greeter.class)
                 .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
     }
-
-    @Inject
-    private Greeter greeter;
 
     @RequiresModule("org.jboss.as.ejb3")
     @Test
@@ -50,16 +62,24 @@ public class InContainerRequireModuleIT {
     @RequiresModule(value = "jakarta.ws.rs.api", minVersion = "3.1.0")
     @Test
     public void pass() {
-        Assertions.assertNotNull(greeter);
-        Assertions.assertEquals("Hello!", greeter.hello());
+        makeRequest();
     }
 
     @RequiresModule(value = "jakarta.ws.rs.api", minVersion = "3.1.0")
     @RequiresModule(value = "org.jboss.as.jaxrs", minVersion = "27.0.0.Final")
     @Test
     public void passTwoRequiredModules() {
-        Assertions.assertNotNull(greeter);
-        Assertions.assertEquals("Hello!", greeter.hello());
+        makeRequest();
+    }
+
+    private void makeRequest() {
+        try (Client client = ClientBuilder.newClient()) {
+            try (Response response = client.target(UriBuilder.fromUri(uri).path("/greeter")).request().get()) {
+                Assertions.assertEquals(Response.Status.OK.getStatusCode(), response.getStatus(), () -> String
+                        .format("Response status code %d: %s", response.getStatus(), response.readEntity(String.class)));
+                Assertions.assertEquals("Hello!", response.readEntity(String.class));
+            }
+        }
     }
 
     @ApplicationScoped
@@ -67,6 +87,22 @@ public class InContainerRequireModuleIT {
 
         public String hello() {
             return "Hello!";
+        }
+    }
+
+    @ApplicationPath("/")
+    public static class RestActivator extends Application {
+
+    }
+
+    @Path("/greeter")
+    public static class GreeterResource {
+        @Inject
+        private Greeter greeter;
+
+        @GET
+        public String hello() {
+            return greeter.hello();
         }
     }
 }

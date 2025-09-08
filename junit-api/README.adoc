@@ -36,6 +36,37 @@ public class Ejb3Test {
 The `minVersion`, `issueRef` and `reason` are all optional. The `value`, which is the module name, is required. The
 `issueRef` and `reason` are used for the reason text when the test is disabled.
 
+This is a repeatable annotation. When more than one `@RequiresModule` is found, all conditions must be met for a test
+to be enabled. If you want only one condition to be met, use the `@AnyOf` annotation.
+
+=== `@AnyOf`
+
+The `@AnyOf` annotation is used to define one or more `@RequiresModule` annotations and only one of the conditions needs
+to be met to enable a test.
+
+.Example
+[source,java]
+----
+@ArquillianTest
+@ApplicationScoped
+public class RestTest {
+    @Inject
+    private Client client;
+
+    @Test
+    @AnyOf({
+        @RequiresModule("org.jboss.resteasy.resteasy-client"),
+        @RequiresModule("org.jboss.resteasy.resteasy-vertx-client")
+    })
+    public void simpleResource() {
+
+    }
+}
+----
+
+The above test will execute if either the `org.jboss.resteasy.resteasy-client` or `org.jboss.resteasy.resteasy-vertx-client`
+exist.
+
 === `@JBossHome`
 
 The `@JBossHome` annotation is a simple helper annotation for injecting a `java.lang.String`, `java.nio.file.Path` or

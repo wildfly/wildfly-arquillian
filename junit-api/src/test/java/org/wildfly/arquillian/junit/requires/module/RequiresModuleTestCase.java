@@ -187,6 +187,75 @@ public class RequiresModuleTestCase {
                         "Found version 1.0.0.Beta1 and required a minimum of version 1.0.0.Final. Disabling test.")));
     }
 
+    @Test
+    public void multiModulePassingVersion() {
+        final var testEvents = EngineTestKit.engine("junit-jupiter")
+                .selectors(DiscoverySelectors.selectMethod(RequireMultiModules.class, "passingVersion"))
+                .execute()
+                .testEvents();
+
+        testEvents.assertStatistics((stats) -> stats.succeeded(1L));
+    }
+
+    @Test
+    public void multiModuleSkippedVersion() {
+        final var testEvents = EngineTestKit.engine("junit-jupiter")
+                .selectors(DiscoverySelectors.selectMethod(RequireMultiModules.class, "skippedVersion"))
+                .execute()
+                .testEvents();
+
+        testEvents.assertStatistics((stats) -> stats.skipped(1L));
+        testEvents.assertThatEvents().haveExactly(1, EventConditions.event(
+                EventConditions.skippedWithReason(
+                        "Found version 2.0.0.Final and required a minimum of version 2.0.1. Disabling test.")));
+    }
+
+    @Test
+    public void multiModuleRequiresModulesPassingVersion() {
+        final var testEvents = EngineTestKit.engine("junit-jupiter")
+                .selectors(DiscoverySelectors.selectMethod(RequireMultiModules.class, "passingVersionRequiresModules"))
+                .execute()
+                .testEvents();
+
+        testEvents.assertStatistics((stats) -> stats.succeeded(1L));
+    }
+
+    @Test
+    public void multiModuleRequiresModulesSkippedVersion() {
+        final var testEvents = EngineTestKit.engine("junit-jupiter")
+                .selectors(DiscoverySelectors.selectMethod(RequireMultiModules.class, "skippedVersionRequiresModules"))
+                .execute()
+                .testEvents();
+
+        testEvents.assertStatistics((stats) -> stats.skipped(1L));
+        testEvents.assertThatEvents().haveExactly(1, EventConditions.event(
+                EventConditions.skippedWithReason(
+                        "Found version 2.0.0.Final and required a minimum of version 2.0.1. Disabling test.")));
+    }
+
+    @Test
+    public void multiModulePassingAnyOf() {
+        final var testEvents = EngineTestKit.engine("junit-jupiter")
+                .selectors(DiscoverySelectors.selectMethod(RequireMultiModules.class, "passingAnyOf"))
+                .execute()
+                .testEvents();
+
+        testEvents.assertStatistics((stats) -> stats.succeeded(1L));
+    }
+
+    @Test
+    public void multiModuleSkippedAnyOf() {
+        final var testEvents = EngineTestKit.engine("junit-jupiter")
+                .selectors(DiscoverySelectors.selectMethod(RequireMultiModules.class, "skippedAnyOf"))
+                .execute()
+                .testEvents();
+
+        testEvents.assertStatistics((stats) -> stats.skipped(1L));
+        testEvents.assertThatEvents().haveExactly(1, EventConditions.event(
+                EventConditions.skippedWithReason(
+                        "None of the modules have been found, disabling the test.")));
+    }
+
     private static void createJar(final String moduleName, final Path jbossHome, final String version) throws IOException {
         // Create the JAR with a manifest only
         final Path jarPath = jbossHome.resolve(

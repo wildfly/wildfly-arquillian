@@ -24,6 +24,11 @@
         <module>domain</module>
     </modules>
 
+    <properties>
+        <!-- Skip deploying tests -->
+        <skipNexusStagingDeployMojo>true</skipNexusStagingDeployMojo>
+    </properties>
+
     <dependencyManagement>
         <dependencies>
             <dependency>

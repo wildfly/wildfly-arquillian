@@ -20,6 +20,31 @@
     <version>5.1.0.Beta12-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>WildFly Arquillian: Parent</name>
+    <description>An Arquillian adaptor for WildFly.</description>
+
+    <url>https://wildfly.org</url>
+
+    <organization>
+        <name>WildFly Community</name>
+        <url>https://wildfly.org</url>
+    </organization>
+
+    <licenses>
+        <license>
+            <name>Apache License 2.0</name>
+            <url>https://repository.jboss.org/licenses/apache-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <id>wildfly.org</id>
+            <name>WildFly Community</name>
+            <organization>wildfly.org</organization>
+            <organizationUrl>https://wildfly.org</organizationUrl>
+        </developer>
+    </developers>
 
     <modules>
         <!-- The project BOM must be built first -->
@@ -96,6 +121,20 @@
         <!-- Require at least Java 11 to compile -->
         <jdk.min.version>11</jdk.min.version>
         <maven.compiler.release>11</maven.compiler.release>
+
+        <!-- maven-release-plugin configuration -->
+        <autoVersionSubmodules>true</autoVersionSubmodules>
+        <releaseProfiles>jboss-release</releaseProfiles>
+        <signTag>true</signTag>
+        <tagNameFormat>v@{project.version}</tagNameFormat>
+        <arguments>-DskipTests</arguments>
+        <!-- Do not push changes by default when using the maven-release-plugin:prepare -->
+        <pushChanges>false</pushChanges>
+        <!-- Use the local directory when using perform -->
+        <localCheckout>true</localCheckout>
+        <!--JBoss Nexus properties -->
+        <nexus.repository.staging>wildfly-staging</nexus.repository.staging>
+        <nexus.staging.tag>wildfly-arquillian-${project.version}</nexus.staging.tag>
     </properties>
 
     <build>

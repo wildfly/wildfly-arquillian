@@ -103,3 +103,37 @@ Since version 3.0.0 of the adapter you can now use Arquillian to test your boota
   <scope>test</scope>
 </dependency>
 ----
+
+== Releasing
+
+Releasing this project requires access to https://repository.jboss.org/nexust[JBoss Nexus].
+
+To perform a release ensure you're on the correct branch and that branch is up to date. Once done you can simply use
+the `release.sh` bash script.
+
+[source,bash]
+----
+./release.sh -r 5.1.0.Final -d 5.1.1.Final-SNAPSHOT
+----
+
+If this was successful, instructions will be printed on the console with the next set of instructions for processing.
+
+[source,base]
+----
+...
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  48.454 s
+[INFO] Finished at: 2025-09-08T15:03:05-07:00
+[INFO] ------------------------------------------------------------------------
+
+Your release has been successful. Check the validation after 15:13:05 on https://repository.jboss.org/nexus.
+Once validation is successful, execute the following command:
+
+git checkout v5.1.0.Final
+mvn nxrm3:staging-move -Dmaven.repo.local="/tmp/m2/repository/wildfly-arquillian"
+git checkout release-update
+git push upstream release-update
+git push upstream v5.1.0.Final
+----

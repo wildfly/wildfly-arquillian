@@ -18,6 +18,11 @@
     <name>WildFly Arquillian: TestNG Integration</name>
     <packaging>jar</packaging>
 
+    <properties>
+        <!-- This is a test only module, we will skip deploying it. -->
+        <skipNexusStagingDeployMojo>true</skipNexusStagingDeployMojo>
+    </properties>
+
     <dependencyManagement>
         <dependencies>
             <dependency>

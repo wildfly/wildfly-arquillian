@@ -8,9 +8,10 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.wildfly.tools</groupId>
-        <artifactId>wildfly-parent</artifactId>
-        <version>1.0.4.Final</version>
+        <groupId>org.jboss</groupId>
+        <artifactId>jboss-parent</artifactId>
+        <version>50</version>
+        <relativePath/>
     </parent>
 
     <artifactId>wildfly-arquillian-parent</artifactId>
@@ -19,6 +20,31 @@
     <version>5.1.0.Beta12-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>WildFly Arquillian: Parent</name>
+    <description>An Arquillian adaptor for WildFly.</description>
+
+    <url>https://wildfly.org</url>
+
+    <organization>
+        <name>WildFly Community</name>
+        <url>https://wildfly.org</url>
+    </organization>
+
+    <licenses>
+        <license>
+            <name>Apache License 2.0</name>
+            <url>https://repository.jboss.org/licenses/apache-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <id>wildfly.org</id>
+            <name>WildFly Community</name>
+            <organization>wildfly.org</organization>
+            <organizationUrl>https://wildfly.org</organizationUrl>
+        </developer>
+    </developers>
 
     <modules>
         <!-- The project BOM must be built first -->
@@ -54,6 +80,8 @@
     </issueManagement>
 
     <properties>
+        <version.formatter.maven.plugin>2.23.0</version.formatter.maven.plugin>
+        <version.impsort.maven.plugin>1.9.0</version.impsort.maven.plugin>
         <version.org.wildfly/>
         <version.org.wildfly.checkstyle-config>1.0.8.Final</version.org.wildfly.checkstyle-config>
         <version.org.wildfly.plugins.wildfly-maven-plugin>5.1.4.Final</version.org.wildfly.plugins.wildfly-maven-plugin>
@@ -68,6 +96,7 @@
         <wildfly.channel.manifest.artifactId>wildfly-ee</wildfly.channel.manifest.artifactId>
 
         <!-- Other properties -->
+        <skipFormatter>false</skipFormatter>
         <wildfly.standalone.config>standalone.xml</wildfly.standalone.config>
 
         <maven.test.skip>false</maven.test.skip>
@@ -92,6 +121,20 @@
         <!-- Require at least Java 11 to compile -->
         <jdk.min.version>11</jdk.min.version>
         <maven.compiler.release>11</maven.compiler.release>
+
+        <!-- maven-release-plugin configuration -->
+        <autoVersionSubmodules>true</autoVersionSubmodules>
+        <releaseProfiles>jboss-release</releaseProfiles>
+        <signTag>true</signTag>
+        <tagNameFormat>v@{project.version}</tagNameFormat>
+        <arguments>-DskipTests</arguments>
+        <!-- Do not push changes by default when using the maven-release-plugin:prepare -->
+        <pushChanges>false</pushChanges>
+        <!-- Use the local directory when using perform -->
+        <localCheckout>true</localCheckout>
+        <!--JBoss Nexus properties -->
+        <nexus.repository.staging>wildfly-staging</nexus.repository.staging>
+        <nexus.staging.tag>wildfly-arquillian-${project.version}</nexus.staging.tag>
     </properties>
 
     <build>
@@ -258,10 +301,55 @@
             <plugin>
                 <groupId>net.revelc.code.formatter</groupId>
                 <artifactId>formatter-maven-plugin</artifactId>
+                <version>${version.formatter.maven.plugin}</version>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.wildfly.tools</groupId>
+                        <artifactId>ide-config</artifactId>
+                        <version>1.0.5.Final</version>
+                    </dependency>
+                </dependencies>
+                <configuration>
+                    <!-- store outside of target to speed up formatting when mvn clean is used -->
+                    <cachedir>.cache</cachedir>
+                    <configFile>eclipse-code-formatter.xml</configFile>
+                    <configXmlFile>wildfly-xml.properties</configXmlFile>
+                    <lineEnding>LF</lineEnding>
+                    <includeResources>true</includeResources>
+                    <removeTrailingWhitespace>true</removeTrailingWhitespace>
+                    <skip>${skipFormatting}</skip>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>format</id>
+                        <goals>
+                            <goal>format</goal>
+                        </goals>
+                        <phase>process-sources</phase>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <groupId>net.revelc.code</groupId>
                 <artifactId>impsort-maven-plugin</artifactId>
+                <version>${version.impsort.maven.plugin}</version>
+                <configuration>
+                    <!-- store outside of target to speed up formatting when mvn clean is used -->
+                    <cachedir>.cache</cachedir>
+                    <groups>java.,javax.,jakarta.,org.,com.</groups>
+                    <staticGroups>*</staticGroups>
+                    <skip>${skipFormatting}</skip>
+                    <removeUnused>true</removeUnused>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>sort-imports</id>
+                        <goals>
+                            <goal>sort</goal>
+                        </goals>
+                        <phase>process-sources</phase>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
@@ -335,35 +423,4 @@
             </build>
         </profile>
     </profiles>
-
-    <repositories>
-        <repository>
-            <releases>
-                <enabled>true</enabled>
-                <updatePolicy>never</updatePolicy>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-                <updatePolicy>never</updatePolicy>
-            </snapshots>
-            <id>jboss-public-repository</id>
-            <name>JBoss Public Repository Group</name>
-            <url>https://repository.jboss.org/nexus/content/groups/public/</url>
-            <layout>default</layout>
-        </repository>
-        <repository>
-            <releases>
-                <enabled>true</enabled>
-                <updatePolicy>never</updatePolicy>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-                <updatePolicy>never</updatePolicy>
-            </snapshots>
-            <id>jboss-enterprise-maven-repository</id>
-            <name>JBoss Enterprise Maven Repository</name>
-            <url>https://maven.repository.redhat.com/ga/</url>
-            <layout>default</layout>
-        </repository>
-    </repositories>
 </project>

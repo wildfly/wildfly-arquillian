@@ -83,7 +83,7 @@
         <version.impsort.maven.plugin>1.9.0</version.impsort.maven.plugin>
         <version.org.wildfly />
         <version.org.wildfly.checkstyle-config>1.0.8.Final</version.org.wildfly.checkstyle-config>
-        <version.org.wildfly.plugins.wildfly-maven-plugin>5.1.4.Final</version.org.wildfly.plugins.wildfly-maven-plugin>
+        <version.org.wildfly.plugins.wildfly-maven-plugin>5.1.5.Final</version.org.wildfly.plugins.wildfly-maven-plugin>
 
         <!-- Provisioning -->
         <galleon.fork.embedded>true</galleon.fork.embedded>

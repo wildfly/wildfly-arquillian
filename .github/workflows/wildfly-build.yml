@@ -51,12 +51,12 @@ jobs:
           cache: 'maven'
       - name: Build with Maven Java ${{ matrix.java }}
         run: mvn -B clean verify '-Dorg.wildfly.logging.skipLogManagerCheck=true'
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         if: failure()
         with:
           name: surefire-reports-${{ matrix.os }}-${{ matrix.java }}
           path: '**/surefire-reports/*'
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         if: failure()
         with:
           name: server-logs-${{ matrix.os }}-${{ matrix.java }}
@@ -87,13 +87,13 @@ jobs:
         run: |
           mvn clean install '-Dversion.org.wildfly=${{steps.wildfly-nightly.outputs.wildfly-version}}' '-Dorg.wildfly.logging.skipLogManagerCheck=true' ${{ matrix.profile }}
       - name: Upload surefire reports
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         if: failure()
         with:
           name: surefire-reports-${{ matrix.os }}-${{ matrix.java }}${{ matrix.profile }}
           path: '**/surefire-reports/*'
       - name: Upload server logs
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         if: failure()
         with:
           name: server-logs-${{ matrix.os }}-${{ matrix.java }}${{ matrix.profile }}

@@ -9,25 +9,24 @@ import org.jboss.arquillian.container.test.api.ContainerController;
 /**
  * {@inheritDoc}
  * <p/>
- * This extension to the original controller provides WildFly-specific lifecycle control methods.
+ * This extension of the generic controller provides WildFly-specific lifecycle control methods.
  *
  * @author Radoslav Husar
- * @version Jan 2015
  */
 public interface WildFlyContainerController extends ContainerController {
 
     /**
-     * Stops the given container with a timeout; corresponds to {@code :shutdown(timeout=Y)} management operation.
-     * <strong>Only compatible with WildFly 9 and newer!</strong>
-     *
+     * Stops the given container with a specified suspend timeout corresponding to {@code :shutdown(suspend-timeout=...)}
+     * management operation.
      * <p>
-     * Note that if the {@code stopTimeoutInSeconds} configuration property is set at a lower value than the timeout
-     * parameter the container process may be destroyed before the controlled shutdown finishes.
+     * Note that if the {@code stopTimeoutInSeconds} configuration property is set at a lower value than the suspendTimeout
+     * parameter,
+     * the container process may be destroyed before the controlled shutdown finishes.
      * </p>
      *
      * @param containerQualifier container qualifier
-     * @param timeout            timeout in seconds to wait during suspend phase
+     * @param suspendTimeout     suspend timeout in seconds to wait for during server suspend phase
      */
-    void stop(String containerQualifier, int timeout);
+    void stop(String containerQualifier, int suspendTimeout);
 
 }

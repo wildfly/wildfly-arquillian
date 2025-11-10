@@ -10,10 +10,9 @@ import org.jboss.arquillian.core.api.annotation.Observes;
 import org.jboss.as.arquillian.api.WildFlyContainerController;
 
 /**
- * WildFlyContainerCommandObserver responding to {@link StopWithTimeoutContainerCommand} events.
+ * {@link WildFlyContainerCommandObserver} observing {@link StopWithTimeoutContainerCommand} events.
  *
  * @author Radoslav Husar
- * @version Jan 2015
  */
 public class WildFlyContainerCommandObserver {
 

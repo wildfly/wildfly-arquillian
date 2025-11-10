@@ -7,21 +7,20 @@ package org.jboss.as.arquillian.container.controller.command;
 import org.jboss.arquillian.container.test.impl.client.deployment.command.AbstractCommand;
 
 /**
- * StopWithTimeoutContainerCommand coming from
+ * {@link StopWithTimeoutContainerCommand} fired by
  * {@link org.jboss.as.arquillian.container.controller.InContainerWildFlyContainerController}.
  *
  * @author Radoslav Husar
- * @version Jan 2015
  */
 public class StopWithTimeoutContainerCommand extends AbstractCommand<String> {
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 8652099525721931094L;
 
     private final String containerQualifier;
-    private final int timeout;
+    private final int suspendTimeout;
 
-    public StopWithTimeoutContainerCommand(String containerQualifier, int timeout) {
+    public StopWithTimeoutContainerCommand(String containerQualifier, int suspendTimeout) {
         this.containerQualifier = containerQualifier;
-        this.timeout = timeout;
+        this.suspendTimeout = suspendTimeout;
     }
 
     public String getContainerQualifier() {
@@ -29,6 +28,6 @@ public class StopWithTimeoutContainerCommand extends AbstractCommand<String> {
     }
 
     public int getTimeout() {
-        return timeout;
+        return suspendTimeout;
     }
 }

@@ -20,7 +20,6 @@ import org.jboss.as.arquillian.container.CommonDeployableContainer;
  * WildFlyContainerLifecycleController
  *
  * @author Radoslav Husar
- * @version Jan 2015
  * @see org.jboss.arquillian.container.impl.client.container.ContainerLifecycleController
  */
 public class WildFlyContainerLifecycleController {
@@ -33,13 +32,13 @@ public class WildFlyContainerLifecycleController {
 
     @SuppressWarnings("UnusedDeclaration")
     public void stopContainerWithTimeout(@Observes final StopContainerWithTimeout stopEvent) throws Exception {
-        forContainer(stopEvent.getContainer(), new Operation<Container>() {
+        forContainer(stopEvent.getContainer(), (Operation<Container<?>>) new Operation<Container<?>>() {
             @Override
-            public void perform(Container container) throws Exception {
+            public void perform(Container<?> container) throws Exception {
                 event.fire(new BeforeStop(container.getDeployableContainer()));
                 try {
                     if (container.getState().equals(Container.State.STARTED)) {
-                        CommonDeployableContainer c = (CommonDeployableContainer) container.getDeployableContainer();
+                        CommonDeployableContainer<?> c = (CommonDeployableContainer<?>) container.getDeployableContainer();
                         c.stop(stopEvent.getTimeout());
                     }
                     container.setState(Container.State.STOPPED);
@@ -52,7 +51,7 @@ public class WildFlyContainerLifecycleController {
         });
     }
 
-    private void forContainer(Container container, Operation<Container> operation) throws Exception {
+    private void forContainer(Container<?> container, Operation<Container<?>> operation) throws Exception {
         injector.get().inject(operation);
         operation.perform(container);
     }

@@ -40,7 +40,7 @@ public abstract class CommonManagedDeployableContainer<T extends CommonManagedCo
     private static final int PORT_RANGE_MAX = 65535;
     private Thread shutdownThread = null;
     private Process process = null;
-    private boolean timeoutSupported = false;
+    private boolean suspendTimeoutSupported = false;
 
     @Override
     @SuppressWarnings("FeatureEnvy")
@@ -81,7 +81,7 @@ public abstract class CommonManagedDeployableContainer<T extends CommonManagedCo
                 destroyProcess(process);
                 throw new TimeoutException(String.format("Managed server was not started within [%d] s", startupTimeout));
             }
-            timeoutSupported = isOperationAttributeSupported("shutdown", "timeout");
+            suspendTimeoutSupported = isOperationAttributeSupported("shutdown", "suspend-timeout");
             this.process = process;
             serverManagerProducer.set(serverManager.asManaged());
 
@@ -168,7 +168,7 @@ public abstract class CommonManagedDeployableContainer<T extends CommonManagedCo
     }
 
     @Override
-    protected void stopInternal(final Integer timeout) throws LifecycleException {
+    protected void stopInternal(final Integer suspendTimeout) throws LifecycleException {
         if (shutdownThread != null) {
             Runtime.getRuntime().removeShutdownHook(shutdownThread);
             shutdownThread = null;
@@ -181,16 +181,16 @@ public abstract class CommonManagedDeployableContainer<T extends CommonManagedCo
 
                 // AS7-6620: Create the shutdown operation and run it asynchronously and wait for process to terminate
                 final ModelNode op = Operations.createOperation("shutdown");
-                if (timeoutSupported) {
-                    if (timeout != null) {
-                        op.get("timeout").set(timeout);
+                if (suspendTimeoutSupported) {
+                    if (suspendTimeout != null) {
+                        op.get("suspend-timeout").set(suspendTimeout);
                     }
                 } else {
                     getLogger().error(String.format("Timeout is not supported for %s on the shutdown operation.",
                             getContainerDescription()));
                 }
 
-                // If the process is not alive there is no sense it invoking a shutdown operation.
+                // If the process is not alive there is no sense invoking a shutdown operation.
                 if (process.isAlive()) {
                     final ManagementClient client = getManagementClient();
                     if (client == null) {

@@ -30,7 +30,7 @@ public class ClientWildFlyContainerController extends ClientContainerController 
      * @see org.jboss.arquillian.container.test.impl.client.container.ClientContainerController#stop(java.lang.String)
      */
     @Override
-    public void stop(String containerQualifier, int timeout) {
+    public void stop(String containerQualifier, int suspendTimeout) {
         {
             DeploymentScenario scenario = getDeploymentScenario().get();
             if (scenario == null) {
@@ -51,7 +51,7 @@ public class ClientWildFlyContainerController extends ClientContainerController 
                         + " container. The container life cycle is controlled by Arquillian");
             }
 
-            Container container = getContainerRegistry().get().getContainer(new TargetDescription(containerQualifier));
+            Container<?> container = getContainerRegistry().get().getContainer(new TargetDescription(containerQualifier));
 
             List<Deployment> managedDeployments = scenario.startupDeploymentsFor(new TargetDescription(containerQualifier));
 
@@ -63,9 +63,9 @@ public class ClientWildFlyContainerController extends ClientContainerController 
                 }
             }
 
-            log.info("Manual stopping of a server instance with timeout=" + timeout);
+            log.info("Manual stopping of a server instance with suspendTimeout=" + suspendTimeout);
 
-            getContainerControllerEvent().fire(new StopContainerWithTimeout(container, timeout));
+            getContainerControllerEvent().fire(new StopContainerWithTimeout(container, suspendTimeout));
         }
     }
 }

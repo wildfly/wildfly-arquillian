@@ -11,22 +11,21 @@ import org.jboss.arquillian.container.spi.event.ContainerControlEvent;
  * {@link ContainerControlEvent} implementation fired in {@link ClientWildFlyContainerController#stop(java.lang.String, int)}.
  *
  * @author Radoslav Husar
- * @version Jan 2015
  */
 public class StopContainerWithTimeout extends ContainerControlEvent {
 
-    private final int timeout;
+    private final int suspendTimeout;
 
     /**
-     * @param container container to stop
-     * @param timeout   graceful shutdown timeout in seconds
+     * @param container      container to stop
+     * @param suspendTimeout graceful shutdown suspend timeout in seconds
      */
-    public StopContainerWithTimeout(Container container, int timeout) {
+    public StopContainerWithTimeout(Container container, int suspendTimeout) {
         super(container);
-        this.timeout = timeout;
+        this.suspendTimeout = suspendTimeout;
     }
 
     public int getTimeout() {
-        return timeout;
+        return suspendTimeout;
     }
 }

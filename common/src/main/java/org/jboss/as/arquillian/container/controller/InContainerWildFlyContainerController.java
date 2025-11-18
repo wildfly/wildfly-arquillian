@@ -9,7 +9,7 @@ import org.jboss.as.arquillian.api.WildFlyContainerController;
 import org.jboss.as.arquillian.container.controller.command.StopWithTimeoutContainerCommand;
 
 /**
- * {@link org.jboss.arquillian.container.test.api.ContainerController} running in container executing
+ * {@link org.jboss.arquillian.container.test.api.ContainerController} running in-container executing
  * {@link org.jboss.arquillian.container.test.spi.command.Command}s
  * over the {@link org.jboss.arquillian.container.test.spi.command.CommandService}.
  *
@@ -19,8 +19,8 @@ import org.jboss.as.arquillian.container.controller.command.StopWithTimeoutConta
 public class InContainerWildFlyContainerController extends ContainerContainerController implements WildFlyContainerController {
 
     @Override
-    public void stop(String containerQualifier, int timeout) {
-        getCommandService().execute(new StopWithTimeoutContainerCommand(containerQualifier, timeout));
+    public void stop(String containerQualifier, int suspendTimeout) {
+        getCommandService().execute(new StopWithTimeoutContainerCommand(containerQualifier, suspendTimeout));
     }
 
 }

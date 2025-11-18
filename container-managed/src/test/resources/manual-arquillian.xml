@@ -14,6 +14,11 @@
                 <property name="allowConnectingToRunningServer">false</property>
                 <property name="javaVmArguments">${jvm.args}</property>
                 <property name="serverConfig">${wildfly.standalone.config}</property>
+                <!--
+                     Used for the ManualFailedDeploymentTestCase as the deployment should fail, but we want the test to
+                     still work. The property expects a regex pattern.
+                -->
+                <property name="deploymentFailurePattern">javax\.xml\.stream\.XMLStreamException</property>
             </configuration>
         </container>
         <container qualifier="read-only-config" default="false" mode="manual">

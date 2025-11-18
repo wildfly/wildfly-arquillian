@@ -92,7 +92,7 @@ public abstract class CommonDeployableContainer<T extends CommonContainerConfigu
         managementClient = client;
         managementClientProducer.set(client);
 
-        archiveDeployer.set(new ArchiveDeployer(client));
+        archiveDeployer.set(new ArchiveDeployer(client, config.getDeploymentFailurePattern()));
     }
 
     @Override

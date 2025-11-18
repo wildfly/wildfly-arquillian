@@ -19,6 +19,11 @@
                      sure that they have not left a stale server running when merging pull requests
                 -->
                 <property name="allowConnectingToRunningServer">false</property>
+                <!--
+                     Used for the FailedDeploymentTestCase as the deployment should fail, but we want the test to still
+                     work. The property expects a regex pattern.
+                -->
+                <property name="deploymentFailurePattern">javax\.xml\.stream\.XMLStreamException</property>
             </configuration>
         </container>
     </group>

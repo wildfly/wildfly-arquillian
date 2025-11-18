@@ -9,6 +9,8 @@ import java.io.InputStream;
 import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.jboss.arquillian.container.spi.client.container.DeploymentException;
 import org.jboss.as.controller.client.ModelControllerClient;
@@ -38,6 +40,7 @@ public class ArchiveDeployer {
 
     private final DeploymentManager deploymentManager;
     private final ManagementClient client;
+    private final Pattern deploymentFailurePattern;
 
     /**
      * Creates a new deployer for deploying archives.
@@ -54,6 +57,7 @@ public class ArchiveDeployer {
     public ArchiveDeployer(ModelControllerClient modelControllerClient) {
         this.deploymentManager = DeploymentManager.create(modelControllerClient);
         client = null;
+        this.deploymentFailurePattern = null;
     }
 
     /**
@@ -62,8 +66,33 @@ public class ArchiveDeployer {
      * @param client the management client to use
      */
     public ArchiveDeployer(ManagementClient client) {
+        this(client, null);
+    }
+
+    /**
+     * Creates a new deployer for deploying archives.
+     *
+     * <p>
+     * If a deployment fails to deploy, the {@code deploymentFailurePattern} is used to {@linkplain Matcher#find() find}
+     * a match in the failure description. If the match is found, a message is logged. If a match is not found an
+     * exception is thrown.
+     * </p>
+     * <p>
+     * Passing a value of {@code null} or an empty string to the {@code deploymentFailurePattern} parameter will result
+     * in failed deployments always throwing an exception. This is the default behavior.
+     * </p>
+     *
+     * @param client                   the management client to use
+     * @param deploymentFailurePattern the pattern to use to check against a deployment failure message, {@code null}
+     *                                     to always throw an exception if a deployment fails
+     *
+     * @since 6.0
+     */
+    public ArchiveDeployer(ManagementClient client, String deploymentFailurePattern) {
         this.client = client;
         this.deploymentManager = DeploymentManager.create(client.getControllerClient());
+        this.deploymentFailurePattern = (deploymentFailurePattern == null || deploymentFailurePattern.isBlank() ? null
+                : Pattern.compile(deploymentFailurePattern));
     }
 
     /**
@@ -71,7 +100,8 @@ public class ArchiveDeployer {
      *
      * @param archive the archive to deploy
      *
-     * @return the runtime name of the deployment
+     * @return the runtime name of the deployment, or {@code null} if the deployment failed but the failure message
+     *             matched the {@linkplain #ArchiveDeployer(ManagementClient, String) deploymentFailurePattern}
      *
      * @throws DeploymentException   if an error happens during deployment
      * @throws IllegalStateException if the client has been closed
@@ -86,7 +116,8 @@ public class ArchiveDeployer {
      * @param name  the runtime for the deployment
      * @param input the input stream of a deployment archive
      *
-     * @return the runtime name of the deployment
+     * @return the runtime name of the deployment, or {@code null} if the deployment failed but the failure message
+     *             matched the {@linkplain #ArchiveDeployer(ManagementClient, String) deploymentFailurePattern}
      *
      * @throws DeploymentException   if an error happens during deployment
      * @throws IllegalStateException if the client has been closed
@@ -171,7 +202,17 @@ public class ArchiveDeployer {
         if (result.successful()) {
             return name;
         }
-        throw new DeploymentException(String.format("Cannot deploy %s: %s", name, result.getFailureMessage()));
+        final String failureDescription = result.getFailureMessage();
+        final DeploymentException deploymentException = new DeploymentException(
+                String.format("Cannot deploy %s: %s", name, failureDescription));
+        if (deploymentFailurePattern != null && failureDescription != null
+                && deploymentFailurePattern.matcher(failureDescription)
+                        .find()) {
+            log.warnf("Deployment '%s' failed as expected (matched pattern '%s'): %s",
+                    name, deploymentFailurePattern.pattern(), failureDescription);
+            return null;
+        }
+        throw deploymentException;
     }
 
     private void checkState() {

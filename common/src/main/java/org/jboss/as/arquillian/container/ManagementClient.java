@@ -264,12 +264,14 @@ public class ManagementClient implements Closeable {
                     "https".equalsIgnoreCase(webURI.getScheme()));
             metaData.addContext(context);
 
-            try {
-                for (Servlet servlet : resolveContexts(deploymentName)) {
-                    context.add(servlet);
+            if (deploymentName != null) {
+                try {
+                    for (Servlet servlet : resolveContexts(deploymentName)) {
+                        context.add(servlet);
+                    }
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
                 }
-            } catch (Exception e) {
-                throw new RuntimeException(e);
             }
         }
         return metaData;

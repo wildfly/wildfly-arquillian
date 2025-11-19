@@ -5,6 +5,9 @@
 package org.jboss.as.arquillian.container;
 
 import java.net.URI;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 import org.jboss.arquillian.container.spi.ConfigurationException;
 import org.jboss.arquillian.container.spi.client.container.ContainerConfiguration;
@@ -29,6 +32,7 @@ public class CommonContainerConfiguration implements ContainerConfiguration {
     private String host;
     private int port;
     private String socketBindingName;
+    private String deploymentFailurePattern;
 
     /**
      * Optional connection timeout in millis.
@@ -174,6 +178,33 @@ public class CommonContainerConfiguration implements ContainerConfiguration {
         this.socketBindingName = socketBindingName;
     }
 
+    /**
+     * A regex pattern which is used when a deployment fails to see if the failure is acceptable. If found to be acceptable,
+     * a deployment error is logged instead of thrown.
+     * <p>
+     * This uses the {@link Matcher#find()} against the failure message from the deployment.
+     * </p>
+     *
+     * @return the deployment failure pattern or {@code null} to indicate no pattern is defined
+     */
+    public String getDeploymentFailurePattern() {
+        return deploymentFailurePattern;
+    }
+
+    /**
+     * Set a regex pattern which is used when a deployment fails to see if the failure is acceptable. If found to be
+     * acceptable, a deployment error is logged instead of thrown.
+     * <p>
+     * This uses the {@link Matcher#find()} against the failure message from the deployment.
+     * </p>
+     *
+     * @param deploymentFailurePattern a regex pattern used for deployment errors to log a deployment failure instead of
+     *                                     throwing an exception, a value of {@code null} will always throw an exception
+     */
+    public void setDeploymentFailurePattern(final String deploymentFailurePattern) {
+        this.deploymentFailurePattern = deploymentFailurePattern;
+    }
+
     @Override
     public void validate() throws ConfigurationException {
         if (username != null && password == null) {
@@ -182,5 +213,13 @@ public class CommonContainerConfiguration implements ContainerConfiguration {
         if (protocol != null && !("http".equalsIgnoreCase(protocol) || "https".equalsIgnoreCase(protocol))) {
             throw new ConfigurationException("Only http and https are allowed protocol settings, found " + protocol);
         }
+        if (deploymentFailurePattern != null && !deploymentFailurePattern.isBlank()) {
+            try {
+                Pattern.compile(deploymentFailurePattern);
+            } catch (PatternSyntaxException e) {
+                throw new ConfigurationException("Invalid deploymentFailurePattern regex: " + deploymentFailurePattern, e);
+            }
+        }
+
     }
 }

@@ -100,6 +100,7 @@
 
         <maven.test.skip>false</maven.test.skip>
         <skipTests>${maven.test.skip}</skipTests>
+        <skipFormatting>false</skipFormatting>
 
         <!-- Surefire properties -->
         <maven.test.redirectTestOutputToFile>true</maven.test.redirectTestOutputToFile>

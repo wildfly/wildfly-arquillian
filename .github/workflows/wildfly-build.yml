@@ -33,34 +33,6 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  legacy-tests:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest, windows-latest ]
-        java: ['11']
-
-    steps:
-      - uses: actions/checkout@v5
-      - name: Set up JDK ${{ matrix.java }}
-        uses: actions/setup-java@v5
-        with:
-          java-version: ${{ matrix.java }}
-          distribution: 'temurin'
-          cache: 'maven'
-      - name: Build with Maven Java ${{ matrix.java }}
-        run: mvn -B clean verify '-Dorg.wildfly.logging.skipLogManagerCheck=true'
-      - uses: actions/upload-artifact@v5
-        if: failure()
-        with:
-          name: surefire-reports-${{ matrix.os }}-${{ matrix.java }}
-          path: '**/surefire-reports/*'
-      - uses: actions/upload-artifact@v5
-        if: failure()
-        with:
-          name: server-logs-${{ matrix.os }}-${{ matrix.java }}
-          path: '**/server.log'
 
   wildfly-arquillian-build:
     runs-on: ${{ matrix.os }}
@@ -68,7 +40,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest]
-        java: ['17', '21']
+        java: ['17', '21', '25']
         profile:
           - ""
           - "'-Pwildfly-preview'"

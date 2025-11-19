@@ -10,7 +10,7 @@
     <parent>
         <groupId>org.jboss</groupId>
         <artifactId>jboss-parent</artifactId>
-        <version>50</version>
+        <version>51</version>
         <relativePath />
     </parent>
 
@@ -119,8 +119,8 @@
         <maven.min.version>3.8.0</maven.min.version>
 
         <!-- Require at least Java 11 to compile -->
-        <jdk.min.version>11</jdk.min.version>
-        <maven.compiler.release>11</maven.compiler.release>
+        <jdk.min.version>17</jdk.min.version>
+        <maven.compiler.release>17</maven.compiler.release>
 
         <!-- maven-release-plugin configuration -->
         <autoVersionSubmodules>true</autoVersionSubmodules>
@@ -365,15 +365,6 @@
             <properties>
                 <!-- Skip the log manager validation in the logging subsystem -->
                 <jvm.args>${default.jvm.args} -Dorg.wildfly.logging.skipLogManagerCheck=true</jvm.args>
-            </properties>
-        </profile>
-        <profile>
-            <id>wildfly-34</id>
-            <activation>
-                <jdk>(,17)</jdk>
-            </activation>
-            <properties>
-                <version.org.wildfly>34.0.1.Final</version.org.wildfly>
             </properties>
         </profile>
         <profile>

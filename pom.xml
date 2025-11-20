@@ -17,7 +17,7 @@
     <artifactId>wildfly-arquillian-parent</artifactId>
 
     <groupId>org.wildfly.arquillian</groupId>
-    <version>6.0.0.Alpha1</version>
+    <version>6.0.0.Alpha2-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>WildFly Arquillian: Parent</name>
     <description>An Arquillian adaptor for WildFly.</description>
@@ -70,7 +70,7 @@
         <connection>scm:git:git://github.com/wildfly/wildfly-arquillian.git</connection>
         <developerConnection>scm:git:git@github.com:wildfly/wildfly-arquillian.git</developerConnection>
         <url>https://github.com/wildfly/wildfly-arquillian/</url>
-        <tag>v6.0.0.Alpha1</tag>
+        <tag>HEAD</tag>
     </scm>
 
     <issueManagement>

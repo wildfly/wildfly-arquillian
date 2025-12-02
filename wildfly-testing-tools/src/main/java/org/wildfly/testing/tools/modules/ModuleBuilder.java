@@ -5,25 +5,14 @@
 
 package org.wildfly.testing.tools.modules;
 
-import java.io.File;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.io.UncheckedIOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
 import java.util.Collection;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 
-import javax.xml.stream.XMLStreamException;
-
-import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
-import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.wildfly.testing.tools.xml.CloseableXMLStreamWriter;
 
 /**
  * A simple utility to create a module.
@@ -32,28 +21,15 @@ import org.wildfly.testing.tools.xml.CloseableXMLStreamWriter;
  * </p>
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
+ * @deprecated use the new WildFly Testing Tools project
  */
-@SuppressWarnings({ "unused", "UnusedReturnValue" })
+@Deprecated(forRemoval = true, since = "6.0")
+@SuppressWarnings({ "unused", "UnusedReturnValue", "removal" })
 public class ModuleBuilder {
+    private final org.wildfly.testing.tools.module.ModuleBuilder delegate;
 
-    private final String name;
-    private final Path modulePath;
-    private final JavaArchive jar;
-    private final Set<String> resourcePaths;
-    private final Set<JavaArchive> resources;
-    private final Set<ModuleDependency> dependencies;
-
-    private ModuleBuilder(final String name, final JavaArchive jar, final Path modulePath) {
-        this.name = name;
-        this.modulePath = modulePath == null ? Modules.discoverModulePath() : modulePath;
-        this.jar = jar;
-        dependencies = new LinkedHashSet<>();
-        resources = new LinkedHashSet<>();
-        this.resourcePaths = new LinkedHashSet<>();
-    }
-
-    private ModuleBuilder(final String name, final String archiveName, final Path modulePath) {
-        this(name, ShrinkWrap.create(JavaArchive.class, archiveName == null ? "test-module.jar" : archiveName), modulePath);
+    private ModuleBuilder(final org.wildfly.testing.tools.module.ModuleBuilder delegate) {
+        this.delegate = delegate;
     }
 
     /**
@@ -88,7 +64,7 @@ public class ModuleBuilder {
      * @return a new module builder
      */
     public static ModuleBuilder of(final String moduleName, final String archiveName) {
-        return new ModuleBuilder(moduleName, archiveName, null);
+        return new ModuleBuilder(org.wildfly.testing.tools.module.ModuleBuilder.of(moduleName, archiveName, null));
     }
 
     /**
@@ -102,7 +78,7 @@ public class ModuleBuilder {
      * @return a new module builder
      */
     public static ModuleBuilder of(final String moduleName, final String archiveName, final Path modulePath) {
-        return new ModuleBuilder(moduleName, archiveName, modulePath);
+        return new ModuleBuilder(org.wildfly.testing.tools.module.ModuleBuilder.of(moduleName, archiveName, modulePath));
     }
 
     /**
@@ -116,7 +92,7 @@ public class ModuleBuilder {
      * @return a new module builder
      */
     public static ModuleBuilder of(final String moduleName, final JavaArchive jar, final Path modulePath) {
-        return new ModuleBuilder(moduleName, jar, modulePath);
+        return new ModuleBuilder(org.wildfly.testing.tools.module.ModuleBuilder.of(moduleName, jar, modulePath));
     }
 
     /**
@@ -125,7 +101,7 @@ public class ModuleBuilder {
      * @return the module name
      */
     public String name() {
-        return name;
+        return delegate.name();
     }
 
     /**
@@ -137,7 +113,7 @@ public class ModuleBuilder {
      * @return this builder
      */
     public ModuleBuilder addAsset(final Asset asset, final String target) {
-        jar.add(asset, target);
+        delegate.addAsset(asset, target);
         return this;
     }
 
@@ -149,7 +125,7 @@ public class ModuleBuilder {
      * @return this builder
      */
     public ModuleBuilder addClass(final Class<?> c) {
-        jar.addClass(c);
+        delegate.addClass(c);
         return this;
     }
 
@@ -161,7 +137,7 @@ public class ModuleBuilder {
      * @return this builder
      */
     public ModuleBuilder addClasses(final Class<?>... classes) {
-        jar.addClasses(classes);
+        delegate.addClasses(classes);
         return this;
     }
 
@@ -173,7 +149,7 @@ public class ModuleBuilder {
      * @return this builder
      */
     public ModuleBuilder addDependency(final String dependency) {
-        this.dependencies.add(ModuleDependency.builder(dependency).build());
+        delegate.addDependency(dependency);
         return this;
     }
 
@@ -185,9 +161,7 @@ public class ModuleBuilder {
      * @return this builder
      */
     public ModuleBuilder addDependencies(final String... dependencies) {
-        for (String dependency : dependencies) {
-            addDependency(dependency);
-        }
+        delegate.addDependencies(dependencies);
         return this;
     }
 
@@ -199,7 +173,7 @@ public class ModuleBuilder {
      * @return this builder
      */
     public ModuleBuilder addDependency(final ModuleDependency dependency) {
-        this.dependencies.add(dependency);
+        delegate.addDependency(dependency.delegate());
         return this;
     }
 
@@ -211,7 +185,8 @@ public class ModuleBuilder {
      * @return this builder
      */
     public ModuleBuilder addDependencies(final ModuleDependency... dependencies) {
-        return addDependencies(Set.of(dependencies));
+        delegate.addDependencies(ModuleDependency.map(List.of(dependencies)));
+        return this;
     }
 
     /**
@@ -222,7 +197,7 @@ public class ModuleBuilder {
      * @return this builder
      */
     public ModuleBuilder addDependencies(final Collection<ModuleDependency> dependencies) {
-        this.dependencies.addAll(dependencies);
+        delegate.addDependencies(ModuleDependency.map(dependencies));
         return this;
     }
 
@@ -235,8 +210,7 @@ public class ModuleBuilder {
      * @return this builder
      */
     public ModuleBuilder addServiceProvider(final Class<?> intf, final Class<?>... implementations) {
-        validate(intf, implementations);
-        jar.addAsServiceProvider(intf, implementations);
+        delegate.addServiceProvider(intf, implementations);
         return this;
     }
 
@@ -248,7 +222,7 @@ public class ModuleBuilder {
      * @return this builder
      */
     public ModuleBuilder addPackage(final String p) {
-        jar.addPackage(p);
+        delegate.addPackage(p);
         return this;
     }
 
@@ -260,7 +234,7 @@ public class ModuleBuilder {
      * @return this builder
      */
     public ModuleBuilder addPackage(final Package p) {
-        jar.addPackage(p);
+        delegate.addPackage(p);
         return this;
     }
 
@@ -273,7 +247,7 @@ public class ModuleBuilder {
      * @return this builder
      */
     public ModuleBuilder addManifestResource(final Asset asset, final String target) {
-        jar.addAsManifestResource(asset, target);
+        delegate.addManifestResource(asset, target);
         return this;
     }
 
@@ -285,7 +259,7 @@ public class ModuleBuilder {
      * @return this builder
      */
     public ModuleBuilder addResource(final JavaArchive resource) {
-        this.resources.add(resource);
+        delegate.addResource(resource);
         return this;
     }
 
@@ -297,7 +271,7 @@ public class ModuleBuilder {
      * @return this builder
      */
     public ModuleBuilder addResources(final JavaArchive... resources) {
-        this.resources.addAll(Set.of(resources));
+        delegate.addResources(resources);
         return this;
     }
 
@@ -309,7 +283,7 @@ public class ModuleBuilder {
      * @return this builder
      */
     public ModuleBuilder addResources(final Collection<JavaArchive> resources) {
-        this.resources.addAll(resources);
+        delegate.addResources(resources);
         return this;
     }
 
@@ -321,7 +295,7 @@ public class ModuleBuilder {
      * @return this builder
      */
     public ModuleBuilder addResourcePath(final String resourcePath) {
-        this.resourcePaths.add(resourcePath);
+        delegate.addResourcePath(resourcePath);
         return this;
     }
 
@@ -333,7 +307,7 @@ public class ModuleBuilder {
      * @return this builder
      */
     public ModuleBuilder addResourcePaths(final String... resourcePaths) {
-        this.resourcePaths.addAll(Set.of(resourcePaths));
+        delegate.addResourcePaths(resourcePaths);
         return this;
     }
 
@@ -345,7 +319,7 @@ public class ModuleBuilder {
      * @return this builder
      */
     public ModuleBuilder addResourcePaths(final Set<String> resourcePaths) {
-        this.resourcePaths.addAll(resourcePaths);
+        delegate.addResourcePaths(resourcePaths);
         return this;
     }
 
@@ -365,133 +339,6 @@ public class ModuleBuilder {
      * @return a task to clean up the module
      */
     public ModuleDescription build() {
-        try {
-            final Path mp = modulePath;
-            final Path moduleDir = mp.resolve(name.replace('.', File.separatorChar)).resolve("main");
-            if (Files.notExists(moduleDir)) {
-                Files.createDirectories(moduleDir);
-            }
-            final Path fullPathToDelete = moduleDir.subpath(0, mp.getNameCount() + 1);
-            createModule(moduleDir);
-            return new ModuleDescription(name, mp, moduleDir);
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
-        }
-    }
-
-    private void createModule(final Path moduleDir) throws IOException {
-        Files.createDirectories(moduleDir);
-        try (CloseableXMLStreamWriter writer = CloseableXMLStreamWriter
-                .of(Files.newBufferedWriter(moduleDir.resolve("module.xml")))) {
-            writer.writeStartDocument("utf-8", "1.0");
-            writer.writeStartElement("module");
-            writer.writeNamespace(null, "urn:jboss:module:1.9");
-            writer.writeAttribute("name", name);
-
-            writer.writeStartElement("resources");
-            writer.writeEmptyElement("resource-root");
-            writer.writeAttribute("path", jar.getName());
-            for (String resource : resourcePaths) {
-                writer.writeEmptyElement("resource-root");
-                writer.writeAttribute("path", resource);
-            }
-            for (JavaArchive resource : resources) {
-                writer.writeEmptyElement("resource-root");
-                writer.writeAttribute("path", resource.getName());
-
-                // Create the JAR
-                try (
-                        OutputStream out = Files.newOutputStream(moduleDir.resolve(resource.getName()),
-                                StandardOpenOption.CREATE_NEW)) {
-                    resource.as(ZipExporter.class).exportTo(out);
-                }
-            }
-            writer.writeEndElement();
-
-            // Write the dependencies
-            if (!dependencies.isEmpty()) {
-                writer.writeStartElement("dependencies");
-                for (ModuleDependency dependency : dependencies) {
-                    final boolean emptyElement = dependency.imports().isEmpty() && dependency.exports().isEmpty();
-                    if (emptyElement) {
-                        writer.writeEmptyElement("module");
-                    } else {
-                        writer.writeStartElement("module");
-                    }
-                    writer.writeAttribute("name", dependency.name());
-                    if (dependency.isExport()) {
-                        writer.writeAttribute("export", "true");
-                    }
-                    if (dependency.isOptional()) {
-                        writer.writeAttribute("optional", "true");
-                    }
-                    if (dependency.services().isPresent()) {
-                        writer.writeAttribute("services", dependency.services().get().toString());
-                    }
-                    if (!emptyElement) {
-                        if (!dependency.imports().isEmpty()) {
-                            writer.writeStartElement("imports");
-                            for (ModuleDependency.Filter filter : dependency.imports()) {
-                                if (filter.include()) {
-                                    writer.writeEmptyElement("include");
-                                    writer.writeAttribute("path", filter.path());
-                                } else {
-                                    writer.writeEmptyElement("exclude");
-                                    writer.writeAttribute("path", filter.path());
-                                }
-                            }
-                            writer.writeEndElement();
-                        }
-                        if (!dependency.exports().isEmpty()) {
-                            writer.writeStartElement("exports");
-                            for (ModuleDependency.Filter filter : dependency.exports()) {
-                                if (filter.include()) {
-                                    writer.writeEmptyElement("include");
-                                    writer.writeAttribute("path", filter.path());
-                                } else {
-                                    writer.writeEmptyElement("exclude");
-                                    writer.writeAttribute("path", filter.path());
-                                }
-                            }
-                            writer.writeEndElement();
-                        }
-                        writer.writeEndElement(); // end module
-                    }
-                }
-                writer.writeEndElement();
-            }
-            writer.writeEndElement();
-            writer.writeEndDocument();
-            writer.flush();
-        } catch (XMLStreamException e) {
-            throw new IOException(e);
-        }
-
-        // Create the JAR
-        try (OutputStream out = Files.newOutputStream(moduleDir.resolve(jar.getName()), StandardOpenOption.CREATE_NEW)) {
-            jar.as(ZipExporter.class).exportTo(out);
-        }
-    }
-
-    private static void validate(final Class<?> type, final Class<?>... subtypes) {
-        final Set<Class<?>> invalidTypes = new LinkedHashSet<>();
-        for (Class<?> subtype : subtypes) {
-            if (!type.isAssignableFrom(subtype)) {
-                invalidTypes.add(subtype);
-            }
-        }
-        if (!invalidTypes.isEmpty()) {
-            final StringBuilder msg = new StringBuilder("The following types are not subtypes of ")
-                    .append(type.getCanonicalName())
-                    .append(" : ");
-            final Iterator<Class<?>> iter = invalidTypes.iterator();
-            while (iter.hasNext()) {
-                msg.append(iter.next().getCanonicalName());
-                if (iter.hasNext()) {
-                    msg.append(", ");
-                }
-            }
-            throw new IllegalArgumentException(msg.toString());
-        }
+        return new ModuleDescription(delegate.build());
     }
 }

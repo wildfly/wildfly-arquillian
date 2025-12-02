@@ -7,24 +7,23 @@ package org.wildfly.testing.tools.modules;
 
 import java.util.Collection;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * A module dependency used for the {@link ModuleBuilder}.
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
+ * @deprecated use the new WildFly Testing Tools project
  */
+@Deprecated(forRemoval = true, since = "6.0")
 public class ModuleDependency implements Comparable<ModuleDependency> {
 
-    private final String name;
-    private final boolean export;
-    private final boolean optional;
-    private final Services services;
-    private final Set<Filter> imports;
-    private final Set<Filter> exports;
+    private final org.wildfly.testing.tools.module.ModuleDependency delegate;
 
     public enum Services {
         NONE,
@@ -51,7 +50,7 @@ public class ModuleDependency implements Comparable<ModuleDependency> {
          * @return a new filter
          */
         static Filter of(final String path, final boolean include) {
-            return new PathFilter(path, include);
+            return new NewToOldFilter(path, include);
         }
 
         /**
@@ -69,14 +68,8 @@ public class ModuleDependency implements Comparable<ModuleDependency> {
         boolean include();
     }
 
-    private ModuleDependency(final String name, final boolean export, final boolean optional, final Services services,
-            final Set<Filter> imports, final Set<Filter> exports) {
-        this.name = name;
-        this.export = export;
-        this.optional = optional;
-        this.services = services;
-        this.imports = imports;
-        this.exports = exports;
+    protected ModuleDependency(final org.wildfly.testing.tools.module.ModuleDependency delegate) {
+        this.delegate = delegate;
     }
 
     /**
@@ -87,7 +80,7 @@ public class ModuleDependency implements Comparable<ModuleDependency> {
      * @return the new dependency builder
      */
     public static Builder builder(final String name) {
-        return new Builder(name);
+        return new Builder(org.wildfly.testing.tools.module.ModuleDependency.builder(name));
     }
 
     /**
@@ -96,7 +89,7 @@ public class ModuleDependency implements Comparable<ModuleDependency> {
      * @return the dependency name
      */
     public String name() {
-        return name;
+        return delegate.name();
     }
 
     /**
@@ -105,7 +98,7 @@ public class ModuleDependency implements Comparable<ModuleDependency> {
      * @return whether the dependency should be exported
      */
     public boolean isExport() {
-        return export;
+        return delegate.isExport();
     }
 
     /**
@@ -114,7 +107,7 @@ public class ModuleDependency implements Comparable<ModuleDependency> {
      * @return whether the dependency is optional
      */
     public boolean isOptional() {
-        return optional;
+        return delegate.isOptional();
     }
 
     /**
@@ -123,7 +116,7 @@ public class ModuleDependency implements Comparable<ModuleDependency> {
      * @return the import filters or an empty set
      */
     public Set<Filter> imports() {
-        return imports;
+        return NewToOldFilter.map(delegate.imports());
     }
 
     /**
@@ -132,7 +125,7 @@ public class ModuleDependency implements Comparable<ModuleDependency> {
      * @return the export filters or an empty set
      */
     public Set<Filter> exports() {
-        return exports;
+        return NewToOldFilter.map(delegate.exports());
     }
 
     /**
@@ -141,7 +134,12 @@ public class ModuleDependency implements Comparable<ModuleDependency> {
      * @return the services value
      */
     public Optional<Services> services() {
-        return Optional.ofNullable(services);
+        final var found = delegate.services();
+        return found.flatMap(services -> switch (services) {
+            case IMPORT -> Optional.of(Services.IMPORT);
+            case EXPORT -> Optional.of(Services.EXPORT);
+            default -> Optional.of(Services.NONE);
+        });
     }
 
     @Override
@@ -149,27 +147,36 @@ public class ModuleDependency implements Comparable<ModuleDependency> {
         if (this == obj) {
             return true;
         }
-        if (!(obj instanceof ModuleDependency)) {
+        if (!(obj instanceof final ModuleDependency other)) {
             return false;
         }
-        final ModuleDependency other = (ModuleDependency) obj;
-        return Objects.equals(name, other.name);
+        return Objects.equals(delegate, other.delegate);
     }
 
     @Override
     public String toString() {
-        return "ModuleDependency[name=" + name + ", export=" + export + ", optional=" + optional + ", services=" + services
-                + ", imports=" + imports + ", exports=" + exports + "]";
+        return "ModuleDependency[name=" + name() + ", export=" + isExport() + ", optional=" + isOptional() + ", services="
+                + services()
+                + ", imports=" + imports() + ", exports=" + exports() + "]";
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name);
+        return Objects.hash(delegate);
     }
 
     @Override
     public int compareTo(final ModuleDependency o) {
-        return name.compareTo(o.name);
+        return delegate.compareTo(o.delegate);
+    }
+
+    org.wildfly.testing.tools.module.ModuleDependency delegate() {
+        return delegate;
+    }
+
+    static Collection<org.wildfly.testing.tools.module.ModuleDependency> map(
+            final Collection<ModuleDependency> moduleDependencies) {
+        return moduleDependencies.stream().map(ModuleDependency::delegate).collect(Collectors.toList());
     }
 
     /**
@@ -179,17 +186,10 @@ public class ModuleDependency implements Comparable<ModuleDependency> {
      */
     @SuppressWarnings("unused")
     public static class Builder {
-        private final String name;
-        private boolean optional;
-        private boolean export;
-        private Services services;
-        private final Set<Filter> imports;
-        private final Set<Filter> exports;
+        private final org.wildfly.testing.tools.module.ModuleDependency.Builder delegate;
 
-        private Builder(final String name) {
-            this.name = name;
-            imports = new LinkedHashSet<>();
-            exports = new LinkedHashSet<>();
+        private Builder(final org.wildfly.testing.tools.module.ModuleDependency.Builder delegate) {
+            this.delegate = delegate;
         }
 
         /**
@@ -200,7 +200,7 @@ public class ModuleDependency implements Comparable<ModuleDependency> {
          * @return this builder
          */
         public Builder optional(final boolean optional) {
-            this.optional = optional;
+            delegate.optional(optional);
             return this;
         }
 
@@ -212,7 +212,7 @@ public class ModuleDependency implements Comparable<ModuleDependency> {
          * @return this builder
          */
         public Builder export(final boolean export) {
-            this.export = export;
+            delegate.export(export);
             return this;
         }
 
@@ -224,7 +224,12 @@ public class ModuleDependency implements Comparable<ModuleDependency> {
          * @return this builder
          */
         public Builder services(final Services services) {
-            this.services = services;
+            final org.wildfly.testing.tools.module.ModuleDependency.Services s = switch (services) {
+                case IMPORT -> org.wildfly.testing.tools.module.ModuleDependency.Services.IMPORT;
+                case EXPORT -> org.wildfly.testing.tools.module.ModuleDependency.Services.EXPORT;
+                default -> org.wildfly.testing.tools.module.ModuleDependency.Services.NONE;
+            };
+            delegate.services(s);
             return this;
         }
 
@@ -236,7 +241,7 @@ public class ModuleDependency implements Comparable<ModuleDependency> {
          * @return this builder
          */
         public Builder addImportFilter(final Filter filter) {
-            imports.add(filter);
+            delegate.addImportFilter(new OldToNewFilter(filter));
             return this;
         }
 
@@ -260,7 +265,7 @@ public class ModuleDependency implements Comparable<ModuleDependency> {
          * @return this builder
          */
         public Builder addImportFilters(final Filter... filters) {
-            imports.addAll(Set.of(filters));
+            delegate.addImportFilters(OldToNewFilter.map(List.of(filters)));
             return this;
         }
 
@@ -272,7 +277,7 @@ public class ModuleDependency implements Comparable<ModuleDependency> {
          * @return this builder
          */
         public Builder addImportFilters(final Collection<Filter> filters) {
-            imports.addAll(filters);
+            delegate.addImportFilters(OldToNewFilter.map(filters));
             return this;
         }
 
@@ -284,7 +289,7 @@ public class ModuleDependency implements Comparable<ModuleDependency> {
          * @return this builder
          */
         public Builder addExportFilter(final Filter filter) {
-            exports.add(filter);
+            delegate.addExportFilter(new OldToNewFilter(filter));
             return this;
         }
 
@@ -319,7 +324,7 @@ public class ModuleDependency implements Comparable<ModuleDependency> {
          * @return this builder
          */
         public Builder addExportFilters(final Collection<Filter> filters) {
-            exports.addAll(filters);
+            delegate.addExportFilters(OldToNewFilter.map(filters));
             return this;
         }
 
@@ -329,32 +334,27 @@ public class ModuleDependency implements Comparable<ModuleDependency> {
          * @return the module dependency
          */
         public ModuleDependency build() {
-            return new ModuleDependency(name, export, optional, services, Set.copyOf(imports), Set.copyOf(exports));
+            return new ModuleDependency(delegate.build());
         }
     }
 
-    private static class PathFilter implements Filter {
-        private final String path;
-        private final boolean include;
+    private record NewToOldFilter(org.wildfly.testing.tools.module.ModuleDependency.Filter delegate) implements Filter {
+        private NewToOldFilter(final String path, final boolean include) {
+            this(org.wildfly.testing.tools.module.ModuleDependency.Filter.of(path, include));
+        }
 
-        private PathFilter(final String path, final boolean include) {
-            this.path = path;
-            this.include = include;
+        static Set<Filter> map(final Collection<org.wildfly.testing.tools.module.ModuleDependency.Filter> filters) {
+            return filters.stream().map(NewToOldFilter::new).collect(Collectors.toCollection(LinkedHashSet::new));
         }
 
         @Override
         public String path() {
-            return path;
+            return delegate.path();
         }
 
         @Override
         public boolean include() {
-            return include;
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(path, include);
+            return delegate.include();
         }
 
         @Override
@@ -362,23 +362,64 @@ public class ModuleDependency implements Comparable<ModuleDependency> {
             if (this == obj) {
                 return true;
             }
-            if (!(obj instanceof PathFilter)) {
+            if (!(obj instanceof final NewToOldFilter other)) {
                 return false;
             }
-            final PathFilter other = (PathFilter) obj;
-            return Objects.equals(path, other.path) && Objects.equals(include, other.include);
+            return Objects.equals(delegate, other.delegate);
         }
 
         @Override
         public String toString() {
-            return "Filter[path=" + path + ", include=" + include + "]";
+            return "Filter[path=" + delegate.path() + ", include=" + delegate.include() + "]";
         }
 
         @Override
         public int compareTo(final Filter o) {
             int result = path().compareTo(o.path());
             if (result == 0) {
-                result = Boolean.compare(include, o.include());
+                result = Boolean.compare(include(), o.include());
+            }
+            return result;
+        }
+    }
+
+    private record OldToNewFilter(Filter delegate) implements org.wildfly.testing.tools.module.ModuleDependency.Filter {
+
+        static Set<org.wildfly.testing.tools.module.ModuleDependency.Filter> map(final Collection<Filter> filters) {
+            return filters.stream().map(OldToNewFilter::new).collect(Collectors.toCollection(LinkedHashSet::new));
+        }
+
+        @Override
+        public String path() {
+            return delegate.path();
+        }
+
+        @Override
+        public boolean include() {
+            return delegate.include();
+        }
+
+        @Override
+        public boolean equals(final Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (!(obj instanceof final OldToNewFilter other)) {
+                return false;
+            }
+            return Objects.equals(delegate, other.delegate);
+        }
+
+        @Override
+        public String toString() {
+            return "Filter[path=" + delegate.path() + ", include=" + delegate.include() + "]";
+        }
+
+        @Override
+        public int compareTo(final org.wildfly.testing.tools.module.ModuleDependency.Filter o) {
+            int result = path().compareTo(o.path());
+            if (result == 0) {
+                result = Boolean.compare(include(), o.include());
             }
             return result;
         }

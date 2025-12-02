@@ -21,7 +21,9 @@ import java.lang.annotation.Target;
  * </p>
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
+ * @deprecated Use the WildFly Testing Tools JUnit API instead
  */
+@Deprecated(forRemoval = true, since = "6.0")
 @Inherited
 @Documented
 @Target({ ElementType.TYPE, ElementType.METHOD })

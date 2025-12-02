@@ -24,7 +24,7 @@ import org.jboss.as.arquillian.api.ReloadIfRequired;
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.logging.Logger;
-import org.wildfly.testing.tools.modules.ModuleDescription;
+import org.wildfly.testing.tools.module.ModuleDescription;
 
 /**
  * A setup task which creates a module and deletes it when {@linkplain #tearDown(ManagementClient, String) torn down}.

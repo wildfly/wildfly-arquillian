@@ -30,6 +30,7 @@
         <version.org.jboss.msc.jboss-msc>1.5.6.Final</version.org.jboss.msc.jboss-msc>
         <version.org.jboss.remotingjmx.remoting-jmx>3.1.0.Final</version.org.jboss.remotingjmx.remoting-jmx>
         <version.org.wildfly.plugins.wildfly-plugin-tools>1.2.4.Final</version.org.wildfly.plugins.wildfly-plugin-tools>
+        <version.org.wildfly.testing>1.0.0.Alpha3</version.org.wildfly.testing>
 
         <!-- keep this in sync with version that is used in arquillian -->
         <version.org.jboss.shrinkwrap>1.2.6</version.org.jboss.shrinkwrap>
@@ -80,6 +81,13 @@
                 <groupId>org.jboss.shrinkwrap</groupId>
                 <artifactId>shrinkwrap-bom</artifactId>
                 <version>${version.org.jboss.shrinkwrap}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.wildfly.testing</groupId>
+                <artifactId>wildfly-testing-tools-bom</artifactId>
+                <version>${version.org.wildfly.testing}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>

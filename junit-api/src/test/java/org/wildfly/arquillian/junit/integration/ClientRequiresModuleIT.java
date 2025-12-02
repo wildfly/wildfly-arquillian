@@ -27,7 +27,7 @@ import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.wildfly.arquillian.junit.annotations.RequiresModule;
+import org.wildfly.testing.junit.annotation.RequiresModule;
 
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>

@@ -15,14 +15,14 @@ import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.wildfly.testing.junit.annotation.RequiresModule;
+import org.wildfly.arquillian.junit.annotations.RequiresModule;
 
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 @ArquillianTest
 @ApplicationScoped
-public class InContainerRequireModuleIT {
+public class LegacyInContainerRequireModuleIT {
 
     @Deployment
     public static WebArchive deployment() {

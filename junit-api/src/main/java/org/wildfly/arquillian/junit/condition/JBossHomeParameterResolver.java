@@ -19,7 +19,9 @@ import org.wildfly.arquillian.junit.annotations.JBossHome;
  * are set a {@link ParameterResolutionException} is thrown.
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
+ * @deprecated Use the WildFly Testing Tools JUnit API instead
  */
+@Deprecated(forRemoval = true, since = "6.0")
 public class JBossHomeParameterResolver implements ParameterResolver {
     @Override
     public boolean supportsParameter(final ParameterContext parameterContext, final ExtensionContext extensionContext)

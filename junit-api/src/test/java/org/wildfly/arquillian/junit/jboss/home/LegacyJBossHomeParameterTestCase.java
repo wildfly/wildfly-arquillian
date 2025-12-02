@@ -11,7 +11,7 @@ import java.nio.file.Path;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
-import org.wildfly.testing.junit.annotation.JBossHome;
+import org.wildfly.arquillian.junit.annotations.JBossHome;
 
 /**
  *
@@ -19,7 +19,7 @@ import org.wildfly.testing.junit.annotation.JBossHome;
  */
 @Tag("env.var")
 @Tag("system.property")
-public class JBossHomeParameterTestCase {
+public class LegacyJBossHomeParameterTestCase {
 
     @Test
     public void stringSet(@JBossHome final String value) {

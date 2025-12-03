@@ -42,12 +42,12 @@ jobs:
         java: ['17', '21', '25']
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         name: Checkout Arquillian Core
         with:
           repository: arquillian/arquillian-core
           path: arquillian-core
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         name: Checkout WildFly Arquillian
         with:
           path: wildfly-arquillian

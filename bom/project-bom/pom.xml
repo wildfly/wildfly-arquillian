@@ -46,7 +46,7 @@
 
         <!-- Jakarta and implementation dependencies -->
         <version.jakarta.ws.rs-api>3.1.0</version.jakarta.ws.rs-api>
-        <version.org.jboss.resteasy>6.2.14.Final</version.org.jboss.resteasy>
+        <version.org.jboss.resteasy>6.2.15.Final</version.org.jboss.resteasy>
     </properties>
     <dependencyManagement>
         <dependencies>

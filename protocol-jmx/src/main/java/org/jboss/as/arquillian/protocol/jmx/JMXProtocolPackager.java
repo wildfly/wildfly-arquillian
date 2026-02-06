@@ -51,8 +51,6 @@ import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.asset.UrlAsset;
 import org.jboss.shrinkwrap.api.container.ManifestContainer;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.jboss.shrinkwrap.descriptor.api.Descriptors;
-import org.jboss.shrinkwrap.descriptor.api.spec.se.manifest.ManifestDescriptor;
 
 /**
  * A {@link DeploymentPackager} for the JMXProtocol.
@@ -165,8 +163,11 @@ public class JMXProtocolPackager implements DeploymentPackager {
         }
         loadableExtensions.add(JMXProtocolEndpointExtension.class.getName());
 
-        // Generate the manifest with it's dependencies
-        ManifestDescriptor manifest = Descriptors.create(ManifestDescriptor.class);
+        // Generate the manifest with its dependencies
+        Manifest manifest = new Manifest();
+        Attributes attributes = manifest.getMainAttributes();
+        attributes.put(Attributes.Name.MANIFEST_VERSION, "1.0");
+
         Iterator<ModuleIdentifier> itdep = archiveDependencies.iterator();
         StringBuilder depspec = new StringBuilder();
         while (itdep.hasNext()) {
@@ -182,8 +183,15 @@ public class JMXProtocolPackager implements DeploymentPackager {
                 depspec.append(",");
             }
         }
-        manifest.attribute("Dependencies", depspec.toString());
-        archive.setManifest(new StringAsset(manifest.exportAsString()));
+        attributes.putValue("Dependencies", depspec.toString());
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try {
+            manifest.write(baos);
+        } catch (IOException e) {
+            throw new IllegalStateException("Cannot write manifest", e);
+        }
+        archive.setManifest(new StringAsset(baos.toString()));
 
         // Add the ServiceActivator
         String serviceActivatorPath = "META-INF/services/" + ServiceActivator.class.getName();

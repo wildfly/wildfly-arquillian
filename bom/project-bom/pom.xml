@@ -35,7 +35,6 @@
 
         <!-- keep this in sync with version that is used in arquillian -->
         <version.org.jboss.shrinkwrap>1.2.6</version.org.jboss.shrinkwrap>
-        <version.org.jboss.shrinkwrap.descriptors>2.0.0</version.org.jboss.shrinkwrap.descriptors>
         <version.org.jboss.ejb-client>5.0.8.Final</version.org.jboss.ejb-client>
         <version.org.jsoup>1.21.2</version.org.jsoup>
         <version.org.testng>7.7.0</version.org.testng>
@@ -177,12 +176,6 @@
                         <artifactId>*</artifactId>
                     </exclusion>
                 </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.shrinkwrap.descriptors</groupId>
-                <artifactId>shrinkwrap-descriptors-impl-base</artifactId>
-                <version>${version.org.jboss.shrinkwrap.descriptors}</version>
             </dependency>
 
             <!-- Required by Elytron dependencies -->

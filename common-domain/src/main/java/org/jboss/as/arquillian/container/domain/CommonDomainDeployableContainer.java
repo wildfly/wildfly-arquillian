@@ -37,7 +37,6 @@ import org.jboss.as.controller.client.ModelControllerClientConfiguration;
 import org.jboss.as.controller.client.helpers.DelegatingModelControllerClient;
 import org.jboss.as.controller.client.helpers.domain.DomainClient;
 import org.jboss.shrinkwrap.api.Archive;
-import org.jboss.shrinkwrap.descriptor.api.Descriptor;
 import org.wildfly.arquillian.domain.ServerGroupArchive;
 import org.wildfly.arquillian.domain.api.DomainManager;
 
@@ -213,16 +212,6 @@ public abstract class CommonDomainDeployableContainer<T extends CommonDomainCont
         } else {
             throw new DeploymentException("Could not determine the server-group for the undeploy.");
         }
-    }
-
-    @Override
-    public void deploy(Descriptor descriptor) throws DeploymentException {
-        throw new UnsupportedOperationException("Can not deploy directly from a Domain Controller");
-    }
-
-    @Override
-    public void undeploy(Descriptor descriptor) throws DeploymentException {
-        throw new UnsupportedOperationException("Can not undeploy directly from a Domain Controller");
     }
 
     /**

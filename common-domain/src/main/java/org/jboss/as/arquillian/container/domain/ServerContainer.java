@@ -11,7 +11,6 @@ import org.jboss.arquillian.container.spi.client.protocol.ProtocolDescription;
 import org.jboss.arquillian.container.spi.client.protocol.metadata.ProtocolMetaData;
 import org.jboss.as.arquillian.container.domain.Domain.Server;
 import org.jboss.shrinkwrap.api.Archive;
-import org.jboss.shrinkwrap.descriptor.api.Descriptor;
 import org.wildfly.arquillian.domain.api.DomainManager;
 
 /**
@@ -64,18 +63,6 @@ public class ServerContainer implements DeployableContainer<EmptyConfiguration> 
 
     @Override
     public void undeploy(Archive<?> archive) throws DeploymentException {
-        throw new UnsupportedOperationException(
-                "Can not undeploy from a single server in the domain, target server-group " + server.getGroup());
-    }
-
-    @Override
-    public void deploy(Descriptor descriptor) throws DeploymentException {
-        throw new UnsupportedOperationException(
-                "Can not deploy to a single server in the domain, target server-group " + server.getGroup());
-    }
-
-    @Override
-    public void undeploy(Descriptor descriptor) throws DeploymentException {
         throw new UnsupportedOperationException(
                 "Can not undeploy from a single server in the domain, target server-group " + server.getGroup());
     }

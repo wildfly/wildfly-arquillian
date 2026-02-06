@@ -232,7 +232,7 @@ public class JMXProtocolPackager implements DeploymentPackager {
      * @param appArchive The Archive to deploy
      */
     private void addModulesManifestDependencies(Archive<?> appArchive) {
-        if (appArchive instanceof ManifestContainer<?> == false)
+        if (!(appArchive instanceof ManifestContainer<?>))
             throw new IllegalArgumentException("ManifestContainer expected " + appArchive);
 
         final Manifest manifest = ManifestUtils.getOrCreateManifest(appArchive);
@@ -242,10 +242,10 @@ public class JMXProtocolPackager implements DeploymentPackager {
             attributes.putValue(Attributes.Name.MANIFEST_VERSION.toString(), "1.0");
         }
         String value = attributes.getValue("Dependencies");
-        StringBuffer moduleDeps = new StringBuffer(value != null && value.trim().length() > 0 ? value : "org.jboss.modules");
+        StringBuffer moduleDeps = new StringBuffer(value != null && !value.trim().isEmpty() ? value : "org.jboss.modules");
         for (String dep : defaultDependencies) {
             if (moduleDeps.indexOf(dep) < 0) {
-                moduleDeps.append("," + dep);
+                moduleDeps.append(",").append(dep);
             }
             if (optionalDeps.contains(dep)) {
                 moduleDeps.append(" optional");

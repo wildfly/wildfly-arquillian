@@ -51,8 +51,6 @@ import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.asset.UrlAsset;
 import org.jboss.shrinkwrap.api.container.ManifestContainer;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.jboss.shrinkwrap.descriptor.api.Descriptors;
-import org.jboss.shrinkwrap.descriptor.api.spec.se.manifest.ManifestDescriptor;
 
 /**
  * A {@link DeploymentPackager} for the JMXProtocol.
@@ -165,8 +163,11 @@ public class JMXProtocolPackager implements DeploymentPackager {
         }
         loadableExtensions.add(JMXProtocolEndpointExtension.class.getName());
 
-        // Generate the manifest with it's dependencies
-        ManifestDescriptor manifest = Descriptors.create(ManifestDescriptor.class);
+        // Generate the manifest with its dependencies
+        Manifest manifest = new Manifest();
+        Attributes attributes = manifest.getMainAttributes();
+        attributes.put(Attributes.Name.MANIFEST_VERSION, "1.0");
+
         Iterator<ModuleIdentifier> itdep = archiveDependencies.iterator();
         StringBuilder depspec = new StringBuilder();
         while (itdep.hasNext()) {
@@ -182,8 +183,15 @@ public class JMXProtocolPackager implements DeploymentPackager {
                 depspec.append(",");
             }
         }
-        manifest.attribute("Dependencies", depspec.toString());
-        archive.setManifest(new StringAsset(manifest.exportAsString()));
+        attributes.putValue("Dependencies", depspec.toString());
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try {
+            manifest.write(baos);
+        } catch (IOException e) {
+            throw new IllegalStateException("Cannot write manifest", e);
+        }
+        archive.setManifest(new StringAsset(baos.toString()));
 
         // Add the ServiceActivator
         String serviceActivatorPath = "META-INF/services/" + ServiceActivator.class.getName();
@@ -224,7 +232,7 @@ public class JMXProtocolPackager implements DeploymentPackager {
      * @param appArchive The Archive to deploy
      */
     private void addModulesManifestDependencies(Archive<?> appArchive) {
-        if (appArchive instanceof ManifestContainer<?> == false)
+        if (!(appArchive instanceof ManifestContainer<?>))
             throw new IllegalArgumentException("ManifestContainer expected " + appArchive);
 
         final Manifest manifest = ManifestUtils.getOrCreateManifest(appArchive);
@@ -234,10 +242,10 @@ public class JMXProtocolPackager implements DeploymentPackager {
             attributes.putValue(Attributes.Name.MANIFEST_VERSION.toString(), "1.0");
         }
         String value = attributes.getValue("Dependencies");
-        StringBuffer moduleDeps = new StringBuffer(value != null && value.trim().length() > 0 ? value : "org.jboss.modules");
+        StringBuffer moduleDeps = new StringBuffer(value != null && !value.trim().isEmpty() ? value : "org.jboss.modules");
         for (String dep : defaultDependencies) {
             if (moduleDeps.indexOf(dep) < 0) {
-                moduleDeps.append("," + dep);
+                moduleDeps.append(",").append(dep);
             }
             if (optionalDeps.contains(dep)) {
                 moduleDeps.append(" optional");

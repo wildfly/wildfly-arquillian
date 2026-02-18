@@ -33,7 +33,6 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
-import org.jboss.shrinkwrap.descriptor.api.Descriptor;
 import org.wildfly.plugin.tools.ContainerDescription;
 import org.wildfly.plugin.tools.server.ServerManager;
 import org.wildfly.plugin.tools.server.StandaloneManager;
@@ -300,16 +299,6 @@ public abstract class CommonDeployableContainer<T extends CommonContainerConfigu
     @Override
     public void undeploy(Archive<?> archive) throws DeploymentException {
         archiveDeployer.get().undeploy(archive.getName());
-    }
-
-    @Override
-    public void deploy(Descriptor descriptor) throws DeploymentException {
-        throw new UnsupportedOperationException("not implemented");
-    }
-
-    @Override
-    public void undeploy(Descriptor descriptor) throws DeploymentException {
-        throw new UnsupportedOperationException("not implemented");
     }
 
     private void safeCloseClient() {

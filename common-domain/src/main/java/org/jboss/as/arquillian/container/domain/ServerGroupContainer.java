@@ -21,7 +21,6 @@ import org.jboss.as.arquillian.container.domain.Domain.Server;
 import org.jboss.as.arquillian.container.domain.Domain.ServerGroup;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.shrinkwrap.api.Archive;
-import org.jboss.shrinkwrap.descriptor.api.Descriptor;
 import org.wildfly.arquillian.domain.api.DomainManager;
 
 /**
@@ -102,16 +101,6 @@ public class ServerGroupContainer implements DeployableContainer<EmptyConfigurat
     @Override
     public void undeploy(Archive<?> archive) throws DeploymentException {
         deployer.undeploy(archive.getName(), serverGroup.getName());
-    }
-
-    @Override
-    public void deploy(Descriptor descriptor) throws DeploymentException {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void undeploy(Descriptor descriptor) throws DeploymentException {
-        throw new UnsupportedOperationException();
     }
 
     /**

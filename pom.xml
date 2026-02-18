@@ -79,7 +79,7 @@
     </issueManagement>
 
     <properties>
-        <version.formatter.maven.plugin>2.23.0</version.formatter.maven.plugin>
+        <version.formatter.maven.plugin>2.29.0</version.formatter.maven.plugin>
         <version.impsort.maven.plugin>1.13.0</version.impsort.maven.plugin>
         <version.org.wildfly />
         <version.org.wildfly.checkstyle-config>1.0.8.Final</version.org.wildfly.checkstyle-config>

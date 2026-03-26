@@ -69,13 +69,13 @@ jobs:
           cd wildfly-arquillian
           mvn -B -ntp clean clean install '-Dversion.org.jboss.arquillian.core=${{ steps.arquillian-core.outputs.arquillian-core-version }}' '-Dorg.wildfly.logging.skipLogManagerCheck=true'
       - name: Upload surefire reports
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         if: failure()
         with:
           name: surefire-reports-${{ matrix.os }}-${{ matrix.java }}
           path: '**/surefire-reports/*'
       - name: Upload server logs
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         if: failure()
         with:
           name: server-logs-${{ matrix.os }}-${{ matrix.java }}

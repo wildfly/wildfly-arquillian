@@ -64,11 +64,6 @@
             <groupId>org.jboss.remotingjmx</groupId>
             <artifactId>remoting-jmx</artifactId>
         </dependency>
-        <!-- Required by the wildfly-server transitive dependency org.apache.sshd:sshd-common -->
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-        </dependency>
         <dependency>
             <groupId>org.wildfly.core</groupId>
             <artifactId>wildfly-jmx</artifactId>

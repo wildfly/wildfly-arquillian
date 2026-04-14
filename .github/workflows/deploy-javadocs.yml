@@ -40,7 +40,7 @@ jobs:
       - name: Generate JavaDoc
         run: mvn -B -ntp clean -Pjboss-release javadoc:aggregate
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v4
+        uses: actions/upload-pages-artifact@v5
         with:
           # Upload the JavaDoc's
           path: 'target/reports/apidocs/'

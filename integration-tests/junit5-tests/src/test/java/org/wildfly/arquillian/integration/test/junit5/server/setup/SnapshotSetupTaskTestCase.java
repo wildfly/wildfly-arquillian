@@ -22,6 +22,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.engine.discovery.DiscoverySelectors;
@@ -46,6 +47,11 @@ public class SnapshotSetupTaskTestCase {
     public static WebArchive createDeployment() {
         return ShrinkWrap.create(WebArchive.class, "snapshot-setup-task-test.war")
                 .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
+    }
+
+    @AfterAll
+    static void deleteTempFile() throws IOException {
+        Files.deleteIfExists(TEST_FILE);
     }
 
     @Test

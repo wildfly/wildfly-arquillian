@@ -221,7 +221,9 @@ public class JMXProtocolPackager implements DeploymentPackager {
         archive.addAsManifestResource("META-INF/permissions.xml", "permissions.xml");
 
         log.debugf("Loadable extensions: %s", loadableExtensions);
-        log.tracef("Archive content: %s\n%s", archive, archive.toString(true));
+        if (log.isTraceEnabled()) {
+            log.tracef("Archive content: %s\n%s", archive, archive.toString(true));
+        }
         return archive;
     }
 

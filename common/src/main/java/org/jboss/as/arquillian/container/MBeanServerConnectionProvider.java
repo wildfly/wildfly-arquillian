@@ -45,7 +45,7 @@ public final class MBeanServerConnectionProvider implements Closeable {
                 "service:jmx:remote+http://" + NetworkUtils.formatPossibleIpv6Address(host) + ":" + port);
         try {
             if (jmxConnector == null) {
-                log.debug("Connecting JMXConnector to: " + urlString);
+                log.debugf("Connecting JMXConnector to: %s", urlString);
                 JMXServiceURL serviceURL = new JMXServiceURL(urlString);
                 jmxConnector = JMXConnectorFactory.connect(serviceURL, null);
             }

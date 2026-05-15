@@ -10,7 +10,7 @@
     <parent>
         <groupId>org.jboss</groupId>
         <artifactId>jboss-parent</artifactId>
-        <version>51</version>
+        <version>53</version>
         <relativePath />
     </parent>
 
@@ -120,8 +120,7 @@
         <!-- Build minimums -->
         <maven.min.version>3.8.0</maven.min.version>
 
-        <!-- Require at least Java 11 to compile -->
-        <jdk.min.version>17</jdk.min.version>
+        <!-- Compile to Java 17 -->
         <maven.compiler.release>17</maven.compiler.release>
 
         <!-- maven-release-plugin configuration -->

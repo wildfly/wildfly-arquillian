@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-~ Copyright The WildFly Authors
-~ SPDX-License-Identifier: Apache-2.0
+    ~ Copyright The WildFly Authors
+    ~ SPDX-License-Identifier: Apache-2.0
 -->
 
 <arquillian xmlns="http://jboss.org/schema/arquillian" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -15,13 +15,13 @@
                 <property name="serverConfig">${wildfly.standalone.config}</property>
 
                 <!--
-                     Please leave this as false. It is a good, early catch for the reviewers to make
-                     sure that they have not left a stale server running when merging pull requests
+                                Please leave this as false. It is a good, early catch for the reviewers to make
+                                sure that they have not left a stale server running when merging pull requests
                 -->
                 <property name="allowConnectingToRunningServer">false</property>
                 <!--
-                     Used for the FailedDeploymentTestCase as the deployment should fail, but we want the test to still
-                     work. The property expects a regex pattern.
+                                Used for the FailedDeploymentTestCase as the deployment should fail, but we want the test to still
+                                work. The property expects a regex pattern.
                 -->
                 <property name="deploymentFailurePattern">javax\.xml\.stream\.XMLStreamException</property>
             </configuration>

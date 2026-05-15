@@ -32,6 +32,9 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  MVN_CMD: './mvnw -V -B -ntp'
+
 jobs:
   wildfly-arquillian-build:
     runs-on: ${{ matrix.os }}
@@ -39,7 +42,6 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest]
-        java: ['17', '21', '25']
 
     steps:
       - uses: actions/checkout@v6
@@ -51,32 +53,45 @@ jobs:
         name: Checkout WildFly Arquillian
         with:
           path: wildfly-arquillian
-      - name: Set up JDK ${{ matrix.java }}
+      - name: Set up JDKs
         uses: actions/setup-java@v5
         with:
-          java-version: ${{ matrix.java }}
           distribution: 'temurin'
           cache: 'maven'
+          # Please note the order here of having 25 last as that is the version we want to compile with
+          java-version: |
+            17
+            21
+            26
+            25
       - name: Build Arquillian Core
         id: arquillian-core
         shell: bash
         run: |
           cd arquillian-core
-          mvn -B -ntp clean install -DskipTests
+          ${{ env.MVN_CMD }} clean install -DskipTests
           echo "arquillian-core-version=$(mvn -B help:evaluate -Dexpression=project.version -DforceStdout -q)" >> $GITHUB_OUTPUT
-      - name: Build with Maven Java ${{ matrix.java }}
+      - name: Build and Test on ${{ matrix.os }} - Java 25
         run: |
           cd wildfly-arquillian
-          mvn -B -ntp clean clean install '-Dversion.org.jboss.arquillian.core=${{ steps.arquillian-core.outputs.arquillian-core-version }}' '-Dorg.wildfly.logging.skipLogManagerCheck=true'
-      - name: Upload surefire reports
+          ${{ env.MVN_CMD }} clean install '-Dversion.org.jboss.arquillian.core=${{ steps.arquillian-core.outputs.arquillian-core-version }}'
+      - name: Build and Test on ${{ matrix.os }} - Java 26
+        run: |
+          cd wildfly-arquillian
+          ${{ env.MVN_CMD }} verify '-Dversion.org.jboss.arquillian.core=${{ steps.arquillian-core.outputs.arquillian-core-version }}' '-Dtest.java.home=${{env.JAVA_HOME_26_X64}}${{env.JAVA_HOME_26_ARM64}}' '-Dtest.report.dir=java26'
+      - name: Build and Test on ${{ matrix.os }} - Java 21
+        run: |
+          cd wildfly-arquillian
+          ${{ env.MVN_CMD }} verify '-Dversion.org.jboss.arquillian.core=${{ steps.arquillian-core.outputs.arquillian-core-version }}' '-Dtest.java.home=${{env.JAVA_HOME_21_X64}}${{env.JAVA_HOME_21_ARM64}}' '-Dtest.report.dir=java21'
+      - name: Build and Test on ${{ matrix.os }} - Java 17
+        run: |
+          cd wildfly-arquillian
+          ${{ env.MVN_CMD }} verify '-Dversion.org.jboss.arquillian.core=${{ steps.arquillian-core.outputs.arquillian-core-version }}' '-Dtest.java.home=${{env.JAVA_HOME_17_X64}}${{env.JAVA_HOME_17_ARM64}}' '-Dtest.report.dir=java17'
+      - name: Upload test logs for failed run
         uses: actions/upload-artifact@v7
         if: failure()
         with:
-          name: surefire-reports-${{ matrix.os }}-${{ matrix.java }}
-          path: '**/surefire-reports/*'
-      - name: Upload server logs
-        uses: actions/upload-artifact@v7
-        if: failure()
-        with:
-          name: server-logs-${{ matrix.os }}-${{ matrix.java }}
-          path: '**/*.log'
+          name: failure-report-${{ matrix.os }}
+          path: |
+            **/surefire-reports/**
+            **/*.log

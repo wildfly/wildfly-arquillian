@@ -32,6 +32,9 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  MVN_CMD: './mvnw -V -B -ntp'
+
 jobs:
 
   wildfly-arquillian-build:
@@ -40,7 +43,6 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest]
-        java: ['17', '21', '25']
         profile:
           - ""
           - "'-Pwildfly-preview'"
@@ -49,24 +51,30 @@ jobs:
       - uses: actions/checkout@v6
       - uses: wildfly-extras/wildfly-nightly-download@v1
         id: wildfly-nightly
-      - name: Set up JDK ${{ matrix.java }}
+      - name: Set up JDKs
         uses: actions/setup-java@v5
         with:
-          java-version: ${{ matrix.java }}
           distribution: 'temurin'
           cache: 'maven'
-      - name: Build with Maven Java ${{ matrix.java }} ${{ matrix.profile }}
-        run: |
-          mvn clean install '-Dversion.org.wildfly=${{steps.wildfly-nightly.outputs.wildfly-version}}' '-Dorg.wildfly.logging.skipLogManagerCheck=true' ${{ matrix.profile }}
-      - name: Upload surefire reports
+          # Please note the order here of having 25 last as that is the version we want to compile with
+          java-version: |
+            17
+            21
+            26
+            25
+      - name: Build and Test on ${{ matrix.os }} ${{ matrix.profile }} - Java 25
+        run: ${{ env.MVN_CMD }} clean install '-Dversion.org.wildfly=${{steps.wildfly-nightly.outputs.wildfly-version}}' ${{ matrix.profile }}
+      - name: Build and Test on ${{ matrix.os }} ${{ matrix.profile }} - Java 26
+        run: ${{ env.MVN_CMD }} verify '-Dversion.org.wildfly=${{steps.wildfly-nightly.outputs.wildfly-version}}' ${{ matrix.profile }} '-Dtest.java.home=${{env.JAVA_HOME_26_X64}}${{env.JAVA_HOME_26_ARM64}}' '-Dtest.report.dir=java26'
+      - name: Build and Test on ${{ matrix.os }} ${{ matrix.profile }} - Java 21
+        run: ${{ env.MVN_CMD }} verify '-Dversion.org.wildfly=${{steps.wildfly-nightly.outputs.wildfly-version}}' ${{ matrix.profile }} '-Dtest.java.home=${{env.JAVA_HOME_21_X64}}${{env.JAVA_HOME_21_ARM64}}' '-Dtest.report.dir=java21'
+      - name: Build and Test on ${{ matrix.os }} ${{ matrix.profile }} - Java 17
+        run: ${{ env.MVN_CMD }} verify '-Dversion.org.wildfly=${{steps.wildfly-nightly.outputs.wildfly-version}}' ${{ matrix.profile }} '-Dtest.java.home=${{env.JAVA_HOME_17_X64}}${{env.JAVA_HOME_17_ARM64}}' '-Dtest.report.dir=java17'
+      - name: Upload test logs for failed run
         uses: actions/upload-artifact@v7
         if: failure()
         with:
-          name: surefire-reports-${{ matrix.os }}-${{ matrix.java }}${{ matrix.profile }}
-          path: '**/surefire-reports/*'
-      - name: Upload server logs
-        uses: actions/upload-artifact@v7
-        if: failure()
-        with:
-          name: server-logs-${{ matrix.os }}-${{ matrix.java }}${{ matrix.profile }}
-          path: '**/*.log'
+          name: failure-report-${{ matrix.os }}
+          path: |
+            **/surefire-reports/**
+            **/*.log

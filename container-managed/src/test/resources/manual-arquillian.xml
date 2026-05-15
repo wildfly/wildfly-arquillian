@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-~ Copyright The WildFly Authors
-~ SPDX-License-Identifier: Apache-2.0
+    ~ Copyright The WildFly Authors
+    ~ SPDX-License-Identifier: Apache-2.0
 -->
 
 <arquillian xmlns="http://jboss.org/schema/arquillian" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -15,8 +15,8 @@
                 <property name="javaVmArguments">${jvm.args}</property>
                 <property name="serverConfig">${wildfly.standalone.config}</property>
                 <!--
-                     Used for the ManualFailedDeploymentTestCase as the deployment should fail, but we want the test to
-                     still work. The property expects a regex pattern.
+                                Used for the ManualFailedDeploymentTestCase as the deployment should fail, but we want the test to
+                                still work. The property expects a regex pattern.
                 -->
                 <property name="deploymentFailurePattern">javax\.xml\.stream\.XMLStreamException</property>
             </configuration>
@@ -30,7 +30,7 @@
             </configuration>
         </container>
         <!-- A separate container is required as setting values when starting the container, the values will be constant
-            for this container.
+                for this container.
         -->
         <container qualifier="yaml" mode="manual">
             <configuration>

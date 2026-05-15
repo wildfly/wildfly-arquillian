@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-~ Copyright The WildFly Authors
-~ SPDX-License-Identifier: Apache-2.0
+    ~ Copyright The WildFly Authors
+    ~ SPDX-License-Identifier: Apache-2.0
 -->
 
 <arquillian xmlns="http://jboss.org/schema/arquillian" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -12,8 +12,8 @@
                 <property name="jbossHome">${jboss.home}</property>
                 <property name="javaVmArguments"> ${jvm.args}</property>
                 <!--
-                     Please leave this as false. It is a good, early catch for the reviewers to make
-                     sure that they have not left a stale server running when merging pull requests
+                                Please leave this as false. It is a good, early catch for the reviewers to make
+                                sure that they have not left a stale server running when merging pull requests
                 -->
                 <property name="allowConnectingToRunningServer">false</property>
             </configuration>

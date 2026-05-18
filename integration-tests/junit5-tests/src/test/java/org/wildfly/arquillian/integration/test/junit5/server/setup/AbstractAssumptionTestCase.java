@@ -32,7 +32,7 @@ abstract class AbstractAssumptionTestCase {
     }
 
     @Test
-    public void failIfExecuted() {
+    void failIfExecuted() {
         Assertions.fail("This should have been skipped and not executed");
     }
 }

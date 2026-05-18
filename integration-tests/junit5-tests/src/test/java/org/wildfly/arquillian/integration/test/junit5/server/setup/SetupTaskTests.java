@@ -129,7 +129,7 @@ abstract class SetupTaskTests {
             RuntimeExceptionSetupTask.class,
             AfterSuccessfulSetupTask.class
     })
-    public static class SuccessThenRuntimeFail extends SetupTaskTests {
+    static class SuccessThenRuntimeFail extends SetupTaskTests {
     }
 
     @ServerSetup({
@@ -137,13 +137,13 @@ abstract class SetupTaskTests {
             AssertionErrorSetupTask.class,
             AfterSuccessfulSetupTask.class
     })
-    public static class SuccessThenAssertionFail extends SetupTaskTests {
+    static class SuccessThenAssertionFail extends SetupTaskTests {
     }
 
     @ServerSetup({
             SuccessfulSetupTask.class,
             AfterSuccessfulSetupTask.class
     })
-    public static class SuccessAndAfter extends SetupTaskTests {
+    static class SuccessAndAfter extends SetupTaskTests {
     }
 }

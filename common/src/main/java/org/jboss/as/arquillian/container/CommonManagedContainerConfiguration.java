@@ -22,13 +22,18 @@ import org.jboss.arquillian.container.spi.client.deployment.Validate;
 public class CommonManagedContainerConfiguration extends CommonContainerConfiguration {
 
     /**
+     * The default startup timeout in seconds.
+     */
+    static final int DEFAULT_STARTUP_TIMEOUT = 60;
+
+    /**
      * Default timeout value waiting on ports is 10 seconds
      */
     private static final Integer DEFAULT_VALUE_WAIT_FOR_PORTS_TIMEOUT_SECONDS = 10;
 
     private String javaHome = System.getenv("JAVA_HOME");
 
-    private int startupTimeoutInSeconds = 60;
+    private int startupTimeoutInSeconds = DEFAULT_STARTUP_TIMEOUT;
 
     private int stopTimeoutInSeconds = 60;
 

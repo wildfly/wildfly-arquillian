@@ -115,7 +115,13 @@ public class ServerSetupObserver {
         }
 
         final ManagementClient client = managementClient.get();
-        final ServerSetupTaskHolder holder = new ServerSetupTaskHolder(serverManager.get(), client, container.getName());
+        final var deployableContainer = container.getDeployableContainer();
+        int reloadTimeout = CommonManagedContainerConfiguration.DEFAULT_STARTUP_TIMEOUT;
+        if (deployableContainer instanceof CommonManagedDeployableContainer<?> commonManagedDeployableContainer) {
+            reloadTimeout = commonManagedDeployableContainer.getContainerConfiguration().getStartupTimeoutInSeconds();
+        }
+        final ServerSetupTaskHolder holder = new ServerSetupTaskHolder(serverManager.get(), client, containerName,
+                reloadTimeout);
         executeSetup(holder, setup, containerName, event.getDeployment());
     }
 
@@ -236,15 +242,17 @@ public class ServerSetupObserver {
         private final ServerManager serverManager;
         private final Deque<ServerSetupTask> setupTasks;
         private final Set<DeploymentDescription> deployments;
-        private final String containerName;;
+        private final String containerName;
+        private final int reloadTimeout;
 
         private ServerSetupTaskHolder(final ServerManager serverManager, final ManagementClient client,
-                final String containerName) {
+                final String containerName, final int reloadTimeout) {
             this.client = client;
             this.serverManager = serverManager;
             setupTasks = new ArrayDeque<>();
             deployments = new HashSet<>();
             this.containerName = containerName;
+            this.reloadTimeout = reloadTimeout;
         }
 
         void setup(final ServerSetup setup, final String containerName) throws Throwable {
@@ -260,7 +268,7 @@ public class ServerSetupObserver {
                 } finally {
                     if (task.getClass().isAnnotationPresent(ReloadIfRequired.class) && serverManager != null) {
                         final ReloadIfRequired reloadIfRequired = task.getClass().getAnnotation(ReloadIfRequired.class);
-                        serverManager.reloadIfRequired(reloadIfRequired.value(), reloadIfRequired.timeUnit());
+                        serverManager.reloadIfRequired(resolveTimeout(reloadIfRequired), reloadIfRequired.timeUnit());
                     }
                 }
             }
@@ -286,7 +294,7 @@ public class ServerSetupObserver {
                         if (task.getClass().isAnnotationPresent(ReloadIfRequired.class) && serverManager != null) {
                             try {
                                 final ReloadIfRequired reloadIfRequired = task.getClass().getAnnotation(ReloadIfRequired.class);
-                                serverManager.reloadIfRequired(reloadIfRequired.value(), reloadIfRequired.timeUnit());
+                                serverManager.reloadIfRequired(resolveTimeout(reloadIfRequired), reloadIfRequired.timeUnit());
                             } catch (IOException e) {
                                 log.errorf(e, "Failed to reload server. The server may still be in reload-required state.");
                             }
@@ -318,6 +326,13 @@ public class ServerSetupObserver {
             } finally {
                 containerContext.get().deactivate();
             }
+        }
+
+        private long resolveTimeout(final ReloadIfRequired reloadIfRequired) {
+            if (reloadIfRequired.value() <= 0) {
+                return reloadTimeout;
+            }
+            return reloadIfRequired.value();
         }
     }
 }

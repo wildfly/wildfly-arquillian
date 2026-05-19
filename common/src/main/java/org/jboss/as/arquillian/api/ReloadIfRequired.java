@@ -27,11 +27,12 @@ import org.jboss.as.arquillian.container.ManagementClient;
 public @interface ReloadIfRequired {
 
     /**
-     * The time to wait for the reload to happen. The default is {@code 10}.
+     * The time to wait for the reload to happen. A value of 0 or less means the value of
+     * {@code startupTimeoutInSeconds} defined in the container's configuration.
      *
      * @return the default time to wait for a reload
      */
-    long value() default 10L;
+    long value() default 0L;
 
     /**
      * The time unit used for the timeout to wait for a reload. The default is {@link TimeUnit#SECONDS SECONDS}.

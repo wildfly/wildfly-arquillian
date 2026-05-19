@@ -7,7 +7,7 @@ https://www.redhat.com/en/technologies/jboss-middleware/application-platform[JBo
 and unmanaged standalone and domain servers. As of 3.0.0 there is also a bootable JAR adapter as well.
 
 Versions under 3.0.0 should work with any version of WildFly and JBoss EAP 7.0 and higher. Version 3.0.0 requires a
-minimum of WildFly 13 or JBoss EAP 7.2. Versions 5.0 for for Jakarta EE 10 and work with WildFly 27 and higher and
+minimum of WildFly 13 or JBoss EAP 7.2. Versions 5.0 for Jakarta EE 10 and work with WildFly 27 and higher and
 JBoss EAP 8.0 and higher.
 
 Found a bug or want a new feature? Please file a bug on the https://issues.redhat.com/browse/WFARQ[issue tracker].
@@ -103,6 +103,96 @@ Since version 3.0.0 of the adapter you can now use Arquillian to test your boota
   <scope>test</scope>
 </dependency>
 ----
+
+=== Testing Tools
+
+[IMPORTANT]
+====
+The `org.wildfly.arquillian:wildfly-testing-tools` artifact is deprecated as of version 6.0.0 and will be removed in a future release.
+
+Please migrate to the new https://github.com/wildfly-extras/wildfly-testing-tools[WildFly Testing Tools] project:
+
+[source,xml]
+----
+<dependency>
+  <groupId>org.wildfly.testing</groupId>
+  <artifactId>wildfly-testing-tools</artifactId>
+  <version>${version.org.wildfly.testing}</version>
+  <scope>test</scope>
+</dependency>
+----
+====
+
+The testing tools provide utilities for working with deployments and modules in WildFly tests, including:
+
+* Creating deployment descriptors (jboss-deployment-structure.xml, jboss-web.xml, permissions.xml)
+* Building and managing JBoss Modules for testing
+* XML utilities for test configuration
+
+==== Migration Notes
+
+When migrating from `org.wildfly.arquillian:wildfly-testing-tools` to `org.wildfly.testing:wildfly-testing-tools`, update your imports:
+
+[cols="1,1"]
+|===
+|Old Package |New Package
+
+|`org.wildfly.testing.tools.deployments`
+|`org.wildfly.testing.tools.deployment`
+
+|`org.wildfly.testing.tools.modules`
+|`org.wildfly.testing.tools.module`
+|===
+
+The deprecated artifact contains compatibility shims that delegate to the new artifact, so the migration can be done incrementally. Simply update your dependency and fix the import statements when deprecation warnings appear.
+
+=== JUnit API Annotations
+
+[IMPORTANT]
+====
+The annotations in `org.wildfly.arquillian:wildfly-arquillian-junit-api` have been deprecated as of version 6.0.0.
+
+Please migrate to the new annotations in the https://github.com/wildfly-extras/wildfly-testing-tools[WildFly Testing Tools] project:
+
+[source,xml]
+----
+<dependency>
+  <groupId>org.wildfly.testing</groupId>
+  <artifactId>wildfly-junit-api</artifactId>
+  <version>${version.org.wildfly.testing}</version>
+  <scope>test</scope>
+</dependency>
+----
+====
+
+==== Migration Notes
+
+When migrating, update your annotation imports from:
+
+* `org.wildfly.arquillian.junit.annotations` to `org.wildfly.testing.junit.annotation`
+
+Example:
+[source,java]
+----
+// Old
+import org.wildfly.arquillian.junit.annotations.AnyOf;
+import org.wildfly.arquillian.junit.annotations.JBossHome;
+import org.wildfly.arquillian.junit.annotations.RequiresModule;
+import org.wildfly.arquillian.junit.annotations.RequiresModules;
+
+// New
+import org.wildfly.testing.junit.annotation.AnyOf;
+import org.wildfly.testing.junit.annotation.JBossHome;
+import org.wildfly.testing.junit.annotation.RequiresModule;
+import org.wildfly.testing.junit.annotation.RequiresModules;
+----
+
+[NOTE]
+====
+If you use the `@JBossHome` annotation in in-container tests (tests that run inside the application server), you must
+continue to include `org.wildfly.arquillian:wildfly-arquillian-junit-api` as a dependency in addition to the new artifact.
+This is required to ensure the annotation and supporting classes are available in the deployment.
+====
 
 == Releasing
 

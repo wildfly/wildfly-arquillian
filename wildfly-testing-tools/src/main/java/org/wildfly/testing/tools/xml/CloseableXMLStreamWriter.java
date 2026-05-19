@@ -16,7 +16,9 @@ import javax.xml.stream.XMLStreamWriter;
  * A simple {@link XMLStreamWriter} which also implements {@link AutoCloseable}.
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
+ * @deprecated use the new WildFly Testing Tools project
  */
+@Deprecated(forRemoval = true, since = "6.0")
 public interface CloseableXMLStreamWriter extends AutoCloseable, XMLStreamWriter {
 
     /**

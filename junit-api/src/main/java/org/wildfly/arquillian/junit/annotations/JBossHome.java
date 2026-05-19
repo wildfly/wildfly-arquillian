@@ -20,7 +20,9 @@ import org.wildfly.arquillian.junit.condition.JBossHomeParameterResolver;
  * {@link java.io.File} or {@link String}.
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
+ * @deprecated Use the WildFly Testing Tools JUnit API instead
  */
+@Deprecated(forRemoval = true, since = "6.0")
 @Inherited
 @Documented
 @Target(ElementType.PARAMETER)

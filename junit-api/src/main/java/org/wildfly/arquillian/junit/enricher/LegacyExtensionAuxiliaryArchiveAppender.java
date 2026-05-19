@@ -9,19 +9,17 @@ import org.jboss.arquillian.container.test.spi.client.deployment.AuxiliaryArchiv
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.wildfly.plugin.tools.VersionComparator;
-import org.wildfly.testing.junit.annotation.JBossHome;
-import org.wildfly.testing.junit.condition.JBossHomeParameterResolver;
+import org.wildfly.arquillian.junit.annotations.JBossHome;
+import org.wildfly.arquillian.junit.condition.JBossHomeParameterResolver;
 
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-public class ExtensionAuxiliaryArchiveAppender implements AuxiliaryArchiveAppender {
+public class LegacyExtensionAuxiliaryArchiveAppender implements AuxiliaryArchiveAppender {
     @Override
     public Archive<?> createAuxiliaryArchive() {
-        return ShrinkWrap.create(JavaArchive.class, "wildfly-junit-utils.jar")
+        return ShrinkWrap.create(JavaArchive.class, "wildfly-junit-legacy-utils.jar")
                 .addPackage(JBossHome.class.getPackage())
-                .addPackage(JBossHomeParameterResolver.class.getPackage())
-                .addClass(VersionComparator.class);
+                .addPackage(JBossHomeParameterResolver.class.getPackage());
     }
 }

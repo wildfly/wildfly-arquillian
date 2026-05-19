@@ -14,6 +14,7 @@ import org.jboss.arquillian.core.spi.LoadableExtension;
 public class EnricherExtension implements LoadableExtension {
     @Override
     public void register(final ExtensionBuilder builder) {
-        builder.service(AuxiliaryArchiveAppender.class, ExtensionAuxiliaryArchiveAppender.class);
+        builder.service(AuxiliaryArchiveAppender.class, ExtensionAuxiliaryArchiveAppender.class)
+                .service(AuxiliaryArchiveAppender.class, LegacyExtensionAuxiliaryArchiveAppender.class);
     }
 }

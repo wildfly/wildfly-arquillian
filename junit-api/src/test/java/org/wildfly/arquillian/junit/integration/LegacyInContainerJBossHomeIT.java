@@ -15,24 +15,25 @@ import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.wildfly.testing.junit.annotation.JBossHome;
+import org.wildfly.arquillian.junit.annotations.JBossHome;
 
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 @ArquillianTest
-public class InContainerJBossHomeIT {
+public class LegacyInContainerJBossHomeIT {
 
     @Deployment
     public static WebArchive deployment() {
-        return ShrinkWrap.create(WebArchive.class, InContainerJBossHomeIT.class.getSimpleName() + ".war")
+        return ShrinkWrap.create(WebArchive.class, LegacyInContainerJBossHomeIT.class.getSimpleName() + ".war")
                 .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
     }
 
     @Test
     public void assertEnvironment() {
         final ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-        Assertions.assertEquals("deployment." + InContainerJBossHomeIT.class.getSimpleName() + ".war", classLoader.getName());
+        Assertions.assertEquals("deployment." + LegacyInContainerJBossHomeIT.class.getSimpleName() + ".war",
+                classLoader.getName());
     }
 
     @Test

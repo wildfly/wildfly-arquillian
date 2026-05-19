@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package org.wildly.testing.tools.deployments;
+package org.wildfly.testing.tools.deployments;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -29,7 +29,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.wildfly.testing.tools.deployments.DeploymentDescriptors;
 
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>

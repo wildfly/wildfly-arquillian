@@ -21,7 +21,9 @@ import org.wildfly.arquillian.junit.condition.RequiresModuleExecutionCondition;
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  * @see RequiresModule
+ * @deprecated Use the WildFly Testing Tools JUnit API instead
  */
+@Deprecated(forRemoval = true, since = "6.0")
 @Inherited
 @Documented
 @Target({ ElementType.TYPE, ElementType.METHOD })

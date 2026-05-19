@@ -67,6 +67,11 @@
             <artifactId>wildfly-arquillian-container-managed</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.wildfly.testing</groupId>
+            <artifactId>wildfly-testing-tools</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>

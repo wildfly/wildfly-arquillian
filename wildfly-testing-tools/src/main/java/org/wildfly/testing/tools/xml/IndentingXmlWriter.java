@@ -15,7 +15,9 @@ import javax.xml.stream.XMLStreamWriter;
 
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
+ * @deprecated use the new WildFly Testing Tools project
  */
+@Deprecated(forRemoval = true, since = "6.0")
 class IndentingXmlWriter implements CloseableXMLStreamWriter, XMLStreamConstants {
 
     private static final String SPACES = "    ";

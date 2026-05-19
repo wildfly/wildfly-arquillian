@@ -35,10 +35,10 @@ import org.junit.jupiter.api.condition.OS;
 import org.junit.platform.engine.discovery.DiscoverySelectors;
 import org.junit.platform.testkit.engine.EngineTestKit;
 import org.junit.platform.testkit.engine.EventConditions;
-import org.wildfly.testing.tools.deployments.DeploymentDescriptors;
-import org.wildfly.testing.tools.modules.ModuleBuilder;
-import org.wildfly.testing.tools.modules.ModuleDescription;
-import org.wildfly.testing.tools.modules.Modules;
+import org.wildfly.testing.tools.deployment.DeploymentDescriptors;
+import org.wildfly.testing.tools.module.ModuleBuilder;
+import org.wildfly.testing.tools.module.ModuleDescription;
+import org.wildfly.testing.tools.module.Modules;
 
 /**
  * Tests the {@link CreateModuleServerSetupTask} works as expected.

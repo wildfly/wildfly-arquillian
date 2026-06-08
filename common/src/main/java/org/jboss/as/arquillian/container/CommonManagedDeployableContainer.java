@@ -10,6 +10,7 @@ import static org.wildfly.core.launcher.ProcessHelper.destroyProcess;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.DatagramSocket;
+import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.concurrent.CancellationException;
@@ -118,7 +119,7 @@ public abstract class CommonManagedDeployableContainer<T extends CommonManagedCo
         final int timeoutInSeconds = config.getWaitForPortsTimeoutInSeconds();
 
         // For all ports we'll wait on
-        if (ports != null && ports.length > 0) {
+        if (ports != null) {
             for (final int port : ports) {
                 final long start = System.currentTimeMillis();
                 // If not available
@@ -152,14 +153,16 @@ public abstract class CommonManagedDeployableContainer<T extends CommonManagedCo
             throw new IllegalArgumentException("Port specified is out of range: " + port);
         }
 
-        try (ServerSocket ss = new ServerSocket(port); DatagramSocket ds = new DatagramSocket(port)) {
-            // Attempt both TCP and UDP
-            // So we don't block from using this port while it's in a TIMEOUT state after we release it
+        // Attempt both TCP and UDP
+        try (ServerSocket ss = new ServerSocket(); DatagramSocket ds = new DatagramSocket(null)) {
+            // Set SO_REUSEADDR so we don't block from using this port while it's in a TIMEOUT state after we release it
             ss.setReuseAddress(true);
+            ss.bind(new InetSocketAddress(port));
             ds.setReuseAddress(true);
+            ds.bind(new InetSocketAddress(port));
             // Could be acquired
             return true;
-        } catch (final IOException ignore) {
+        } catch (IOException ignore) {
             // Swallow
         }
 

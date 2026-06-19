@@ -51,7 +51,7 @@ jobs:
     timeout-minutes: 30
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Set up JDK 25
         uses: actions/setup-java@v5
         with:
@@ -70,7 +70,7 @@ jobs:
         os: [ubuntu-latest, windows-latest ]
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Set up JDKs
         uses: actions/setup-java@v5
         with:

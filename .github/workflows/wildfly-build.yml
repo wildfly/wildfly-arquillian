@@ -48,7 +48,7 @@ jobs:
           - "'-Pwildfly-preview'"
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: wildfly-extras/wildfly-nightly-download@v1
         id: wildfly-nightly
       - name: Set up JDKs

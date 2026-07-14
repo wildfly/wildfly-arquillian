@@ -220,7 +220,7 @@ public abstract class CommonManagedDeployableContainer<T extends CommonManagedCo
                     }
                 }
 
-                final int timeoutSeconds = getContainerConfiguration().getStartupTimeoutInSeconds();
+                final int timeoutSeconds = getContainerConfiguration().getStopTimeoutInSeconds();
                 if (!process.waitFor(timeoutSeconds, TimeUnit.SECONDS)) {
                     // Log a warning indicating the timeout happened
                     logger.warnf("The container process did not exit within %d seconds. Forcibly destroying the process.",

@@ -33,7 +33,7 @@
         <version.org.wildfly.testing>1.0.0.Alpha4</version.org.wildfly.testing>
 
         <!-- keep this in sync with version that is used in arquillian -->
-        <version.org.jboss.shrinkwrap>1.2.6</version.org.jboss.shrinkwrap>
+        <version.org.jboss.shrinkwrap>2.0.0.Final</version.org.jboss.shrinkwrap>
         <version.org.jboss.ejb-client>5.0.8.Final</version.org.jboss.ejb-client>
         <version.org.jsoup>1.22.2</version.org.jsoup>
         <version.org.testng>7.12.0</version.org.testng>
